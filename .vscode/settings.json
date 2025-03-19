@@ -673,5 +673,6 @@
       "before": ["t", "t"],
       "commands": ["workbench.action.closeEditorsInGroup"]
     }
-  ]
+  ],
+  "python.analysis.autoImportCompletions": true
 }
