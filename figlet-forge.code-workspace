@@ -311,6 +311,7 @@
       "Fira",
       "fwcd",
       "golangci",
+      "htmlcov",
       "levelname",
       "ngrx",
       "picoregex",
@@ -393,15 +394,7 @@
       "editorCursor.foreground": "#ff930f",
       "editorLineNumber.activeForeground": "#A020F0",
       "editorLineNumber.foreground": "#5DE23C",
-      "titleBar.activeBackground": "#000000",
-      "titleBar.activeForeground": "#F4DB01",
-      "titleBar.inactiveBackground": "#000000",
-      "titleBar.inactiveForeground": "#ffffff",
-      "tab.activeBorder": "#F4DB01",
       "terminal.tab.activeBorder": "#F4DB01",
-      "statusBar.background": "#000000",
-      "statusBar.debuggingBackground": "#007acc",
-      "statusBar.foreground": "#F4DB01",
       "statusBar.noFolderBackground": "#007acc"
     },
 

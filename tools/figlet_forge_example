@@ -1,0 +1,124 @@
+#!/bin/sh
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║ Figlet Forge - Eidosian Typography Engine                                 ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+# An Eidosian reimplementation extending the original pyfiglet package
+# (itself a pure Python port of FIGlet) with:
+# - Full colorized ANSI code support for vibrant text art
+# - Unicode character rendering with comprehensive mapping
+# - Expanded font ecosystem with careful attention to licensing
+# - Intelligent fallbacks for compatibility with older systems
+# - Significant performance optimizations without sacrificing quality
+# - Enhanced maintainability through modern Python practices
+# - Comprehensive documentation for all use cases
+# - Full backward compatibility with pyfiglet
+#
+# A central component of the Eidosian Forge ecosystem.
+
+FIGLET_FORGE='./figlet_forge'
+OUTPUT='/tmp/figlet_forge_example.log'
+TEXT='figlet_forge'
+LOG=0
+COLOR=0
+UNICODE=0
+WIDTH=0
+DIRECTION=""
+
+cd "$(dirname "$0")" || exit
+if [ ! -f "$FIGLET_FORGE" ]; then
+    echo "Error! Can't find $FIGLET_FORGE!"
+    exit 1
+fi
+
+print_samples() {
+    if [ "$LOG" -eq 1 ]; then
+        output="$OUTPUT"
+        rm -f "$output" 2>/dev/null
+    else
+        output='/dev/null'
+    fi
+
+    # Get font list from figlet_forge
+    fonts="$("$FIGLET_FORGE" --list-fonts | sed -e "s/[',]//g" -e 's/^\[//g' -e 's/\]$//g')"
+
+    # Define color options if requested
+    color_opt=""
+    if [ "$COLOR" -eq 1 ]; then
+        color_opt="--color rainbow"
+    fi
+
+    # Define unicode option if requested
+    unicode_opt=""
+    if [ "$UNICODE" -eq 1 ]; then
+        unicode_opt="--unicode"
+    fi
+
+    # Define width option if specified
+    width_opt=""
+    if [ "$WIDTH" -gt 0 ]; then
+        width_opt="--width $WIDTH"
+    fi
+
+    # Define direction option if specified
+    direction_opt=""
+    if [ -n "$DIRECTION" ]; then
+        direction_opt="--direction $DIRECTION"
+    fi
+
+    for font in $fonts; do
+        echo "Font: $font" | tee -a "$output"
+        "$FIGLET_FORGE" "$color_opt" $unicode_opt "$width_opt" "$direction_opt" --font "$font" "$TEXT" | tee -a "$output"
+        echo "" | tee -a "$output"
+    done
+}
+
+usage() {
+    echo "Figlet Forge Example - Showcase the Eidosian Typography Engine"
+    echo "Usage: $0 [options] [text ...]"
+    echo ""
+    echo "Options:"
+    echo "-l                  Create log file"
+    echo "-o [path_to_file]   Specify the path of log file (default: $OUTPUT)"
+    echo "-c                  Enable colorized ANSI output"
+    echo "-u                  Enable Unicode character rendering"
+    echo "-w [width]          Specify output width"
+    echo "-d [direction]      Specify text direction (auto, left-to-right, right-to-left)"
+    echo "-h                  Show this help message"
+    exit 0
+}
+
+# Parse options and arguments
+while getopts ":lo:cuw:d:h" opt; do
+    case "$opt" in
+        l)
+            LOG=1
+            ;;
+        o)
+            if [ -n "$OPTARG" ]; then
+                OUTPUT="$OPTARG"
+            fi
+            ;;
+        c)
+            COLOR=1
+            ;;
+        u)
+            UNICODE=1
+            ;;
+        w)
+            WIDTH="$OPTARG"
+            ;;
+        d)
+            DIRECTION="$OPTARG"
+            ;;
+        h|\?)
+            usage
+            ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+if [ -n "$1" ]; then
+    TEXT="$*"
+fi
+
+# Main execution
+print_samples

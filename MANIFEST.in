@@ -1,8 +1,9 @@
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 🔤 Core Font Assets - The lifeblood of figlet typography
+# 🔤 Core Font Assets - Typography crystallization system
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-include pyfiglet/fonts/*.flf   # FIGlet font files 🎨
-include pyfiglet/fonts/*.flc   # FIGlet font control files 🔧
+include figlet_forge/fonts/*.flf        # Standard FIGlet font files 🎨
+include figlet_forge/fonts/*.flc        # FIGlet control files 🔧
+include figlet_forge/fonts-standard/*   # Extended typography ecosystem
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 📄 Legal & Documentation - Knowledge is structural integrity
@@ -11,13 +12,18 @@ include LICENSE                # Legal foundation ⚖️
 include README.md              # Project overview 📝
 include CHANGELOG.md           # Version history 📊
 include CONTRIBUTING.md        # Collaboration guidelines 🤝
+include pyproject.toml         # Project specification 📋
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 📚 Documentation Structure - Eidosian knowledge architecture
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-recursive-include doc *        # All documentation files 📚
+recursive-include docs *       # Documentation files 📚
 recursive-include examples *   # Usage examples 💡
 recursive-include tests *.py   # Test suite 🧪
+
+# ANSI and Unicode support files
+include figlet_forge/color_maps/*.json  # ANSI color mapping definitions 🎨
+include figlet_forge/unicode_maps/*.dat # Unicode character mappings 🔤
 
 # Exclude development artifacts (because perfection means no waste) 🧹
 global-exclude __pycache__
@@ -25,3 +31,5 @@ global-exclude *.py[cod]
 global-exclude *.so
 global-exclude .git*
 global-exclude .DS_Store
+global-exclude .venv
+global-exclude venv

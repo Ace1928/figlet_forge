@@ -2,19 +2,19 @@
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 [build-system]
-requires = ["setuptools>=68.0.0", "wheel>=0.40.0"]
+requires      = [ "setuptools>=68.0.0", "wheel>=0.40.0" ]
 build-backend = "setuptools.build_meta"
 
 # 📦 Core Project Identity - The fractal nucleus
 [project]
 name = "figlet_forge"
 version = "0.1.0"
-description = "Universal Figlet Management System with Eidosian principles"
+description = "Enhanced Figlet System with colorized ANSI support and Unicode rendering"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
-authors = [{ name = "Lloyd Handyside", email = "ace1928@gmail.com" }]
-maintainers = [{ name = "Neuroforge", email = "lloyd.handyside@neuroforge.io" }]
+authors = [ { name = "Lloyd Handyside", email = "ace1928@gmail.com" } ]
+maintainers = [ { name = "Lloyd Handyside", email = "ace1928@gmail.com" } ]
 keywords = [
     "figlet",
     "ascii-art",
@@ -23,6 +23,11 @@ keywords = [
     "eidosian",
     "typography",
     "cli",
+    "ansi",
+    "color",
+    "unicode",
+    "terminal-art",
+    "pyfiglet-extension",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -31,6 +36,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Topic :: Text Processing :: Fonts",
@@ -40,9 +46,10 @@ classifiers = [
 
 # ✨ Dependencies - Surgical precision, zero bloat
 dependencies = [
-    "pyfiglet>=0.8.0", # Core ASCII art engine
-    "rich>=12.0.0",    # Terminal aesthetics that spark joy
+    "pyfiglet>=0.8.0", # Original ASCII art engine we're extending
+    "rich>=12.0.0",    # Terminal aesthetics for colorized output
     "typer>=0.7.0",    # CLI framework that doesn't waste your time
+    "colorama>=0.4.6", # Cross-platform ANSI color support
 ]
 
 # 🧩 Optional modules - Perfect symbiosis of components
@@ -54,12 +61,16 @@ dev = [
     "mypy>=1.0.0",       # Type checking that prevents chaos
     "ruff>=0.0.256",     # Linting at the speed of thought
     "pre-commit>=3.3.0", # Git hooks that enforce excellence
+    "tox>=4.0.0",        # Multi-environment torture chamber
+    "bandit>=1.7.5",     # Security scanner for suspicious code
+    "pyright>=1.1.0",    # Microsoft's opinion on your types
 ]
 docs = [
-    "sphinx>=6.0.0",            # Documentation that illuminates
-    "sphinx-rtd-theme>=1.2.0",  # Aesthetics that enhance comprehension
-    "myst-parser>=1.0.0",       # Markdown that transcends formats
-    "sphinx-copybutton>=0.5.1", # Copy functionality that respects your time
+    "sphinx>=6.0.0",                    # Documentation that illuminates
+    "sphinx-rtd-theme>=1.2.0",          # Aesthetics that enhance comprehension
+    "myst-parser>=1.0.0",               # Markdown that transcends formats
+    "sphinx-copybutton>=0.5.1",         # Copy functionality that respects your time
+    "sphinx-autodoc-typehints>=1.22.0", # Type hints in documentation
 ]
 ui = [
     "textual>=0.38.1", # TUI framework for the discerning developer
@@ -67,11 +78,12 @@ ui = [
 
 # 🔗 Project Connections - The synapses of our ecosystem
 [project.urls]
-"Homepage" = "https://github.com/neuroforge/figlet_forge"
-"Bug Tracker" = "https://github.com/neuroforge/figlet_forge/issues"
-"Documentation" = "https://figlet-forge.readthedocs.io/"
-"Source Code" = "https://github.com/neuroforge/figlet_forge"
-"Changelog" = "https://github.com/neuroforge/figlet_forge/blob/main/CHANGELOG.md"
+"Homepage"         = "https://github.com/Ace1928/figlet_forge"
+"Bug Tracker"      = "https://github.com/Ace1928/figlet_forge/issues"
+"Documentation"    = "https://figlet-forge.readthedocs.io/"
+"Source Code"      = "https://github.com/Ace1928/figlet_forge"
+"Changelog"        = "https://github.com/Ace1928/figlet_forge/blob/main/CHANGELOG.md"
+"Original Project" = "https://github.com/pwaller/pyfiglet"
 
 # 🚀 CLI Entry Point - Zero friction, maximum impact
 [project.scripts]
@@ -79,39 +91,43 @@ figlet-forge = "figlet_forge.cli:app"
 
 # 🔧 Development Tools - Recursively refined excellence
 [tool.black]
-line-length = 88
-target-version = ["py38", "py39", "py310", "py311"]
-include = '\.pyi?$'
+line-length    = 88
+target-version = [ "py38", "py39", "py310", "py311", "py312" ]
+include        = '\.pyi?$'
 # Life's too short for style debates - black decides
 
 [tool.isort]
-profile = "black"
-line-length = 88
+profile           = "black"
+line-length       = 88
 multi_line_output = 3
 # Imports ordered like a well-designed library
 
 [tool.mypy]
-python_version = "3.8"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
+python_version              = "3.12"
+warn_return_any             = true
+warn_unused_configs         = true
+disallow_untyped_defs       = true
+disallow_incomplete_defs    = true
+check_untyped_defs          = true
 disallow_untyped_decorators = true
-no_implicit_optional = true
+no_implicit_optional        = true
 # Types: because assuming is the mother of all bugs
 
 [tool.ruff]
-select = ["E", "F", "B", "I", "N", "UP", "ANN", "S", "A"]
-line-length = 88
+select         = [ "E", "F", "B", "I", "N", "UP", "ANN", "S", "A" ]
+line-length    = 88
 target-version = "py38"
 # Clean code moves at the speed of thought
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = [ "tests" ]
 python_files = "test_*.py"
 markers = [
     "slow: marks tests as slow (select with '-m \"slow\"')",
     "integration: integration tests (select with '-m \"integration\"')",
+    "compatibility: tests for backward compatibility with pyfiglet",
+    "unicode: tests for unicode character rendering",
+    "color: tests for ANSI color functionality",
+    "fallback: tests for intelligent fallback mechanisms",
 ]
 # Tests that verify truth at every scale

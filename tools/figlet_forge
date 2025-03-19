@@ -1,0 +1,24 @@
+#!/bin/sh
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║ Figlet Forge - Eidosian Typography Engine                                 ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+# An Eidosian reimplementation extending the original pyfiglet package
+# (itself a pure Python port of FIGlet) with:
+# - Full colorized ANSI code support for vibrant text art
+# - Unicode character rendering with comprehensive mapping
+# - Expanded font ecosystem with careful attention to licensing
+# - Intelligent fallbacks for complete backward compatibility
+# - Significant performance optimizations without sacrificing quality
+# - Enhanced maintainability through modern Python practices
+# - Comprehensive documentation for all use cases
+#
+# A central component of the Eidosian Forge ecosystem.
+
+# Set path to ensure module visibility
+cd "$(dirname "$0")"/.. || exit
+# Capture current directory and export PYTHONPATH separately
+current_dir="$(pwd)"
+export PYTHONPATH="$current_dir"
+
+# Execute the forge
+exec python -m figlet_forge.cli "$@"

@@ -1,154 +1,142 @@
-# **pyfiglet**
+# **figlet_forge**
 
-```
-                        _|_|  _|            _|              _|
-_|_|_|    _|    _|    _|            _|_|_|  _|    _|_|    _|_|_|_|
-_|    _|  _|    _|  _|_|_|_|  _|  _|    _|  _|  _|_|_|_|    _|
-_|    _|  _|    _|    _|      _|  _|    _|  _|  _|          _|
-_|_|_|      _|_|_|    _|      _|    _|_|_|  _|    _|_|_|      _|_|
-_|              _|                      _|
-_|          _|_|                    _|_|
+```ascii
+  _____ _       _      _     _____
+   |  ___(_) __ _| | ___| |_  |  ___|__  _ __ __ _  ___
+   | |_  | |/ _` | |/ _ \ __| | |_ / _ \| '__/ _` |/ _ \
+   |  _| | | (_| | |  __/ |_  |  _| (_) | | | (_| |  __/
+   |_|   |_|\__, |_|\___|\__| |_|  \___/|_|  \__, |\___|
+      |___/                            |___/
 ```
 
 ## **Synopsis**
 
-pyfiglet is a full port of FIGlet (http://www.figlet.org/) into pure
-python. It takes ASCII text and renders it in ASCII art fonts (like
-the title above, which is the 'block' font).
+Figlet Forge is an Eidosian reimplementation and extension of pyfiglet (which itself is a port of [FIGlet](http://www.figlet.org/) into pure Python). It renders text as ASCII art typography with significant enhancements and optimizations.
+
+Building upon pyfiglet's foundation, Figlet Forge adds robust support for colorized ANSI codes, full Unicode character rendering, an expanded font ecosystem, and intelligent fallback mechanisms that ensure backward compatibility with older systems.
+
+## **Key Improvements**
+
+- **Colorized Output**: Full ANSI color support for vibrant text art
+- **Unicode Compatibility**: Render any Unicode character with appropriate mappings
+- **Enhanced Font Ecosystem**: Expanded library with careful attention to licensing
+- **Intelligent Fallbacks**: Automatic degradation for compatibility with legacy systems
+- **Performance Optimization**: Significantly faster rendering without sacrificing quality
+- **API Extensions**: New capabilities while maintaining full backward compatibility
+- **Comprehensive Documentation**: Clear guides for all usage scenarios
 
 ## **FAQ**
 
-- **Q**: Why? WHY?!!
+- **Q**: How is this different from the original pyfiglet?
 
-  **A**: I [cjones] was bored. Really bored.
-  
-- **Q**: What the hell does this do that FIGlet doesn't?
+  **A**: Figlet Forge extends pyfiglet with colorized text, Unicode support, enhanced performance, and intelligent fallbacks while maintaining 100% backward compatibility.
 
-  **A**: Not much, except allow your font collection to live
-           in one big zipfile. The point of this code is to embed
-           dynamic figlet rendering in Python without having to
-           execute an external program, although it operates on the
-           commandline as well.  See below for USAGE details. You can
-           think of this as a python FIGlet driver.
-- **Q**: Does this support kerning/smushing like FIGlet?
+- **Q**: Will my existing pyfiglet code work with Figlet Forge?
 
-  **A**: Yes, yes it does. Output should be identical to FIGlet. If
-           not, this is a bug, which you should report to me!
-  
-- **Q**: Can I use/modify/redstribute this code?
+  **A**: Yes! We've ensured complete API compatibility. Simply replace import statements and enjoy the enhancements.
 
-  **A**: Yes, under the terms of the MIT (see LICENSE below).
-  
-- **Q**: I improved this code, what should I do with it?
+- **Q**: Does it support kerning/smushing like the original?
 
-  **A**: You can submit changes to https://github.com/pwaller/pyfiglet/pulls.
-           If you make changes to the kerning/mushing/rendering portion, PLEASE
-           test it thoroughly. The code is fragile and complex.
-- **Q**: Where did my font go?
+  **A**: Yes, all original functionality is preserved and optimized, including kerning and smushing. Output quality matches or exceeds the original.
 
-  **A**: It turns out that we didn't have distribution rights for some of the
-           fonts and so we had to remove them.  Full details of the change and
-           why we did it are in https://github.com/pwaller/pyfiglet/issues/59.
-- **Q**: Where can I find these and other fonts?
+- **Q**: Can I use/modify/redistribute this code?
 
-  **A**: Do a quick search for "figlet fonts" on your favourite search engine
-           should give you what you need.  However, if you are looking for the
-           specific removed fonts, please go to http://www.jave.de/figlet/fonts.html.
+  **A**: Yes, under the terms of the MIT license (see LICENSE below).
 
-- **Q**: Why are some fonts missing in <my favourite> distribution?
-  
-  **A**: Some Linux distributions have very strict legal restrictions on what
-           contributions they will take.  For these systems, we have divided the
-           fonts into ones that have a clear redistribution license and those that
-           don't.  These are the fonts-standard and fonts-contrib directories in
-           this repository.
-- **Q**: What about those other fonts?
-  
-  **A**: While there isn't a watertight case for the license, we believe that
-           any legal constraint for these fonts has long expired and so they
-           are public domain, so are continuing to redistribute via pypi.  If
-           an owner of any of these fonts wants us to stop, please just
-           raise an issue on https://github.com/pwaller/pyfiglet/issues
-           proving your ownership and we will remove the requested fonts.
+- **Q**: I've improved the code, what should I do with it?
 
+  **A**: Please submit changes via pull request. For kerning/mushing/rendering changes, include thorough testing as this code is both powerful and complex.
+
+- **Q**: Why are some fonts missing in my distribution?
+
+  **A**: Some Linux distributions have strict legal requirements. We've organized fonts into standard (clear licensing) and contrib (other licenses) directories.
+
+- **Q**: How do I use the new color features?
+
+  **A**: The color API is detailed in our documentation. Basic usage: `figlet_forge.colored_format("text", font="slant", fg="red", bg="black")`.
+
+- **Q**: What about Unicode support limitations?
+
+  **A**: While we support full Unicode, rendering quality depends on font completeness. Our intelligent fallbacks will substitute approximations when needed.
 
 ## **Usage**
 
-You can use pyfiglet in one of two ways. First, it operates on the
-commandline as C figlet does and supports most of the same options.
-Run with `--help` to see a full list of tweaks.  Mostly you will only
-use `-f` to change the font. It defaults to standard.flf.
+You can use Figlet Forge in two ways:
 
-`tools/pyfiglet 'text to render'`
+### Command line interface
 
-### Pyfiglet is also a library that can be used in python code:
+```bash
+figlet_forge 'text to render'
+```
+
+Run with `--help` to see all options, including color controls, Unicode options, and font selection.
+
+### As a Python library
 
 ```py
-from pyfiglet import Figlet
+from figlet_forge import Figlet
 f = Figlet(font='slant')
 print(f.renderText('text to render'))
 ```
 
-or
+Or with the simplified interface:
 
 ```py
-import pyfiglet
-f = pyfiglet.figlet_format("text to render", font="slant")
+import figlet_forge
+f = figlet_forge.figlet_format("text to render", font="slant")
 print(f)
 ```
-If you have found some new fonts that you want to use, you can use the
-command line interface to install your font file as follows:
 
-`pyfiglet -L <font file>`
+Using the new color features:
 
-The font file can be a ZIP file of lots of fonts or just a single font.
-Depending on how you installed pyfiglet, you may find that you need
-root access to install the font - e.g. `sudo pyfiglet -L <font file>`.
+```py
+import figlet_forge
+colored_text = figlet_forge.colored_format("Rainbow Text", font="slant",
+                       color_mode="rainbow")
+print(colored_text)
+```
 
-## **Author**
+To install custom fonts:
 
-All of the documentation and the majority of the work done was by
-Christopher Jones (cjones@insub.org) and many other contributors.
-Packaged by Peter Waller (p@pwaller.net), various enhancements by
-Stefano Rivera (stefano@rivera.za.net),
-and lots of help from many contributors!
+```bash
+figlet_forge --load-font <font_file>
+```
 
-Thank you all for your efforts, please send a pull request to add yourself to
-this list if you would like to take credit.
+The font file can be a ZIP of multiple fonts or a single font file. Administrative privileges may be needed depending on your installation.
 
-(In the words of the original author) pyfiglet is a **port** of FIGlet, and much
-of the code is directly translated from the C source. I optimized some bits
-where I could, but because the smushing and kerning code is so incredibly
-complex, it was safer and easier to port the logic almost exactly. Therefore, I
-can't really take much credit for authorship, just translation. The original
-authors of FIGlet are listed on their website at http://www.figlet.org/.
+## **Author & Contributors**
 
-The Python port was done by Christopher Jones <cjones@insub.org> (http://gruntle.org/).
+Figlet Forge is an Eidosian reimplementation developed by Lloyd Handyside, building upon:
 
-It is currently maintained by Peter Waller (p@pwaller.net, github:pwaller)
+- Original pyfiglet by Christopher Jones (<cjones@insub.org>)
+- Packaging by Peter Waller (<p@pwaller.net>)
+- Enhancements by Stefano Rivera (<stefano@rivera.za.net>)
+- And many other contributors to the original project
 
-The toilet fonts (.tlf) were imported from toilet 0.3-1, by Sam Hocevar (sam@zoy.org).
+Figlet Forge maintains the spirit of the original code while significantly enhancing its capabilities, performance, and future-proofness.
 
-## **Thanks**
+The original FIGlet authors are listed on their website at <http://www.figlet.org/>.
 
-Lots of people have helped make pyfiglet what it is but I particularly want to
-call out.
+## **Integration with Eidosian Forge**
 
-github:stefanor for various bug fixes and improvements and the debian packaging.
-github:peterbrittain for helping to close lots of issues.
-
+Figlet Forge serves as a central component of the Eidosian Forge ecosystem, providing typography services, text crystallization, and visual communication tools for other Forge components. It exemplifies the Eidosian principles of extending and enhancing existing tools while maintaining strict backwards compatibility.
 
 ## **License**
+
 The MIT License (MIT)
-Copyright © 2007-2023
-```
+Copyright © 2007-2023 Original pyfiglet authors
+Copyright © 2023-2024 Lloyd Handyside and Eidosian Forge contributors
+
+```markdown
 Christopher Jones <cjones@insub.org>
 Stefano Rivera <stefano@rivera.za.net>
 Peter Waller <p@pwaller.net>
+Lloyd Handyside <ace1928@gmail.com>
 And various contributors (see git history).
 ```
+
 (see LICENSE for full details)
 
-# Packaging status
+## Packaging status
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/python:pyfiglet.svg)](https://repology.org/project/python:pyfiglet/versions)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/python:figlet-forge.svg)](https://repology.org/project/python:figlet-forge/versions)
