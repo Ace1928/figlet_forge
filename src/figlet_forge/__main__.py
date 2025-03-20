@@ -1,7 +1,6 @@
 import sys
 
-from figlet_forge import main
-
+from figlet_forge.cli import main
 
 if __name__ == "__main__":
     sys.exit(main())

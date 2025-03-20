@@ -1,71 +1,77 @@
-        _____  ___  ____   __                _
-       |  ___||_ _|/ ___| / _|  ___   _ __  | |_  ___  _
-       | |_    | || |  _ | |_  / _ \ | '_ \ | __|/ __|(_)
-       |  _|   | || |_| ||  _|| (_) || | | || |_ \__ \ _
-       |_|    |___|\____||_|   \___/ |_| |_| \__||___/(_)
+        ╔═══════════════════════════════════════════════════════════╗
+        ║  _____  ___  ____   __                _                   ║
+        ║ |  ___||_ _|/ ___| / _|  ___   _ __  | |_  ___  _        ║
+        ║ | |_    | || |  _ | |_  / _ \ | '_ \ | __|/ __|(_)       ║
+        ║ |  _|   | || |_| ||  _|| (_) || | | || |_ \__ \ _        ║
+        ║ |_|    |___|\____||_|   \___/ |_| |_| \__||___/(_)       ║
+        ╚═══════════════════════════════════════════════════════════╝
 
-       The FIGfont Version 2 FIGfont and FIGdriver Standard
-       === ======= ======= = ======= === ========= ========
+           ⚜️ The FIGfont Version 2 FIGfont and FIGdriver Standard ⚜️
+           ═══ ═══════ ═══════ ═ ═══════ ═══ ═════════ ════════
               Draft 2.0 Copyright 1996, 1997
-                  by John Cowan and Paul Burton
+              by John Cowan and Paul Burton
               Portions Copyright 1991, 1993, 1994
-                  by Glenn Chappell and Ian Chai
+              by Glenn Chappell and Ian Chai
               May be freely copied and distributed.
 
              Figlet lives at: http://www.figlet.org/
 
-  _____          __           __
- / ___/__  ___  / /____ ___  / /____
-/ /__/ _ \/ _ \/ __/ -_) _ \/ __(_-<
-\___/\___/_//_/\__/\__/_//_/\__/___/
+      ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+      ▓  _____          __           __                         ▓
+      ▓ / ___/__  ___  / /____ ___  / /____                     ▓
+      ▓/ /__/ _ \/ _ \/ __/ -_) _ \/ __(_-<                     ▓
+      ▓\___/\___/_//_/\__/\__/_//_/\__/___/                     ▓
+      ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 
-    INTRODUCTION
-    BASIC DEFINITIONS AND CONCEPTS
-        "FIGfont"
-        "FIGcharacters" and "Sub-characters"
-        "FIGdriver"
-        "FIGure"
-        "FIG"
-        "Layout Modes"
-        "Smushing Rules"
-        "Hardblanks"
-    CREATING FIGFONTS
-        The Header Line
-        Interpretation of Layout Parameters
-        Setting Layout Parameters Step-by-Step
-        FIGfont Comments
-        FIGcharacter Data
-           - Basic Data Structure
-           - Character Codes
-           - Required FIGcharacters
-           - Code Tagged FIGcharacters
-    NOTES - AVOIDING ERRORS AND GENERAL ADVICE
-    CONTROL FILES
-        Standard Format
-        Extended Commands
-    STANDARDIZED CAPABILITIES OF CURRENT AND FUTURE FIGDRIVERS
-    CHART OF CAPABILITIES OF FIGLET 2.2.1 AND FIGWIN 1.0
+        ╭─────────────────────────────────────────────────────╮
+        │ ◈ INTRODUCTION                                      │
+        │ ◈ BASIC DEFINITIONS AND CONCEPTS                    │
+        │   • "FIGfont"                                       │
+        │   • "FIGcharacters" and "Sub-characters"            │
+        │   • "FIGdriver"                                     │
+        │   • "FIGure"                                        │
+        │   • "FIG"                                           │
+        │   • "Layout Modes"                                  │
+        │   • "Smushing Rules"                                │
+        │   • "Hardblanks"                                    │
+        │ ◈ CREATING FIGFONTS                                 │
+        │   • The Header Line                                 │
+        │   • Interpretation of Layout Parameters             │
+        │   • Setting Layout Parameters Step-by-Step          │
+        │   • FIGfont Comments                                │
+        │   • FIGcharacter Data                               │
+        │     - Basic Data Structure                          │
+        │     - Character Codes                               │
+        │     - Required FIGcharacters                        │
+        │     - Code Tagged FIGcharacters                     │
+        │ ◈ NOTES - AVOIDING ERRORS AND GENERAL ADVICE        │
+        │ ◈ CONTROL FILES                                     │
+        │   • Standard Format                                 │
+        │   • Extended Commands                               │
+        │ ◈ STANDARDIZED CAPABILITIES OF CURRENT AND FUTURE   │
+        │   FIGDRIVERS                                        │
+        │ ◈ CHART OF CAPABILITIES OF FIGLET 2.2.1 AND         │
+        │   FIGWIN 1.0                                        │
+        ╰─────────────────────────────────────────────────────╯
 
-
-INTRODUCTION
-============
+# INTRODUCTION
 
 This document specifies the format of font files, and the associated control
-files, used by the FIGlet and FIGWin programs (FIGdrivers).  It is written
+files, used by the FIGlet and FIGWin programs (FIGdrivers). It is written
 for designers who wish to build fonts (FIGfonts) usable by either program,
 and also serves as a standard for development of future versions or similar
-FIGdrivers.  Some features explained here are not supported by both programs.
+FIGdrivers. Some features explained here are not supported by both programs.
 See separate documentation to learn how to use FIGlet or FIGWin.
 
 NOTE: FIGWin 1.0 is packaged with a program called FIGfont Editor for Windows
-1.0, which is just that.  It does not require a complete understanding of
-this document to create FIGfonts.  However it is a good idea to become
+1.0, which is just that. It does not require a complete understanding of
+this document to create FIGfonts. However it is a good idea to become
 familiar with the "BASIC DEFINITIONS AND CONCEPTS" information before using
 it.
 
 If you design a FIGfont, please send an e-mail announcement to
 <figletfonts@figlet.org>, the FIGlet fonts mailing list, and email a copy
-to info@figlet.org for us to put it on the ftp site (ftp://ftp.figlet.org/)
+to <info@figlet.org> for us to put it on the ftp site (ftp://ftp.figlet.org/)
 
 BASIC DEFINITIONS AND CONCEPTS
 ===== =========== === ========
@@ -73,11 +79,10 @@ BASIC DEFINITIONS AND CONCEPTS
 "FIGfont"
 
 A FIGfont is a file which represents the graphical arrangement of characters
-representing larger characters.  Since a FIGfont file is a text file, it can
-be created with any text editing program on any platform.  The filename of a
+representing larger characters. Since a FIGfont file is a text file, it can
+be created with any text editing program on any platform. The filename of a
 FIGfont file must end with ".flf", which stands for "<F>IG<L>ettering
 <F>ont".
-
 
 "FIGcharacters" and "Sub-characters"
 
@@ -86,17 +91,14 @@ characters, confusion can result when descussing one or the other.
 Therefore, the terms "FIGcharacter" and "sub-character" are used,
 respectively.
 
-
 "FIGdriver"
 
 The term FIGdriver is used in this document to encompass FIGlet, FIGWin, and
 any future programs which use FIGfonts.
 
-
 "FIGure"
 
 A FIGure (thusly capitalized) is an image created by a FIGdriver.
-
 
 "FIG"
 
@@ -105,43 +107,43 @@ A bit of history:
 In Spring 1991, inspired by the Email signature of a friend named Frank, and
 goaded on by Ian Chai, Glenn Chappell wrote a nifty little 170-line "C"
 program called "newban", which would create large letters out of ordinary
-text characters.  At the time, it was only compiled for UNIX.  In hindsight,
-we now call it "FIGlet 1.0".  FIGlet stands for <F>rank, <I>an, and <G>lenn's
-<let>ters.  In various incarnations, newban circulated around the net for a
-couple of years.  It had one font, which included only lowercase letters.
+text characters. At the time, it was only compiled for UNIX. In hindsight,
+we now call it "FIGlet 1.0". FIGlet stands for <F>rank, <I>an, and <G>lenn's
+<let>ters. In various incarnations, newban circulated around the net for a
+couple of years. It had one font, which included only lowercase letters.
 
 In early 1993, Ian decided newban was due for a few changes, so together Ian
-and Glenn added the full ASCII character set, to start with.  First, though,
+and Glenn added the full ASCII character set, to start with. First, though,
 Ian had to find a copy of the source, since Glenn had tossed it away as not
-worth the disk space.  Ian and Glenn discussed what could be done with it,
+worth the disk space. Ian and Glenn discussed what could be done with it,
 decided on a general re-write, and, 7 months later, ended up with 888 lines
-of code, 13 FIGfonts and documentation.  This was FIGlet 2.0, the first real
+of code, 13 FIGfonts and documentation. This was FIGlet 2.0, the first real
 release.
 
-To their great surprise, FIGlet took the net by storm.  They received floods
+To their great surprise, FIGlet took the net by storm. They received floods
 of "FIGlet is great!" messages and a new contributed FIGfont about once a
-week.  To handle all the traffic, Ian quickly set up a mailing list, Daniel
+week. To handle all the traffic, Ian quickly set up a mailing list, Daniel
 Simmons kindly offered space for an FTP site, several people volunteered to
 port FIGlet to non-Unix operating systems, ...and bug reports poured in.
 
 Because of these, and the need to make FIGlet more "international", Ian and
 Glenn released a new version of FIGlet which could handle non-ASCII character
-sets and right-to-left printing.  This was FIGlet 2.1, which, in a couple of
-weeks, became figlet 2.1.1.  This weighed in at 1314 lines, and there were
+sets and right-to-left printing. This was FIGlet 2.1, which, in a couple of
+weeks, became figlet 2.1.1. This weighed in at 1314 lines, and there were
 over 60 FIGfonts.
 
 By late 1996, FIGlet had quite a following of fans subscribing to its mailing
-list.  It had been ported to MS-DOS, Macintosh, Amiga, Apple II GS, Atari ST,
-Acorn and OS/2.  FIGlet had been further updated, and there were nearly 200
+list. It had been ported to MS-DOS, Macintosh, Amiga, Apple II GS, Atari ST,
+Acorn and OS/2. FIGlet had been further updated, and there were nearly 200
 FIGfonts.
 
 John Cowan and Paul Burton are two FIGlet fans who decided to create new
-versions.  While John wrote FIGlet version 2.2 using C, Paul wrote FIGWin
+versions. While John wrote FIGlet version 2.2 using C, Paul wrote FIGWin
 1.0, the first true GUI (Windows) implementation of FIGlet, using Visual
-Basic.  John and Paul worked together to add new features to FIGfont files
+Basic. John and Paul worked together to add new features to FIGfont files
 which could be read by both programs, and together wrote this document, which
 we hope helps to establish consistency in FIGfonts and help with the creation
-of future FIGdrivers.  FIGlet 2.2 has about 4800 lines of code, of which
+of future FIGdrivers. FIGlet 2.2 has about 4800 lines of code, of which
 over half is a support library for reading compressed files.
 
 FIGlet 2.2 and FIGWin 1.0 both allow greater flexibility by use of new
@@ -149,18 +151,15 @@ information which can be contained in FIGfont files without interfering with
 the function of older FIGdrivers.
 
 NOTE: The Macintosh version of FIGlet is still command-line driven as of this
-writing, and a GUI version is very much in demand.  The FIGlet C code is
+writing, and a GUI version is very much in demand. The FIGlet C code is
 written to be easily plugged in to a GUI shell, so it will be a relatively
 easy task for a Macintosh developer.
-
-
-
 
 "Layout Modes"
 
 A FIGdriver may arrange FIGcharacters using one of three "layout modes",
-which define the spacing between FIGcharacters.  The layout mode for the
-horizontal axis may differ from the layout mode for the vertical axis.  A
+which define the spacing between FIGcharacters. The layout mode for the
+horizontal axis may differ from the layout mode for the vertical axis. A
 default choice is defined for each axis by every FIGfont.
 
 The three layout modes are:
@@ -212,34 +211,33 @@ The three layout modes are:
 For vertical fitting or smushing, entire lines of output FIGcharacters are
 "moved" as a unit.
 
-Not all FIGdrivers do vertical fitting or smushing.  At present, FIGWin 1.0
-does, but FIGlet 2.2 does not.  Further, while FIGlet 2.2 allows the user to
+Not all FIGdrivers do vertical fitting or smushing. At present, FIGWin 1.0
+does, but FIGlet 2.2 does not. Further, while FIGlet 2.2 allows the user to
 override the FIGfont designer's set of smushing rules, FIGWin 1.0 does not.
 
 NOTE: In the documentation of FIGlet versions prior to 2.2, the term
 "smushmode" was used to mean the layout mode, and this term further included
-the smushing rules (if any) to be applied.  However, since the layout mode
+the smushing rules (if any) to be applied. However, since the layout mode
 may or may not involve smushing, we are straying from the use of this
 somewhat misleading term.
 
-
 "Smushing Rules"
 
-Again, smushing rules are for controlled smushing.  If none are defined to be
+Again, smushing rules are for controlled smushing. If none are defined to be
 active in a FIGfont, universal smushing occurs instead.
 
 Generally, if a FIGfont is "drawn at the borders" using sub-characters
-"-_|/\[]{}()<>", you will want to use controlled smushing by selecting from
-the rules below.  Otherwise, if your FIGfont uses a lot of other
+"-\_|/\[]{}()<>", you will want to use controlled smushing by selecting from
+the rules below. Otherwise, if your FIGfont uses a lot of other
 sub-characters, do not select any rules and universal smushing will occur
-instead.  (See "Hardblanks" below if your FIGfont is very small and would
-become illegible if smushed.)  Experimentation is the best way to make these
+instead. (See "Hardblanks" below if your FIGfont is very small and would
+become illegible if smushed.) Experimentation is the best way to make these
 decisions.
 
 There are six possible horizontal smushing rules and five possible vertical
-smushing rules.  Below is a description of all of the rules.
+smushing rules. Below is a description of all of the rules.
 
-NOTE: Ignore the "code values" for now.  They are explained later.
+NOTE: Ignore the "code values" for now. They are explained later.
 
     The Six Horizontal Smushing Rules
 
@@ -316,12 +314,11 @@ NOTE: Ignore the "code values" for now.  They are explained later.
             considered for smushing as soon as any such stacked
             vertical lines are encountered.
 
-
 "Hardblanks"
 
 A hardblank is a special sub-character which is displayed as a blank (space)
 in rendered FIGures, but is treated more like a "visible" sub-character when
-fitting or smushing horizontally.  Therefore, hardblanks keep adjacent
+fitting or smushing horizontally. Therefore, hardblanks keep adjacent
 FIGcharacters a certain distance apart.
 
 NOTE: Hardblanks act the same as blanks for vertical operations.
@@ -422,92 +419,91 @@ Hardblanks have three purposes:
         FIGfont will quickly see why you did not choose smushing as
         the default vertical layout mode, and will agree with you.
 
-
 "Character Sets" and "Character Codes"
 
 When you type using your keyboard, you are actually sending your computer a
-series of numbers.  Each number must be interpreted by your computer so that
-it knows what character to display.  The computer uses a list of definitions,
-called a "character set".  The numbers which represent each character are
- called "character codes".
+series of numbers. Each number must be interpreted by your computer so that
+it knows what character to display. The computer uses a list of definitions,
+called a "character set". The numbers which represent each character are
+called "character codes".
 
 There are many character sets, most of which are internationally accepted as
-standards.  By far, the most common character set is ASCII, which stands for
-"American Standard Code for Information Interchange".  ASCII identifies its
+standards. By far, the most common character set is ASCII, which stands for
+"American Standard Code for Information Interchange". ASCII identifies its
 characters with codes ranging from 0 to 127.
 
 NOTE: The term "ASCII art" has become well-understood to mean artistic images
 which consist of characters on your screen (such as FIGures).
 
 For a list of the printable ASCII characters with the corresponding codes,
-see the section "REQUIRED CHARACTERS" below.  The other ASCII codes in the
+see the section "REQUIRED CHARACTERS" below. The other ASCII codes in the
 range of 0 through 31 are "control characters" such as carriage-return
 (code 13), linefeed/newline (code 10), tab (code 9), backspace (code 8) or
-null (code 0).  Code 127 is a delete in ASCII.
+null (code 0). Code 127 is a delete in ASCII.
 
 Getting more technical for just a moment: A byte consisting of 8 bits (eight
- 1's or 0's) may represent a number from 0 to 255.  Therefore, most computers
-have DIRECT access to 256 characters at any given time.  A character set
+1's or 0's) may represent a number from 0 to 255. Therefore, most computers
+have DIRECT access to 256 characters at any given time. A character set
 which includes 256 characters is called an 8-bit character set.
 
 For Latin-based languages, ASCII is almost always the first half of a larger
-8-bit character set.  Latin-1 is the most common example of an 8-bit
-character set.  Latin-1 includes all of ASCII, and adds characters with codes
+8-bit character set. Latin-1 is the most common example of an 8-bit
+character set. Latin-1 includes all of ASCII, and adds characters with codes
 from 128 to 255 which include umlauted ("double-dotted") letters and
-characters with various other accents.  In the United States, Windows and
+characters with various other accents. In the United States, Windows and
 most Unix systems have Latin-1 directly available.
 
 Most modern systems allow the possibility of changing 8-bit character sets.
-On Windows systems, character sets are referred to as "code pages".  There
-are many other character sets which are not mentioned here.  DOS has its own
+On Windows systems, character sets are referred to as "code pages". There
+are many other character sets which are not mentioned here. DOS has its own
 character set (which also has international variants) that includes graphics
-characters for drawing lines.  It is also an extension of ASCII.
+characters for drawing lines. It is also an extension of ASCII.
 
 For some languages, 8-bit character sets are insufficient, particularly on
-East Asian systems.  Therefore, some systems allow 2 bytes for each
+East Asian systems. Therefore, some systems allow 2 bytes for each
 character, which multiplies the 256 possibilties by 256, resulting in 65536
-possible characters.  (Much more than the world will ever need.)
+possible characters. (Much more than the world will ever need.)
 
 Unicode is a character set standard which is intended to fulfill the
 worldwide need for a single character set which includes all characters used
-worldwide.  Unicode includes character codes from 0 to 65535, although at
+worldwide. Unicode includes character codes from 0 to 65535, although at
 present, only about 22,000 characters have been officially assigned and named
-by the Unicode Consortium.  The alphabets and other writing systems
+by the Unicode Consortium. The alphabets and other writing systems
 representable with Unicode include all Latin-alphabet systems, Greek,
 Russian and other Cyrillic-alphabet systems, Hebrew, Arabic, the various
-languages of India, Chinese, Japanese, Korean, and others.  The existing
+languages of India, Chinese, Japanese, Korean, and others. The existing
 Unicode symbols include chess pieces, astrological signs, gaming symbols,
 telephones, pointing fingers, etc. --- just about any type of FIGcharacter
-you may wish to create.  Unicode is constantly (but slowly) being extended
-to handle new writing systems and symbols.  Information on Unicode is
-available at http://www.unicode.org and at ftp://unicode.org .
+you may wish to create. Unicode is constantly (but slowly) being extended
+to handle new writing systems and symbols. Information on Unicode is
+available at <http://www.unicode.org> and at ftp://unicode.org .
 
 Unicode, Latin-1, and ASCII all specify the same meanings for overlapping
-character codes:  ASCII 65 = Latin-1 65 = Unicode 65 = "A", formally known
+character codes: ASCII 65 = Latin-1 65 = Unicode 65 = "A", formally known
 as "LATIN CAPITAL LETTER A".
 
 Since a keyboard usually has only about 100 keys, your computer may contain
 a program called a "keyboard map", which will interpret certain keystrokes
-or combinations of keystrokes as different character codes.  Keyboard maps
-use "mapping tables" to make these determinations.  The appropriate keyboard
-activity for a given character code may involve several keystrokes.  Almost
+or combinations of keystrokes as different character codes. Keyboard maps
+use "mapping tables" to make these determinations. The appropriate keyboard
+activity for a given character code may involve several keystrokes. Almost
 all systems are capable of handling at least 8-bit character sets (containing
 256 characters), so there is always an active keyboard map, at least for
-those characters which are not actually painted on the keys.  (United States
+those characters which are not actually painted on the keys. (United States
 users may not even know that their computer can interpret special keystrokes.
 Such keystrokes may be something similar to holding down the ALT key while
-typing a character code on the numeric keypad.  Try it!)
+typing a character code on the numeric keypad. Try it!)
 
 Below are characters 160 through 255, AS REPRESENTED ON YOUR SYSTEM.
 
-       ������������������������������������������������
-       ������������������������������������������������
+       ������������������������������������������������
+       ������������������������������������������������
 
 IMPORTANT NOTE: Depending on which character set is active on your system,
-you may see different characters.  This document (like all computer
-documents) does not contains characters per se, only bytes.  What you see
+you may see different characters. This document (like all computer
+documents) does not contains characters per se, only bytes. What you see
 above is your particular computer's representation of these byte values.
-In other words, your active character set.  However, if it is Latin-1, the
+In other words, your active character set. However, if it is Latin-1, the
 first visible character is an inverted "!", and the last is an umlauted "y".
 Although we can safely assume your computer has ASCII, it does not
 necessarily have the Latin-1 character set active.
@@ -515,12 +511,12 @@ necessarily have the Latin-1 character set active.
 What does all this have to do with FIGfonts???
 
 First, it should be evident that it is best to use only ASCII characters for
-sub-characters when possible.  This will ensure portability to different
+sub-characters when possible. This will ensure portability to different
 platforms.
 
 FIGlet has gained international popularity, but early versions were made to
 handle only FIGcharacters with assigned character codes corresponding to
-ASCII.  So, over the years there have been four methods used to create
+ASCII. So, over the years there have been four methods used to create
 "virtual mapping tables" within the program itself:
 
      The first method was simply to create FIGcharacters which do not
@@ -557,56 +553,55 @@ ASCII.  So, over the years there have been four methods used to create
      FIGlet 2.2 can now accept specially encoded formats of input
      text which imply more than one byte per character.
 
-
 CREATING FIGFONTS
 ======== ========
 
 NOTE: FIGWin 1.0 is packaged with a program called FIGfont Editor for Windows
-1.0, which is just that.  There is no need to read further if you intend to
-use it.  However, the section "CONTROL FILES" below is still relevant.
+1.0, which is just that. There is no need to read further if you intend to
+use it. However, the section "CONTROL FILES" below is still relevant.
 
 Since a FIGfont file is a text file, it can be created with any text editing
 program on any platform, and will still be compatible with FIGdrivers on all
 operating systems, except that the bytes used to indicate the end of each
-text line may vary.  (PC's use carriage return and linefeed at the end of
+text line may vary. (PC's use carriage return and linefeed at the end of
 each line, Macintosh uses carriage return only, and UNIX uses linefeed only.)
 
 This minor difference among operating systems is handled easily by setting
-your FTP program to ASCII mode during upload or download.  So there is no
+your FTP program to ASCII mode during upload or download. So there is no
 need to be concerned about this as long as you remember to do this during
 file transfer.
 
 The filename of a FIGfont file must end with ".flf", which stands for
-"<F>IG<L>ettering <F>ont".    The first part of the filename should contain
+"<F>IG<L>ettering <F>ont". The first part of the filename should contain
 only letters, and should be lowercase on operating systems which permit case
-sensitive filenames.  The filename should be unique in the first 8
+sensitive filenames. The filename should be unique in the first 8
 characters, since some older file systems truncate longer filenames.
 
 It is easier to modify an existing FIGfont than it is to create a new one
-from scratch.  The first step is to read and understand this document.
+from scratch. The first step is to read and understand this document.
 You may want to load "standard.flf" or another FIGfont into a text editor as
 an example while you read.
 
 A FIGfont file contains three portions: a header line, comments, and
 FIGcharacter data.
 
-
 THE HEADER LINE
 
-The header line gives information about the FIGfont.  Here is an example
+The header line gives information about the FIGfont. Here is an example
 showing the names of all parameters:
 
           flf2a$ 6 5 20 15 3 0 143 229    NOTE: The first five characters in
             |  | | | |  |  | |  |   |     the entire file must be "flf2a".
            /  /  | | |  |  | |  |   \
-  Signature  /  /  | |  |  | |   \   Codetag_Count
-    Hardblank  /  /  |  |  |  \   Full_Layout*
-         Height  /   |  |   \  Print_Direction
-         Baseline   /    \   Comment_Lines
-          Max_Length      Old_Layout*
 
-  * The two layout parameters are closely related and fairly complex.
-      (See "INTERPRETATION OF LAYOUT PARAMETERS".)
+Signature / / | | | | | \ Codetag_Count
+Hardblank / / | | | \ Full_Layout*
+Height / | | \ Print_Direction
+Baseline / \ Comment_Lines
+Max_Length Old_Layout*
+
+- The two layout parameters are closely related and fairly complex.
+  (See "INTERPRETATION OF LAYOUT PARAMETERS".)
 
 For those desiring a quick explanation, the above line indicates that this
 FIGfont uses "$" to represent the hardblank in FIGcharacter data, it has
@@ -617,11 +612,11 @@ default print direction for this FIGfont is left-to-right, a complete
 description of default and possible horizontal and vertical layouts is
 represented by the number 143, and there are 229 code-tagged characters.
 
-The first seven parameters are required.  The last three (Direction,
-Full_Layout, and Codetag_Count, are not.  This allows for backward
+The first seven parameters are required. The last three (Direction,
+Full_Layout, and Codetag_Count, are not. This allows for backward
 compatibility with older FIGfonts, but a FIGfont without these parameters would
 force a FIGdriver to "guess" (by means not described in this document) the
-information it would expect to find in Full_Layout.  For this reason, inclusion
+information it would expect to find in Full_Layout. For this reason, inclusion
 of all parameters is strongly recommended.
 
 Future versions of this standard may add more parameters after Codetag_Count.
@@ -630,29 +625,29 @@ A description of each parameter follows:
 
      Signature
 
-The signature is the first five characters: "flf2a".  The first four
+The signature is the first five characters: "flf2a". The first four
 characters "flf2" identify the file as compatible with FIGlet version 2.0 or
-later (and FIGWin 1.0).  The "a" is currently ignored, but cannot be omitted.
+later (and FIGWin 1.0). The "a" is currently ignored, but cannot be omitted.
 Different characters in the "a" location may mean something in future
-versions of this standard.  If so, you can be sure your FIGfonts will still
+versions of this standard. If so, you can be sure your FIGfonts will still
 work if this character is "a".
 
      Hardblank
 
-Immediately following the signature is the hardblank character.  The
+Immediately following the signature is the hardblank character. The
 hardblank character in the header line defines which sub-character will be
 used to represent hardblanks in the FIGcharacter data.
 
 By convention, the usual hardblank is a "$", but it can be any character
 except a blank (space), a carriage-return, a newline (linefeed) or a null
-character.  If you want the entire printable ASCII set available to use, make
-the hardblank a "delete" character (character code 127).  With the exception
+character. If you want the entire printable ASCII set available to use, make
+the hardblank a "delete" character (character code 127). With the exception
 of delete, it is inadvisable to use non-printable characters as a hardblank.
 
      Height
 
 The Height parameter specifies the consistent height of every FIGcharacter,
-measured in sub-characters.  Note that ALL FIGcharacters in a given FIGfont
+measured in sub-characters. Note that ALL FIGcharacters in a given FIGfont
 have the same height, since this includes any empty space above or below.
 This is a measurement from the top of the tallest FIGcharacter to the bottom
 of the lowest hanging FIGcharacter, such as a lowercase g.
@@ -660,25 +655,25 @@ of the lowest hanging FIGcharacter, such as a lowercase g.
      Baseline
 
 The Baseline parameter is the number of lines of sub-characters from the
-baseline of a FIGcharacter to the top of the tallest FIGcharacter.  The
+baseline of a FIGcharacter to the top of the tallest FIGcharacter. The
 baseline of a FIGfont is an imaginary line on top of which capital letters
 would rest, while the tails of lowercase g, j, p, q, and y may hang below.
 In other words, Baseline is the height of a FIGcharacter, ignoring any
 descenders.
 
 This parameter does not affect the output of FIGlet 2.2 or FIGWin 1.0, but
-future versions or other future FIGdrivers may use it.  The Baseline
+future versions or other future FIGdrivers may use it. The Baseline
 parameter should be correctly set to reflect the true baseline as described
-above.  It is an error for Baseline to be less than 1 or greater than the
+above. It is an error for Baseline to be less than 1 or greater than the
 Height parameter.
 
      Max_Length
 
 The Max_Length parameter is the maximum length of any line describing a
-FIGcharacter.  This is usually the width of the widest FIGcharacter, plus 2
-(to accommodate endmarks as described later.)  However, you can (and probably
+FIGcharacter. This is usually the width of the widest FIGcharacter, plus 2
+(to accommodate endmarks as described later.) However, you can (and probably
 should) set Max_Length slightly larger than this as a safety measure in case
-your FIGfont is edited to include wider FIGcharacters.  FIGlet (but not
+your FIGfont is edited to include wider FIGcharacters. FIGlet (but not
 FIGWin 1.0) uses this number to minimize the memory taken up by a FIGfont,
 which is important in the case of FIGfonts with many FIGcharacters.
 
@@ -689,17 +684,17 @@ which is important in the case of FIGfonts with many FIGcharacters.
      Comment_Lines
 
 Between the first line and the actual FIGcharacters of the FIGfont are the
-comment lines.  The Comment_Lines parameter specifies how many lines there
-are.  Comments are optional, but recommended to properly document the origin
+comment lines. The Comment_Lines parameter specifies how many lines there
+are. Comments are optional, but recommended to properly document the origin
 of a FIGfont.
 
      Print_Direction
 
 The Print_Direction parameter tells which direction the font is to be
-printed by default.  A value of 0 means left-to-right, and 1 means
-right-to-left.  If this parameter is absent, 0 (left-to-right) is assumed.
+printed by default. A value of 0 means left-to-right, and 1 means
+right-to-left. If this parameter is absent, 0 (left-to-right) is assumed.
 Print_Direction may not specify vertical print, although FIGdrivers are
-capable of vertical print.  Versions of FIGlet prior to 2.1 ignore this
+capable of vertical print. Versions of FIGlet prior to 2.1 ignore this
 parameter.
 
       Full_Layout
@@ -709,13 +704,12 @@ parameter.
       Codetag_Count
 
 Indicates the number of code-tagged (non-required) FIGcharacters in this
-FIGfont.  This is always equal to the total number of FIGcharacters in the font
-minus 102.  This parameter is typically ignored by FIGdrivers, but can be
+FIGfont. This is always equal to the total number of FIGcharacters in the font
+minus 102. This parameter is typically ignored by FIGdrivers, but can be
 used to verify that no characters are missing from the end of the FIGfont.
 The chkfont program will display the number of codetagged characters
 in the FIGfont on which it is run, making it easy to insert this parameter
 after a FIGfont is written.
-
 
 INTERPRETATION OF LAYOUT PARAMETERS
 
@@ -725,9 +719,9 @@ not a default layout mode.
 
 Old_Layout does not include all of the information desired by the most
 recent FIGdrivers, which is the inspiration for the creation of the new
-Full_Layout parameter.  Old_Layout is still required for backward
+Full_Layout parameter. Old_Layout is still required for backward
 compatibility, and FIGdrivers must be able to interpret FIGfonts which do not
-have the Full_Layout parameter.  (See "STANDARDIZED CAPABILITIES OF CURRENT
+have the Full_Layout parameter. (See "STANDARDIZED CAPABILITIES OF CURRENT
 AND FUTURE FIGDRIVERS".)
 
 Versions of FIGlet prior to 2.2 do not recognize the Full_Layout parameter.
@@ -738,7 +732,7 @@ modes other than smushing.
 Old_Layout and Full_Layout must contain some redundant information.
 
 Setting the layout parameters is a matter of adding numbers together ("code
-values").  What follows is a chart of the meanings of all code values.
+values"). What follows is a chart of the meanings of all code values.
 (You may skip down to "SETTING LAYOUT PARAMETERS STEP BY STEP" if you prefer,
 or if you find this portion confusing.)
 
@@ -751,14 +745,15 @@ Full_Layout: (Legal values 0 to 32767)
     16  Apply horizontal smushing rule 5 when smushing
     32  Apply horizontal smushing rule 6 when smushing
     64  Horizontal fitting (kerning) by default
-   128  Horizontal smushing by default (Overrides 64)
-   256  Apply vertical smushing rule 1 when smushing
-   512  Apply vertical smushing rule 2 when smushing
-  1024  Apply vertical smushing rule 3 when smushing
-  2048  Apply vertical smushing rule 4 when smushing
-  4096  Apply vertical smushing rule 5 when smushing
-  8192  Vertical fitting by default
- 16384  Vertical smushing by default (Overrides 8192)
+
+128 Horizontal smushing by default (Overrides 64)
+256 Apply vertical smushing rule 1 when smushing
+512 Apply vertical smushing rule 2 when smushing
+1024 Apply vertical smushing rule 3 when smushing
+2048 Apply vertical smushing rule 4 when smushing
+4096 Apply vertical smushing rule 5 when smushing
+8192 Vertical fitting by default
+16384 Vertical smushing by default (Overrides 8192)
 
 When no smushing rules are included in Full_Layout for a given axis, the
 meaning is that universal smushing shall occur, either by default or when
@@ -775,15 +770,15 @@ Old_Layout: (Legal values -1 to 63)
     16  Apply horizontal smushing rule 5 by default
     32  Apply horizontal smushing rule 6 by default
 
-* When Full_Layout indicates UNIVERSAL smushing as a horizontal default
-(i.e., when none of the code values of horizontal smushing rules are included
-and code value 128 is included in Full_Layout) Old_Layout must be set to 0
-(zero).  Older FIGdrivers which cannot read the Full_Layout parameter are
-also incapable of universal smushing.  Therefore they would be directed to
-the "next best thing", which is horizontal fitting (kerning).
+- When Full_Layout indicates UNIVERSAL smushing as a horizontal default
+  (i.e., when none of the code values of horizontal smushing rules are included
+  and code value 128 is included in Full_Layout) Old_Layout must be set to 0
+  (zero). Older FIGdrivers which cannot read the Full_Layout parameter are
+  also incapable of universal smushing. Therefore they would be directed to
+  the "next best thing", which is horizontal fitting (kerning).
 
 NOTE: You should NOT add the -1 value to any positive code value for
-Old_Layout.  This would be a logical contradiction.
+Old_Layout. This would be a logical contradiction.
 
 See "STANDARDIZED CAPABILITIES OF CURRENT AND FUTURE FIGDRIVERS" for the
 behavior of a FIGdriver when the Full_Layout parameter is absent (presumably
@@ -791,36 +786,35 @@ in an older FIGfont).
 
 The following rules establish consistency between Old_Layout and Full_Layout.
 
-  If full width is to be the horizontal default:
-    Old_Layout must be -1.
-    Full_Layout must NOT include code values 64 nor 128.
+If full width is to be the horizontal default:
+Old_Layout must be -1.
+Full_Layout must NOT include code values 64 nor 128.
 
-  If horizontal fitting (kerning) is to be default:
-    Old_Layout must be 0.
-    Full_Layout must include code value 64.
-    Full_Layout must NOT include code value 128.
+If horizontal fitting (kerning) is to be default:
+Old_Layout must be 0.
+Full_Layout must include code value 64.
+Full_Layout must NOT include code value 128.
 
-  If CONTROLLED smushing is to be the horizontal default:
-    Old_Layout must be a positive number, represented by the added
-        code values of all desired horizontal smushing rules.
-    Full_Layout must include the code values for the SAME set of
-        horizontal smushing rules as included in Old_Layout.
-    Full_Layout must include code value 128.
+If CONTROLLED smushing is to be the horizontal default:
+Old_Layout must be a positive number, represented by the added
+code values of all desired horizontal smushing rules.
+Full_Layout must include the code values for the SAME set of
+horizontal smushing rules as included in Old_Layout.
+Full_Layout must include code value 128.
 
-  If UNIVERSAL smushing is to be the horizontal default:
-    Old_Layout must be 0.
-    Full_Layout must include code value 128.
-    Full_Layout must NOT include any code value under 64.
+If UNIVERSAL smushing is to be the horizontal default:
+Old_Layout must be 0.
+Full_Layout must include code value 128.
+Full_Layout must NOT include any code value under 64.
 
 In general terms, if Old_Layout specifies horizontal smushing rules,
 Full_Layout must specify the same set of horizontal rules, and both must
 indicate the same horizontal default layout mode.
 
-
 SETTING LAYOUT PARAMETERS STEP-BY-STEP
 
 The following step-by-step process will yield correct and consistent values
-for the two layout parameters.  You may skip this if you find the
+for the two layout parameters. You may skip this if you find the
 explanations above easier to use.
 
 Step 1: Start with 0 for both numbers.
@@ -904,10 +898,9 @@ Step 6: You're done.
 The resulting value of Old_Layout will be a number from -1 to 63.
 The resulting value of Full_Layout will be a number from 0 and 32767.
 
-
 FIGFONT COMMENTS
 
-After the header line are FIGfont comments.  The comments can be as many
+After the header line are FIGfont comments. The comments can be as many
 lines as you like, but should at least include your name and Email address.
 Here is an example which also shows the header line.
 
@@ -916,12 +909,11 @@ Here is an example which also shows the header line.
     Permission is hereby given to modify this font, as long as the
     modifier's name is placed on a comment line.
 
-Comments are not required, but they are appreciated.  Please comment your
+Comments are not required, but they are appreciated. Please comment your
 FIGfonts.
 
 Remember to adjust the Comment_Lines parameter as you add lines to your
-comments.  Don't forget that blank lines DO count.
-
+comments. Don't forget that blank lines DO count.
 
 FIGCHARACTER DATA
 ============ ====
@@ -940,17 +932,17 @@ with two exceptions:
     2) Every line has one or two endmark characters, whose column
        locations define the width of each FIGcharacter.
 
-In most FIGfonts, the endmark character is either "@" or "#".  The FIGdriver
+In most FIGfonts, the endmark character is either "@" or "#". The FIGdriver
 will eliminate the last block of consecutive equal characters from each line
-of sub-characters when the font is read in.  By convention, the last line of
+of sub-characters when the font is read in. By convention, the last line of
 a FIGcharacter has two endmarks, while all the rest have one. This makes it
-easy to see where FIGcharacters begin and end.  No line should have more
+easy to see where FIGcharacters begin and end. No line should have more
 than two endmarks.
 
 Below is an example of the first few FIGcharacters, taken from small.flf.
 
 NOTE: The line drawn below consisting of "|" represents the left margin of
-your editor.  It is NOT part of the FIGfont.  Also note that hardblanks are
+your editor. It is NOT part of the FIGfont. Also note that hardblanks are
 represented as "$" in this FIGfont, as would be described in the header line.
 
                         |$@
@@ -984,7 +976,7 @@ this case), which must also be expressed in the header line as the Height
 parameter.
 
 Also notice that for every FIGcharacter, there must be a consistent width
-(length) for each line once the endmarks are removed.  To do otherwise would
+(length) for each line once the endmarks are removed. To do otherwise would
 be an error.
 
 Be aware of the vertical alignment of each FIGcharacter within its height,
@@ -992,19 +984,18 @@ so that all FIGcharacters will be properly lined up when printed.
 
 If one of the last sub-characters in a particular FIGcharacter is "@", you
 should use another character for the endmark in that FIGcharacter so that
-the intended "@" is not interpreted as an endmark.  "#" is a common
+the intended "@" is not interpreted as an endmark. "#" is a common
 alternative.
 
 Load a few existing FIGfonts into your favorite text editor for other
 examples.
-
 
 REQUIRED FIGCHARACTERS
 
 Some FIGcharacters are required, and must be represented in a specific order.
 Specifically: all of the printable character codes from ASCII shown in the
 table below, in order, plus character codes 196, 214, 220, 228, 246, 252,
-and 223, in that order.  In Latin-1, these extra 7 characters represent the
+and 223, in that order. In Latin-1, these extra 7 characters represent the
 following German characters: umlauted "A", "O", "U", "a", "o" and "u"; and
 also "ess-zed".
 
@@ -1061,14 +1052,13 @@ also "ess-zed".
 
 If you do not wish to define FIGcharacters for all of those required above,
 you MAY create "empty" FIGcharacters in their place by placing endmarks flush
-with the left margin.  The Deutsch FIGcharacters are commonly created as
-empty.  If your FIGfont includes only capital letters, please copy them to
+with the left margin. The Deutsch FIGcharacters are commonly created as
+empty. If your FIGfont includes only capital letters, please copy them to
 the appropriate lowercase locations, rather than leaving lowercase letters
-empty.  A FIGfont which does not include at least all ASCII letters, a space,
-and a few basic punctuation marks will probably frustrate some users.  (For
+empty. A FIGfont which does not include at least all ASCII letters, a space,
+and a few basic punctuation marks will probably frustrate some users. (For
 example "@" is more frequently desired as a FIGcharacter than you may think,
 since Email addresses may be written as FIGures.)
-
 
 CODE TAGGED FIGCHARACTERS
 
@@ -1109,16 +1099,16 @@ exceptions:
        FIGcharacter for those who do not use a control file.
 
 Those FIGcharacters which are not required must have an explicit character
-code in a separate line preceding them, called a "code tag".  A code tag
+code in a separate line preceding them, called a "code tag". A code tag
 contains the value of the character code, followed by whitespace (a few
-spaces), and perhaps an optional comment.  The comment is usually the name of
-the FIGcharacter.  The Unicode Consortium has assigned formal names to all
-officially accepted characters, and these may be used.  An entire code tag,
-including the comment, should not occupy more than 95 columns.  (Over 100
+spaces), and perhaps an optional comment. The comment is usually the name of
+the FIGcharacter. The Unicode Consortium has assigned formal names to all
+officially accepted characters, and these may be used. An entire code tag,
+including the comment, should not occupy more than 95 columns. (Over 100
 characters here may make older versions of FIGlet crash.)
 
 Here is an example, showing two code tagged FIGcharacters after the last two
-required Deutsch FIGcharacters.  Again, the line drawn below consisting of
+required Deutsch FIGcharacters. Again, the line drawn below consisting of
 "|" represents the left margin of your editor, and is NOT part of the FIGfont.
 
                         | _   _ @
@@ -1148,22 +1138,20 @@ required Deutsch FIGcharacters.  Again, the line drawn below consisting of
                         | \   )@
                         |  |_| @@
 
-
 A character code may be expressed in decimal (as shown above, numbers we're
 all familiar with), or in Octal (seldom used) or in hexadecimal.
 
 Character codes expressed in octal must be preceded by "0" (zero), and if
-negative, "-" (minus) must precede the "0".  There are eight octal digits:
-01234567.  You may recall octal numbers from school as "base 8 numbers".
+negative, "-" (minus) must precede the "0". There are eight octal digits: 01234567. You may recall octal numbers from school as "base 8 numbers".
 
 Character codes expressed in hexadecimal must be preceded by "0x" or "0X".
-(That's also a zero.)  If negative, the "-" must precede the "0x".  There are
-16 hexadecimal digits: 01234567890ABCDEF.  (The "letter-digits" may also be
-lowercase.)  Hexadecimal is "base 16".
+(That's also a zero.) If negative, the "-" must precede the "0x". There are
+16 hexadecimal digits: 01234567890ABCDEF. (The "letter-digits" may also be
+lowercase.) Hexadecimal is "base 16".
 
 It is common to express character codes less than 256 (in the range of an
 8-bit character set) as decimal, while FIGfonts which extend into the Unicode
-range would have character codes expressed in hexadecimal.  This is because
+range would have character codes expressed in hexadecimal. This is because
 the Unicode Standard expresses character codes in hexadecimal, which is
 helpful for programmers.
 
@@ -1171,36 +1159,35 @@ The code tagged FIGcharacters may be listed in any order, but simple
 sequential order is recommended.
 
 If two or more FIGcharacters have the same character code, the last one in
-the FIGfont is the one used.  It is common for the Deutsch FIGcharacters to
+the FIGfont is the one used. It is common for the Deutsch FIGcharacters to
 be given twice in a FIGfont, just to maintain a consistent order for the
 Latin-1 range (128 to 255).
 
 It is not advisable to assign character codes in the range of 1 to 31, since
-this range includes control characters in ASCII.  Character code 127 is a
-delete in ASCII, and is also not advised.  Character codes 128 to 159 are
+this range includes control characters in ASCII. Character code 127 is a
+delete in ASCII, and is also not advised. Character codes 128 to 159 are
 additional control characters in Latin-1, and they too should not be used.
 All of the above are legal, technically, but are not part of what is legal
 for input, so they could only be accessed by use of a control file.
-(See "CONTROL FILES" below.)  If you are still tempted to use them, consider
+(See "CONTROL FILES" below.) If you are still tempted to use them, consider
 negative character codes instead, which are meaningless in all standardized
 character sets.
 
 Again, the character code -1 is illegal for technical reasons.
 
-
 NOTES - AVOIDING ERRORS AND GENERAL ADVICE
-=====   ======== ====== === ======= ======
+===== ======== ====== === ======= ======
 
 It is very important that every character in a font has the same height, and,
 once the endmarks are removed, that all the lines constituting a single
-FIGcharacter have the same length.  Be careful also that no lines in the font
+FIGcharacter have the same length. Be careful also that no lines in the font
 file have trailing blanks (spaces), as the FIGdriver will take these to be
-the endmarks.  (FIGWin 1.0 will not consider blanks to be endmarks.)
+the endmarks. (FIGWin 1.0 will not consider blanks to be endmarks.)
 
 Errors in a FIGfont can be detected by using the "chkfont" program,
 part of the standard FIGlet package, and also available, as of this
-writing from http://www.figlet.org/
-�
+writing from <http://www.figlet.org/>
+�
 For FIGWin users, the FIGWin program will report errors when a FIGfont is
 read in; it is less forgiving than FIGlet, which can produce nonsense if the
 FIGfont is incorrectly formatted.
@@ -1215,13 +1202,12 @@ when horizontal fitting (kerning) or smushing occurs.
 
 Again, if you design a FIGfont, please let us know!
 
-
 CONTROL FILES
 ======= =====
 
 A FIGfont control file is a separate text file, associated with one or more
 FIGfonts, that indicates how to map input characters into FIGfont character
-codes.  By default, FIGdrivers read single bytes from the input source and
+codes. By default, FIGdrivers read single bytes from the input source and
 interpret them as Latin-1 FIGcharacters.
 
 FIGlet version 2.2 (and later) can optionally interpret its input as DBCS or
@@ -1230,15 +1216,15 @@ outside the Latin-1 range (greater than 255).
 
 In addition, though, all versions of FIGlet can use control files to
 transform specific character codes (or ranges of codes) as other codes
-(or ranges).  Multiple control files can be specified, in which case multiple
+(or ranges). Multiple control files can be specified, in which case multiple
 stages of transformation are performed.
 
 The filename of a control file always ends with ".flc".
 
 CONTROL FILE FORMAT
 
-Control files contain several kinds of lines.  Lines beginning with "#", as
-well as blank lines, are comment lines and are ignored.  All other lines are
+Control files contain several kinds of lines. Lines beginning with "#", as
+well as blank lines, are comment lines and are ignored. All other lines are
 command lines, with one of the following formats:
 
     t inchar outchar
@@ -1258,7 +1244,7 @@ a "\" character; and "number" is a numeric character code with no preceding
 "\" character.
 
 Thus "A" represents the code 65, as does "\65", and "\0x100" represents the
-code 256 (100 in hexadecimal).  In addition, "\ " (backslash followed by a
+code 256 (100 in hexadecimal). In addition, "\ " (backslash followed by a
 space) represents the code 32 (space), and the following backslash sequences
 are also understood:
 
@@ -1280,7 +1266,7 @@ and "outchar", but not around the "-" characters used in the second type of
 "t" command.
 
 The term "string" refers to any number of characters represented in the
-format given above.  The characters begin after the whitespace following the
+format given above. The characters begin after the whitespace following the
 letter "s", and continue to the end of the line.
 
 Anything following the first letter of an "f", "h", "j", or "u" command is
@@ -1290,7 +1276,7 @@ The first type of "t" command transforms characters with the code "inchar"
 into characters with the code "outchar". The second type of "t" command
 transforms characters in the range "inchar1" to "inchar2" as the
 corresponding codes in the range "outchar1" to "outchar2". Both ranges must
-be of the same size.  The form "number number" is equivalent to a "t"
+be of the same size. The form "number number" is equivalent to a "t"
 command of the first type, and is provided for compatibility with the mapping
 tables issued by the Unicode Consortium.
 
@@ -1298,10 +1284,10 @@ Multiple transformation stages can be encoded in a single control file by
 using "f" commands to separate the stages.
 
 Versions of FIGlet before 2.1 required that the first line of a control file
-consist of the signature string "flc2a".  This signature line is still
+consist of the signature string "flc2a". This signature line is still
 permitted in FIGlet 2.2 and later versions, but is no longer required.
 
-Here is an example of a control file.  The blanks at the beginning of each
+Here is an example of a control file. The blanks at the beginning of each
 line are for readability only, and are not part of the file.
 
 The following control file:
@@ -1320,16 +1306,16 @@ Consider this control file:
     t A B
     t B A
 
-It will swap the characters "A" and "B".  If the FIGdriver reads an "A", the
+It will swap the characters "A" and "B". If the FIGdriver reads an "A", the
 first command will change "A" to "B", in which case the second will not be
-executed.  If the FIGdriver reads a "B", the first command will have no
-effect, and the second command will change "B" to "A".  Here is another
+executed. If the FIGdriver reads a "B", the first command will have no
+effect, and the second command will change "B" to "A". Here is another
 control file:
 
     t A B
     t A C
 
-In this example, the second line is never executed.  In short, a sequence of
+In this example, the second line is never executed. In short, a sequence of
 "t" lines "does what it ought to".
 
 More complex files, in which a single character is acted upon by several "t"
@@ -1340,8 +1326,8 @@ commands, can be set up using an "f" command. For example:
     f
     t Q ~
 
-This control file specifies two transformation stages.  In the first stage,
-lowercase ASCII letters are changed to their uppercase equivalents.  The
+This control file specifies two transformation stages. In the first stage,
+lowercase ASCII letters are changed to their uppercase equivalents. The
 second stage maps any Q (whether original or a converted "q") into the "~"
 character. If the "f" command were omitted, "q" characters would remain "Q"
 and not be converted to "~".
@@ -1349,16 +1335,16 @@ and not be converted to "~".
 EXTENDED COMMANDS
 
 The "h", "j", "b", "u", and "g" commands are only understood by FIGlet
-version 2.2 or later.  They control how a FIGdriver interprets bytes in the
-input.  By default, the FIGdriver interprets each byte of input as a distinct
-character.  This mode is suitable for most character encodings.  All these
+version 2.2 or later. They control how a FIGdriver interprets bytes in the
+input. By default, the FIGdriver interprets each byte of input as a distinct
+character. This mode is suitable for most character encodings. All these
 commands are logically acted on before any other control file commands, no
-matter where in the sequence of control files they appear.  They are also
+matter where in the sequence of control files they appear. They are also
 mutually exclusive; if more than one of these commands is found, only the
-last is acted on.  Multiple "g" commands are permitted, however.
+last is acted on. Multiple "g" commands are permitted, however.
 
 The "h" command forces the input to be interpreted in HZ mode, which is used
-for the HZ character encoding of Chinese text.  In this mode, the sequence
+for the HZ character encoding of Chinese text. In this mode, the sequence
 "~{" (which is removed from the input) signals that all following characters
 are two bytes long until the sequence "~}" is detected. In addition, the
 sequence "~~" is changed to just "~", and all other two-byte sequences
@@ -1368,45 +1354,45 @@ corresponding to a two-byte character is:
     first character * 256 + second character
 
 The "j" command forces the input to be interpreted in Shift-JIS mode (also
-called "MS-Kanji mode").  Input bytes in the ranges 128-159 and 224-239 are
+called "MS-Kanji mode"). Input bytes in the ranges 128-159 and 224-239 are
 read as the high-order byte of a two-byte character; all other bytes are
-interpreted as one-byte characters.  The value of a two-byte character is
+interpreted as one-byte characters. The value of a two-byte character is
 determined in the same way as in HZ mode.
 
 The "b" command forces the input to be interpreted in DBCS mode, which is
-suitable for processing HZ or Shift-GB Chinese text or Korean text.  Input
+suitable for processing HZ or Shift-GB Chinese text or Korean text. Input
 bytes in the ranges 128-255 are read as the high-order byte of a two-byte
-character; all other bytes are interpreted as one-byte characters.  The
+character; all other bytes are interpreted as one-byte characters. The
 value of a two-byte character is determined in the same way as in HZ mode.
 
 The "u" command forces the input to be interpreted in UTF-8 mode, which
 causes any input byte in the range 0x80 to 0xFF to be interpreted as the
-first byte of a multi-byte Unicode (ISO 10646) character.  UTF-8 characters
-can be from 1 to 6 bytes long.  An incorrectly formatted sequence is
+first byte of a multi-byte Unicode (ISO 10646) character. UTF-8 characters
+can be from 1 to 6 bytes long. An incorrectly formatted sequence is
 interpreted as the character 128 (normally an unused control character).
 
 Otherwise, the input is allowed to contain ISO 2022 escape sequences, which
-are decoded to generate appropriate character codes.  These character codes
-are *not* a subset of Unicode, but may be more useful in processing East
-Asian text.  A brief explanation of ISO 2022 is given here in order to
-clarify how a FIGdriver should interpret it.  The "g" command provides
+are decoded to generate appropriate character codes. These character codes
+are _not_ a subset of Unicode, but may be more useful in processing East
+Asian text. A brief explanation of ISO 2022 is given here in order to
+clarify how a FIGdriver should interpret it. The "g" command provides
 information for the ISO 2022 interpreter, and is explained below.
 
 ISO 2022 text is specified using a mixture of registered character sets.
-At any time, up to four character sets may be available.  Character sets
-have one of three sizes:  single-byte character sets with 94 characters
+At any time, up to four character sets may be available. Character sets
+have one of three sizes: single-byte character sets with 94 characters
 (e.g. ASCII), single-byte character sets with 96 characters (e.g. the top
 halves of ISO Latin-1 to Latin-5), or double-byte character sets with
-94 x 94 characters (e.g. JIS 0208X-1983).  Each registered character set has
+94 x 94 characters (e.g. JIS 0208X-1983). Each registered character set has
 a standard designating byte in the range 48 to 125; the bytes are unique withi
-n character set sizes, but may be reused across sizes.  For example, byte 66
+n character set sizes, but may be reused across sizes. For example, byte 66
 designates the 94-character set ASCII, the 96-character set ISO Latin-2 (top
 half), and the 94 x 94 Japanese character set JIS 0208X-1983. In this
 document, the designating byte of a character set will be represented by <D>.
 
-The four available character sets are labeled G0, G1, G2, and G3.  Initially,
+The four available character sets are labeled G0, G1, G2, and G3. Initially,
 G0 is the 94-character set ASCII, and G1 is the 96-character set ISO Latin-1
-(top half).  The other character sets are unassigned.  The following escape
+(top half). The other character sets are unassigned. The following escape
 sequences (where ESC = the byte 27) specify changes to the available
 character sets:
 
@@ -1423,15 +1409,14 @@ character sets:
         ESC $ * <D>    Set G2 to the 94 x 94 character set <D>
         ESC $ + <D>    Set G3 to the 94 x 94 character set <D>
 
-
 Note that G0 may not be a 96-character set, and that there are two ways to
 specify a 94 x 94 character set in G0, of which the first is deprecated.
 
 ISO 2022 decoding affects input bytes in the ranges 33 to 126 and 160 to 255,
-known as "the left half" and "the right half" respectively.  All other bytes,
+known as "the left half" and "the right half" respectively. All other bytes,
 unless they belong to a control sequence shown in this document, remain
-unchanged.  Initially, the left half is interpreted as character set G0,
-and the right half as character set G1.  This can be changed by the following
+unchanged. Initially, the left half is interpreted as character set G0,
+and the right half as character set G1. This can be changed by the following
 control sequences:
 
         SI (byte 15)    Interpret the left half as G1 characters
@@ -1446,15 +1431,14 @@ control sequences:
         SS3 (byte 143)  Interpret next character only as G3
         ESC O           Interpret next character only as G3
 
-
-This rich schema may be used in various ways.  In ISO-2022-JP, the Japanese
+This rich schema may be used in various ways. In ISO-2022-JP, the Japanese
 flavor of ISO 2022, only the bytes 33-126 and the G0 character set is used,
 and escape sequences are used to switch between ASCII, ISO-646-JP (the
-Japanese national variant of ASCII), and JIS 0208X-1983.  In other versions,
+Japanese national variant of ASCII), and JIS 0208X-1983. In other versions,
 the G1 character set has 94 x 94 size, and so any byte in the range 160-255
 is automatically the first byte of a double-byte character.
 
-FIGdrivers that support ISO 2022 do so in the following way.  Each character i
+FIGdrivers that support ISO 2022 do so in the following way. Each character i
 is decoded and assigned to a character set <D>.
 
     If the character belongs to a 94-bit character set,
@@ -1471,12 +1455,11 @@ is decoded and assigned to a character set <D>.
             plus the second byte,
             plus the value 65536 * <D>.
 
-
 Thus, the character code 65 ("A") in ASCII remains 65, the character code
 196 in ISO Latin-1 ("A-umlaut") remains 196, the character code 65 (0x41)
 in ISO-646-JP (whose <D> is 74 = 0x4A) becomes 0x4A0041 =4849729, and the
 two-byte sequence 33 33 (0x21 0x21) in JIS 0208X-1983 (whose <D> is
-65 = 0x41) becomes 0x412121 = 4268321.  These codes may be used in compiling
+65 = 0x41) becomes 0x412121 = 4268321. These codes may be used in compiling
 FIGfonts suitable for use with ISO 2022 encoded text.
 
 The initial settings of G0 through G3 and their assignments to the left half
@@ -1486,7 +1469,7 @@ as follows:
     g {0|1|2|3} {94|96|94x94} [<D>]
 
 specifies that one of G0-G3 is a 94, 96, or 94x94 character set with
-designating character <D>.  If no designating character is specified, then a
+designating character <D>. If no designating character is specified, then a
 <D> value of zero is assumed.
 
 For example, the list of control commands:
@@ -1514,10 +1497,9 @@ of character set that is currently available as G2.
 Spaces may be freely used or omitted in "g" commands.
 
 The standard FIGlet distribution contains mapping tables for Latin-2 (ISO 8859-2),
-Latin-3 (ISO 8859-3), Latin-4 (ISO 8859-4), and Latin-5 (ISO 8859-9).  They
+Latin-3 (ISO 8859-3), Latin-4 (ISO 8859-4), and Latin-5 (ISO 8859-9). They
 can be used with the font "standard.flf", which contains all the characters
 used in these standards.
-
 
 STANDARDIZED CAPABILITIES OF CURRENT AND FUTURE FIGDRIVERS
 ============ ============ == ======= === ====== ==========
@@ -1527,9 +1509,9 @@ We assert the following as the "Law" of our intentions:
 PROFIT
 
 All future FIGdrivers shall be FREE OF CHARGE to the general public via the
-Internet.  Any advertisements of other works by the author must be in
+Internet. Any advertisements of other works by the author must be in
 documentation only, and limited to ONE "screenful", and shall not appear by
-normal program behavior, nor interfere with normal behavior.  No FIGdriver
+normal program behavior, nor interfere with normal behavior. No FIGdriver
 shall disable itself after a set period of time or request "donations".
 No FIGdriver shall offer any other FIGdriver with improved capability for
 creating FIGures in exchange for money.
@@ -1552,12 +1534,12 @@ Any future FIGdriver created for the same platform as an existing FIGdriver,
 and using the same name as the existing FIGdriver, shall be considered a new
 version of the preceding FIGdriver, and shall contain all historical comments
 of updates to past versions on the same platform, and shall have full
-capability of the preceding versions.  If the source code is not provided to
+capability of the preceding versions. If the source code is not provided to
 the general public, it shall be at least provided to any potential developers
 of later versions, and such comments relating to past versions shall be
-accessible to any user by other means or documentation.  If a new program is
+accessible to any user by other means or documentation. If a new program is
 created on a platform that already has an existing FIGdriver, it must be
-given a new and distinct name.  This allows multiple FIGdrivers to exist for
+given a new and distinct name. This allows multiple FIGdrivers to exist for
 the same platform with different capabilities.
 
 The format of FIGfonts may not be modified to be non-backwards compatible
@@ -1614,14 +1596,14 @@ platform.)
 
 When a FIGdriver word wraps and there are several consecutive blanks in input
 text where the wrapping occurred, the FIGdriver will disregard all blanks
-until the next non-blank input character is encountered.  However, if blanks
+until the next non-blank input character is encountered. However, if blanks
 in input text immediately follow a linebreak, or if blanks are the first
 characters in the input text, the blanks will be "printed", moving any
 visible FIGcharacters which follow on the same output line to the right.
 Similarly, if an image is right-aligned, and blanks immediately precede
 linebreaks or the end of input text, a FIGdriver will move an entire line of
 output FIGcharacters to the left to make room for the blank FIGcharacters
-until the left margin is encountered.  (If the print direction is
+until the left margin is encountered. (If the print direction is
 right-to-left, everything stated in this paragraph is reversed.)
 
 Word processing programs or text editors usually behave similarly in all
@@ -1630,10 +1612,10 @@ regards to word wrapping.
 GENERAL INTENT FOR CROSS-PLATFORM PORTABILITY
 
 Currently, all versions of FIGlet are compiled from C code, while FIGWin 1.0
-is written in Visual Basic.  Over time it is intended that a later version of
+is written in Visual Basic. Over time it is intended that a later version of
 FIGWin will be created using a GUI C programming language, and that the
 FIGlet C code shall continue to be written to be easily "plugged in" to a
-GUI shell.  It is preferable for developers of FIGdrivers for new platforms
+GUI shell. It is preferable for developers of FIGdrivers for new platforms
 to use C or a GUI version of C, so that when the core rendering engine of
 FIGlet is updated, it will be portable to other platforms.
 
@@ -1646,23 +1628,21 @@ never be given a meaning.
 FILE COMPRESSION
 
 FIGfonts (and control files) are often quite long, especially if many
-FIGcharacters are included, or if the FIGcharacters are large.  Therefore,
+FIGcharacters are included, or if the FIGcharacters are large. Therefore,
 some FIGdrivers (at present, only FIGlet version 2.2 or later) allow
 compressed FIGfonts and control files.
 
 The standard for FIG compression is to place the FIGfont or control file into
-a ZIP archive.  ZIP archives can be created by the proprietary program PKZIP
+a ZIP archive. ZIP archives can be created by the proprietary program PKZIP
 on DOS and Windows platforms, or by the free program Info-ZIP ZIP on almost
-all platforms.  More information on ZIP can be obtained at
-http://www.cdrom.com/pub/infozip/Info-Zip.html .
+all platforms. More information on ZIP can be obtained at
+<http://www.cdrom.com/pub/infozip/Info-Zip.html> .
 
-The ZIP archive must contain only a single file.  Any files in the archive
-after the first are ignored by FIGdrivers.  In addition, the standard
+The ZIP archive must contain only a single file. Any files in the archive
+after the first are ignored by FIGdrivers. In addition, the standard
 extension ".zip" of the archive must be changed to ".flf" or ".flc" as
-appropriate.  It does not matter what the name of the file within the
+appropriate. It does not matter what the name of the file within the
 archive is.
-
-
 
 CHART OF CAPABILITIES OF FIGLET 2.2 AND FIGWIN 1.0
 ===== == ============ == ====== === === ====== ===

@@ -1,9 +1,10 @@
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 🔤 Core Font Assets - Typography crystallization system
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-include figlet_forge/fonts/*.flf        # Standard FIGlet font files 🎨
-include figlet_forge/fonts/*.flc        # FIGlet control files 🔧
-include figlet_forge/fonts-standard/*   # Extended typography ecosystem
+include src/figlet_forge/fonts/standard/*.flf        # Standard FIGlet font files 🎨
+include src/figlet_forge/fonts/standard/*.flc        # FIGlet control files 🔧
+include src/figlet_forge/fonts/contrib/*.flf         # Contributed font files 🎨
+include src/figlet_forge/fonts/contrib/*.flc         # Contributed control files 🔧
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # 📄 Legal & Documentation - Knowledge is structural integrity
@@ -15,11 +16,32 @@ include CONTRIBUTING.md        # Collaboration guidelines 🤝
 include pyproject.toml         # Project specification 📋
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 📚 Documentation Structure - Eidosian knowledge architecture
+# 📚 Documentation - Understanding elevates implementation
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-recursive-include docs *       # Documentation files 📚
-recursive-include examples *   # Usage examples 💡
-recursive-include tests *.py   # Test suite 🧪
+recursive-include docs *.rst *.md *.py *.png *.jpg *.gif *.svg
+exclude docs/_build
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🔬 Examples - Knowledge crystallized into practice
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+recursive-include examples *.py *.md *.txt
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🛠️ Development Tools - The recursive self-improvement framework
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+include tools/*.py
+include tools/figlet_forge_example
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🧪 Testing - Truth verification mechanisms
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+include tests/conftest.py
+recursive-include tests *.py *.txt *.flf
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 🌌 Eidosian Principles - Forge consciousness framework
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+recursive-include .github/prompts *.md
 
 # ANSI and Unicode support files
 include figlet_forge/color_maps/*.json  # ANSI color mapping definitions 🎨
