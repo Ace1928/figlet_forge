@@ -1,19 +1,59 @@
 #!/usr/bin/env python
-# -*- encoding: utf-8 -*-
 
 """
-Python FIGlet adaption
+╔═══════════════════════════════════════════════════════════════════════════╗
+║   ███████╗██╗ ██████╗ ██╗     ███████╗████████╗    ███████╗ ██████╗ ██████╗  ██████╗ ███████╗   ║
+║   ██╔════╝██║██╔════╝ ██║     ██╔════╝╚══██╔══╝    ██╔════╝██╔═══██╗██╔══██╗██╔════╝ ██╔════╝   ║
+║   █████╗  ██║██║  ███╗██║     █████╗     ██║       █████╗  ██║   ██║██████╔╝██║  ███╗█████╗     ║
+║   ██╔══╝  ██║██║   ██║██║     ██╔══╝     ██║       ██╔══╝  ██║   ██║██╔══██╗██║   ██║██╔══╝     ║
+║   ██║     ██║╚██████╔╝███████╗███████╗   ██║       ██║     ╚██████╔╝██║  ██║╚██████╔╝███████╗   ║
+║   ╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚═╝       ╚═╝       ╚═╝      ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ║
+║                                                                                                   ║
+║ ╭────────────────────────────────────────────────────────────────────────────────────────────╮   ║
+║ │           TEXT CRYSTALLIZATION ENGINE - DIGITAL TYPOGRAPHY FORGE                           │   ║
+║ ╰────────────────────────────────────────────────────────────────────────────────────────────╯   ║
+╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+Figlet Forge: An Eidosian reimplementation extending pyfiglet with colorized ANSI support,
+Unicode rendering and intelligent fallbacks while maintaining backward compatibility.
 """
 
-from __future__ import print_function, unicode_literals
+import logging
+import sys
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-import itertools
+__version__ = "0.1.0"
+
+# Core components - expose main classes at package level for backward compatibility
+from .figlet import Figlet
+from .figlet_string import FigletString
+
+# Initialize logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+
+# Convenience exports for backwards compatibility with pyfiglet
+# Expose new color functions
+from .color import ColorMode, ColorScheme, colored_format
+from .figlet import print_figlet
+
+__all__ = [
+    "Figlet",
+    "FigletString",
+    "print_figlet",
+    "colored_format",
+    "ColorMode",
+    "ColorScheme",
+]
+
+
 import importlib.resources
+import itertools
 import os
 import pathlib
 import re
 import shutil
-import sys
 import zipfile
 from optparse import OptionParser
 
@@ -128,7 +168,7 @@ class InvalidColor(FigletError):
     """
 
 
-class FigletFont(object):
+class FigletFont:
     """
     This class represents the currently loaded font, including
     meta-data about how it should be displayed by default
@@ -263,7 +303,7 @@ class FigletFont(object):
             # Figlet is installed using a zipped resource - don't try to upload to it.
             location = SHARED_DIRECTORY
 
-        print("Installing {} to {}".format(file_name, location))
+        print(f"Installing {file_name} to {location}")
 
         # Make sure the required destination directory exists
         if not os.path.exists(location):
@@ -479,7 +519,7 @@ class FigletString(unicode_string):
         return FigletString("\n".join(list) + "\n")
 
 
-class FigletRenderingEngine(object):
+class FigletRenderingEngine:
     """
     This class handles the rendering of a FigletFont,
     including smushing/kerning/justification/direction
@@ -507,7 +547,7 @@ class FigletRenderingEngine(object):
         return builder.returnProduct()
 
 
-class FigletProduct(object):
+class FigletProduct:
     """
     This class stores the internal build part of
     the ascii output string
@@ -524,7 +564,7 @@ class FigletProduct(object):
         return FigletString(self.buffer_string)
 
 
-class FigletBuilder(object):
+class FigletBuilder:
     """
     Represent the internals of the build process
     """
@@ -875,60 +915,6 @@ class FigletBuilder(object):
         return
 
 
-class Figlet(object):
-    """
-    Main figlet class.
-    """
-
-    def __init__(self, font=DEFAULT_FONT, direction="auto", justify="auto", width=80):
-        self.font = font
-        self._direction = direction
-        self._justify = justify
-        self.width = width
-        self.setFont()
-        self.engine = FigletRenderingEngine(base=self)
-
-    def setFont(self, **kwargs):
-        if "font" in kwargs:
-            self.font = kwargs["font"]
-
-        self.Font = FigletFont(font=self.font)
-
-    def getDirection(self):
-        if self._direction == "auto":
-            direction = self.Font.printDirection
-            if direction == 0:
-                return "left-to-right"
-            elif direction == 1:
-                return "right-to-left"
-            else:
-                return "left-to-right"
-
-        else:
-            return self._direction
-
-    direction = property(getDirection)
-
-    def getJustify(self):
-        if self._justify == "auto":
-            if self.direction == "left-to-right":
-                return "left"
-            elif self.direction == "right-to-left":
-                return "right"
-
-        else:
-            return self._justify
-
-    justify = property(getJustify)
-
-    def renderText(self, text):
-        # wrapper method to engine
-        return self.engine.render(text)
-
-    def getFonts(self):
-        return self.Font.getFonts()
-
-
 def color_to_ansi(color, isBackground):
     if not color:
         return ""
@@ -937,7 +923,7 @@ def color_to_ansi(color, isBackground):
         raise InvalidColor("Specified color '{}' not a valid color in R;G;B format")
     elif color.count(";") == 0 and color not in COLOR_CODES:
         raise InvalidColor(
-            "Specified color '{}' not found in ANSI COLOR_CODES list".format(color)
+            f"Specified color '{color}' not found in ANSI COLOR_CODES list"
         )
 
     if color in COLOR_CODES:
@@ -946,9 +932,9 @@ def color_to_ansi(color, isBackground):
             ansiCode += 10
     else:
         ansiCode = 48 if isBackground else 38
-        ansiCode = "{};2;{}".format(ansiCode, color)
+        ansiCode = f"{ansiCode};2;{color}"
 
-    return "\033[{}m".format(ansiCode)
+    return f"\033[{ansiCode}m"
 
 
 def parse_color(color):
@@ -1059,9 +1045,7 @@ def main():
         exit(0)
 
     if opts.color == "list":
-        print(
-            "[0-255];[0-255];[0-255] # RGB\n" + "\n".join((sorted(COLOR_CODES.keys())))
-        )
+        print("[0-255];[0-255];[0-255] # RGB\n" + "\n".join(sorted(COLOR_CODES.keys())))
         exit(0)
 
     if opts.info_font:
@@ -1088,7 +1072,7 @@ def main():
             justify=opts.justify,
             width=opts.width,
         )
-    except FontNotFound as err:
+    except FontNotFound:
         print(f"pyfiglet error: requested font {opts.font!r} not found.")
         return 1
 

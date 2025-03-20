@@ -10,15 +10,15 @@ This test suite ensures backward compatibility with the original PyFiglet
 while validating the enhanced features of FigletForge.
 """
 
-from __future__ import print_function
-import os.path
-import sys
-import platform
-from optparse import OptionParser
-from figlet_forge import Figlet, FigletString
-from subprocess import Popen, PIPE
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+import os.path
+import platform
+import sys
+from optparse import OptionParser
+from subprocess import PIPE, Popen
+from typing import Any
+
+from figlet_forge import Figlet
 
 # Configure logging
 logging.basicConfig(
@@ -84,7 +84,7 @@ class TestOptions:
     test_color: bool
 
 
-class Test(object):
+class Test:
     def __init__(self, opts: TestOptions):
         self.opts = opts
         self.ok: int = 0
@@ -123,7 +123,7 @@ class Test(object):
             logger.warning(f"Unicode decoding error with font {font}: {str(e)}")
             return ""
         except FileNotFoundError:
-            logger.warning(f"Command not found. Ensure figlet/toilet is installed")
+            logger.warning("Command not found. Ensure figlet/toilet is installed")
             return ""
 
     def validate_font_output(
