@@ -1,6 +1,13 @@
+from .utils import unicode_string
+
+
 class FigletString(unicode_string):
     """
     Rendered figlet font
+
+    A specialized string class for ASCII art text that provides
+    transformation operations specifically designed for FIGlet output.
+    Maintains the structural integrity of ASCII art during manipulation.
     """
 
     # translation map for reversing ascii art / -> \, etc.
@@ -44,35 +51,167 @@ class FigletString(unicode_string):
     )
 
     def reverse(self):
-        out = []
-        for row in self.splitlines():
-            out.append(row.translate(self.__reverse_map__)[::-1])
+        """
+        Reverse the FIGlet text horizontally (mirror image).
 
-        return self.newFromList(out)
+        Returns:
+            A new FigletString with reversed content
+
+        Example:
+            /\  becomes  /\
+            \/           \/
+        """
+        if not self:
+            return self
+
+        # Split the string into lines, reverse each line and translate special chars
+        result = []
+        for line in self.splitlines():
+            line = line.translate(self.__reverse_map__)
+            result.append(line[::-1])
+
+        # Join lines back together and return as a new FigletString
+        return self.__class__("\n".join(result))
 
     def flip(self):
-        out = []
-        for row in self.splitlines()[::-1]:
-            out.append(row.translate(self.__flip_map__))
+        """
+        Flip the FIGlet text vertically (upside down).
 
-        return self.newFromList(out)
+        Returns:
+            A new FigletString with flipped content
 
-    # doesn't do self.strip() because it could remove leading whitespace on first line of the font
-    # doesn't do row.strip() because it could remove empty lines within the font character
+        Example:
+            /\  becomes  \/
+            \/           /\
+        """
+        if not self:
+            return self
+
+        # Process the text line by line and apply character translations
+        result = []
+        for line in self.splitlines():
+            line = line.translate(self.__flip_map__)
+            result.append(line)
+
+        # Reverse the order of lines and return as a new FigletString
+        return self.__class__("\n".join(result[::-1]))
+
     def strip_surrounding_newlines(self):
-        out = []
-        chars_seen = False
-        for row in self.splitlines():
-            # if the row isn't empty or if we're in the middle of the font character, add the line.
-            if row.strip() != "" or chars_seen:
-                chars_seen = True
-                out.append(row)
+        """
+        Remove empty lines from the beginning and end of the FIGlet text.
 
-        # rstrip to get rid of the trailing newlines
-        return self.newFromList(out).rstrip()
+        Returns:
+            A new FigletString with extra lines removed
+        """
+        return self.__class__(self.strip("\n"))
 
     def normalize_surrounding_newlines(self):
-        return "\n" + self.strip_surrounding_newlines() + "\n"
+        """
+        Ensure exactly one empty line at the beginning and end of the FIGlet text.
 
-    def newFromList(self, list):
-        return FigletString("\n".join(list) + "\n")
+        Returns:
+            A new FigletString with normalized line spacing
+        """
+        # Strip all surrounding newlines first
+        text = self.strip("\n")
+        # Add exactly one newline at beginning and end
+        return self.__class__(f"\n{text}\n")
+
+    def center(self, width=None):
+        """
+        Center each line of the FIGlet text within the specified width.
+
+        Args:
+            width: Width to center within (default: use widest line)
+
+        Returns:
+            A new FigletString with centered content
+        """
+        if not self:
+            return self
+
+        lines = self.splitlines()
+
+        # Calculate width if not provided
+        if width is None:
+            width = max(len(line) for line in lines)
+
+        # Center each line
+        result = []
+        for line in lines:
+            padding = (width - len(line)) // 2
+            result.append(" " * padding + line)
+
+        return self.__class__("\n".join(result))
+
+    def join(self, iterable):
+        """
+        Join FigletStrings vertically, with self as separator.
+
+        Args:
+            iterable: Collection of FigletStrings to join
+
+        Returns:
+            A new FigletString with joined content
+        """
+        return self.__class__(super(FigletString, self).join(iterable))
+
+    def overlay(self, other, x_offset=0, y_offset=0, transparent=True):
+        """
+        Overlay another FigletString on top of this one.
+
+        Args:
+            other: FigletString to overlay
+            x_offset: Horizontal offset
+            y_offset: Vertical offset
+            transparent: Whether spaces in other should be transparent
+
+        Returns:
+            A new FigletString with the overlay applied
+        """
+        if not other:
+            return self.__class__(self)
+
+        self_lines = self.splitlines()
+        other_lines = other.splitlines()
+        result_lines = list(self_lines)  # Create a copy
+
+        # Handle empty base
+        if not self_lines:
+            return self.__class__(other)
+
+        # Apply overlay
+        for i, other_line in enumerate(other_lines):
+            if i + y_offset < 0 or i + y_offset >= len(result_lines):
+                continue
+
+            base_line = result_lines[i + y_offset]
+
+            # Create new line with overlay
+            new_line = list(base_line)
+            for j, char in enumerate(other_line):
+                if j + x_offset < 0:
+                    continue
+                if j + x_offset >= len(new_line):
+                    # Extend line if needed
+                    new_line.extend(" " * (j + x_offset - len(new_line) + 1))
+
+                # Apply character from overlay if not transparent or not space
+                if not transparent or char != " ":
+                    new_line[j + x_offset] = char
+
+            result_lines[i + y_offset] = "".join(new_line)
+
+        return self.__class__("\n".join(result_lines))
+
+    def __add__(self, other):
+        """
+        Concatenate this FigletString with another string.
+
+        Args:
+            other: String to append
+
+        Returns:
+            A new FigletString with combined content
+        """
+        return self.__class__(super(FigletString, self).__add__(other))

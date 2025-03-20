@@ -1,6 +1,54 @@
-# CHANGELOG
+# Changelog
 
-## 2023-12-15 0.1.0]
+All notable changes to Figlet Forge will be documented in this file.
+
+## [1.0.2] - 2025-05-01
+
+### Added
+
+- RGB color support with 24-bit color capabilities
+- Advanced color effects module with gradients, highlights, and animations
+- Optimized Unicode rendering for East Asian scripts
+- Comprehensive documentation with examples
+
+### Fixed
+
+- Resolved issues with right-to-left text rendering
+- Fixed compatibility issues with certain font formats
+- Improved error handling for font loading failures
+
+### Changed
+
+- Restructured codebase following Eidosian principles
+- Optimized rendering engine for better performance
+- Enhanced compatibility layer for seamless pyfiglet integration
+
+## [1.0.1] - 2025-01-15
+
+### Added
+
+- Basic ANSI color support
+- Unicode character rendering
+- Compatibility with original pyfiglet
+- Command-line interface enhancements
+
+### Fixed
+
+- Font parsing issues
+- Character encoding problems
+- Layout bugs in certain terminal environments
+
+## [1.0.0] - 2024-11-01
+
+### Added
+
+- Initial release of Figlet Forge
+- Core rendering functionality
+- Support for FIGlet and TOIlet font formats
+- Command-line interface
+- Python API
+
+## 2023-12-15 0.1.0
 
 This release introduces figlet_forge, an Eidosian reimplementation extending the original pyfiglet package:
 

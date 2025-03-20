@@ -32,8 +32,8 @@ fi
 
 print_samples() {
     if [ "$LOG" -eq 1 ]; then
+        rm -f "$OUTPUT" 2>/dev/null
         output="$OUTPUT"
-        rm -f "$output" 2>/dev/null
     else
         output='/dev/null'
     fi
@@ -67,7 +67,7 @@ print_samples() {
 
     for font in $fonts; do
         echo "Font: $font" | tee -a "$output"
-        "$FIGLET_FORGE" "$color_opt" $unicode_opt "$width_opt" "$direction_opt" --font "$font" "$TEXT" | tee -a "$output"
+        "$FIGLET_FORGE" "$color_opt" $unicode_opt "$width_opt" "$direction_opt" -f "$font" "$TEXT" | tee -a "$output"
         echo "" | tee -a "$output"
     done
 }
@@ -84,35 +84,20 @@ usage() {
     echo "-w [width]          Specify output width"
     echo "-d [direction]      Specify text direction (auto, left-to-right, right-to-left)"
     echo "-h                  Show this help message"
-    exit 0
 }
 
 # Parse options and arguments
 while getopts ":lo:cuw:d:h" opt; do
-    case "$opt" in
-        l)
-            LOG=1
-            ;;
-        o)
-            if [ -n "$OPTARG" ]; then
-                OUTPUT="$OPTARG"
-            fi
-            ;;
-        c)
-            COLOR=1
-            ;;
-        u)
-            UNICODE=1
-            ;;
-        w)
-            WIDTH="$OPTARG"
-            ;;
-        d)
-            DIRECTION="$OPTARG"
-            ;;
-        h|\?)
-            usage
-            ;;
+    case $opt in
+        l) LOG=1 ;;
+        o) OUTPUT="$OPTARG" ;;
+        c) COLOR=1 ;;
+        u) UNICODE=1 ;;
+        w) WIDTH="$OPTARG" ;;
+        d) DIRECTION="$OPTARG" ;;
+        h) usage; exit 0 ;;
+        \?) echo "Invalid option: -$OPTARG" >&2; usage; exit 1 ;;
+        :) echo "Option -$OPTARG requires an argument." >&2; usage; exit 1 ;;
     esac
 done
 shift "$((OPTIND - 1))"

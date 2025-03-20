@@ -1,14 +1,9 @@
 # filepath: /home/lloyd/repos/global_info.py
 import platform
 import pprint
-from pathlib import Path
 from datetime import date
-from typing import Dict
-from typing import Dict, List
-from typing import Dict, Any
-from typing import Dict, List, Any, TypedDict, Union, Literal
-from typing import Dict, List, TypedDict, Optional
-from typing import Dict, Any, Optional, TypeVar, List, Union
+from pathlib import Path
+from typing import Any, Dict, List, Literal, Optional, TypedDict, TypeVar, Union
 
 """
 ╔═══════════════════════════════════════════════════════════════════════════╗

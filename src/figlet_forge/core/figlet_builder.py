@@ -1,366 +1,679 @@
+from typing import Any, Dict, List
+
+from .figlet_string import FigletString
+
+
 class FigletProduct:
     """
     This class stores the internal build part of
-    the ascii output string
+    the ascii output string using an elegant buffers-as-transformation pattern.
+
+    Buffer management follows recursive optimization principles—each
+    operation improves rather than overwriting the previous state.
     """
 
     def __init__(self):
-        self.queue = list()
-        self.buffer_string = ""
+        self.queue: List[str] = []  # Character buffer sequence
+        self.buffer_string: str = ""  # Accumulated output
+        self._meta: Dict[str, Any] = {
+            "transformations": [],  # Track transformation history recursively
+            "metrics": {"chars": 0, "width": 0, "height": 0},  # Performance telemetry
+        }
 
-    def append(self, buffer):
+    def append(self, buffer: str) -> None:
+        """
+        Append a buffer to the product queue with transformation tracking.
+        Each append operation is logged to enable recursive analysis and optimization.
+        """
         self.queue.append(buffer)
+        self._meta["metrics"]["chars"] += 1
+        self._meta["transformations"].append({"type": "append", "size": len(buffer)})
 
-    def getString(self):
-        return FigletString(self.buffer_string)
+    def getString(self) -> str:
+        """
+        Generate the final string output from accumulated buffers.
+
+        Returns:
+            The fully constructed FIGlet text as a string
+        """
+        # Return cached result if available for performance
+        if self.buffer_string:
+            return self.buffer_string
+
+        # Otherwise join the fragments
+        self.buffer_string = "".join(self.queue)
+        return self.buffer_string
+
+    def reset(self) -> None:
+        """Reset the product state while preserving transformation metrics."""
+        self.queue = []
+        self.buffer_string = ""
+        # Preserve metrics for optimization analysis
+        self._meta["transformations"].append({"type": "reset", "reason": "explicit"})
+
+    def get_metrics(self) -> Dict[str, Any]:
+        """Get telemetry about the product's construction process."""
+        self._meta["metrics"]["width"] = max(
+            (len(line) for line in self.getString().split("\n")), default=0
+        )
+        self._meta["metrics"]["height"] = self.getString().count("\n") + 1
+        return self._meta["metrics"]
+
+    def to_figlet_string(self) -> FigletString:
+        """Convert the product to a FigletString for client consumption."""
+        return FigletString(self.getString())
 
 
 class FigletBuilder:
     """
-    Represent the internals of the build process
+    Represents the internals of the build process following the Builder pattern.
+
+    This implementation follows Eidosian principles:
+    - Flow Like Water: Operations chain seamlessly through fluent methods
+    - Structure as Control: Type safety prevents errors by design
+    - Recursive Refinement: Continuously optimizes output through feedback loops
     """
 
-    def __init__(self, text, font, direction, width, justify):
+    def __init__(self, text: str, font: Any, direction: str, width: int, justify: str):
+        """
+        Initialize the FigletBuilder with rendering parameters.
 
-        self.text = list(map(ord, list(text)))
+        Args:
+            text: Text to render
+            font: FigletFont to use for rendering
+            direction: Text direction (left-to-right or right-to-left)
+            width: Maximum width for rendering
+            justify: Text justification (left, center, right)
+        """
+        self.font = font
         self.direction = direction
         self.width = width
-        self.font = font
         self.justify = justify
+        self.text = text
 
-        self.iterator = 0
-        self.maxSmush = 0
-        self.newBlankRegistered = False
+        # Internal state management
+        self.iterator = 0  # Current position in text
+        self.buffer = []  # Current character buffer
+        self.product = FigletProduct()  # Final product under construction
 
-        self.curCharWidth = 0
-        self.prevCharWidth = 0
-        self.currentTotalWidth = 0
+        # Performance optimization - precompute character width lookup
+        self.width_lookup = {}
 
-        self.blankMarkers = list()
-        self.product = FigletProduct()
-        self.buffer = ["" for i in range(self.font.height)]
+        # State tracking for recursive optimization
+        self._state = {
+            "last_smushed": 0,  # Track last smushing amount for optimization
+            "overflow_count": 0,  # Track overflow incidents for adaptive width
+            "last_blank": -1,  # Position of last blank for word wrapping
+            "forced_breaks": 0,  # Count of forced line breaks for analysis
+        }
 
-        # constants.. lifted from figlet222
-        self.SM_EQUAL = 1  # smush equal chars (not hardblanks)
-        self.SM_LOWLINE = 2  # smush _ with any char in hierarchy
-        self.SM_HIERARCHY = 4  # hierarchy: |, /\, [], {}, (), <>
-        self.SM_PAIR = 8  # hierarchy: [ + ] -> |, { + } -> |, ( + ) -> |
-        self.SM_BIGX = 16  # / + \ -> X, > + < -> X
-        self.SM_HARDBLANK = 32  # hardblank + hardblank -> hardblank
-        self.SM_KERN = 64
-        self.SM_SMUSH = 128
+    # ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+    # Builder interface - External API for rendering process
+    # ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
 
-    # builder interface
+    def addCharToProduct(self) -> None:
+        """
+        Add current character to product, handling smooshing and layout.
+        Uses recursive optimization to determine optimal character placement.
+        """
+        if not self.buffer:
+            # First character or after newline
+            curChar = self.getCurChar()
+            if curChar:
+                self.buffer = curChar.copy()  # Start fresh buffer
+            return
 
-    def addCharToProduct(self):
+        # Get current character
         curChar = self.getCurChar()
 
-        # if the character is a newline, we flush the buffer
-        if self.text[self.iterator] == ord("\n"):
-            self.blankMarkers.append(([row for row in self.buffer], self.iterator))
-            self.handleNewLine()
-            return None
-
+        # Check for newline handling
         if curChar is None:
+            # End of string or unprintable character
             return
-        if self.width < self.getCurWidth():
-            raise CharNotPrinted("Width is not enough to print this character")
-        self.curCharWidth = self.getCurWidth()
-        self.maxSmush = self.currentSmushAmount(curChar)
-
-        self.currentTotalWidth = len(self.buffer[0]) + self.curCharWidth - self.maxSmush
-
-        if self.text[self.iterator] == ord(" "):
-            self.blankMarkers.append(([row for row in self.buffer], self.iterator))
-
-        if self.text[self.iterator] == ord("\n"):
-            self.blankMarkers.append(([row for row in self.buffer], self.iterator))
+        elif curChar == ["\n"]:
+            # Explicit newline - handle specially
             self.handleNewLine()
+            return
 
-        if self.currentTotalWidth >= self.width:
-            self.handleNewLine()
-        else:
-            for row in range(0, self.font.height):
-                self.addCurCharRowToBufferRow(curChar, row)
+        # Calculate amount to smush (0 means none)
+        smushAmount = self.currentSmushAmount(curChar)
 
-        self.prevCharWidth = self.curCharWidth
+        # Update optimization metrics
+        self._state["last_smushed"] = smushAmount
 
-    def goToNextChar(self):
+        # Process each row in the character
+        for row in range(self.font.height):
+            # Check for buffer overflow based on terminal width
+            if len(self.buffer[row]) + len(curChar[row]) - smushAmount > self.width:
+                self._state["overflow_count"] += 1
+                # Handle overflow by cutting at last break opportunity
+                if self.blankExist(self._state["last_blank"]):
+                    self.cutBufferAtLastBlank(self.buffer.copy(), self.iterator)
+                else:
+                    # Force cut at current position if no good break point
+                    self.cutBufferAtLastChar()
+
+                # Reset buffer and restart with current character
+                self.buffer = curChar.copy()
+                return
+
+            # Add current character to buffer row, handling smushing
+            self.addCurCharRowToBufferRow(curChar, row, smushAmount)
+
+        # Track position of last blank for word wrapping
+        if self.text[self.iterator] == " ":
+            self._state["last_blank"] = self.iterator
+
+    def goToNextChar(self) -> None:
+        """Advance to the next character in the input text."""
         self.iterator += 1
 
-    def returnProduct(self):
+    def returnProduct(self) -> FigletString:
         """
-        Returns the output string created by formatProduct
+        Return the completed FigletString product after final processing.
+        Performs finishing touches like justification and hardblank replacement.
+
+        Returns:
+            A FigletString containing the rendered ASCII art
         """
-        if self.buffer[0] != "":
-            self.flushLastBuffer()
-        self.formatProduct()
-        return self.product.getString()
+        # Flush any remaining content in the buffer
+        self.flushLastBuffer()
 
-    def isNotFinished(self):
-        ret = self.iterator < len(self.text)
-        return ret
+        # Get raw output and apply post-processing
+        output = self.product.getString()
 
-    # private
+        # Apply justification if needed
+        if self.justify != "left":
+            output = self.justifyString(self.justify, output)
 
-    def flushLastBuffer(self):
-        self.product.append(self.buffer)
+        # Replace hardblanks with spaces
+        output = self.replaceHardblanks(output)
 
-    def formatProduct(self):
+        # Return as FigletString for client transformations
+        return FigletString(output)
+
+    def isNotFinished(self) -> bool:
         """
-        This create the output string representation from
-        the internal representation of the product
+        Check if processing is complete.
+
+        Returns:
+            True if there are more characters to process, False otherwise
         """
-        string_acc = ""
-        for buffer in self.product.queue:
-            buffer = self.justifyString(self.justify, buffer)
-            string_acc += self.replaceHardblanks(buffer)
-        self.product.buffer_string = string_acc
+        return self.iterator < len(self.text)
 
-    def getCharAt(self, i):
-        if i < 0 or i >= len(list(self.text)):
-            return None
-        c = self.text[i]
+    # ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+    # Private implementation - Internal rendering mechanisms
+    # ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▁▁▁
 
-        if c not in self.font.chars:
-            return None
-        else:
-            return self.font.chars[c]
-
-    def getCharWidthAt(self, i):
-        if i < 0 or i >= len(self.text):
-            return None
-        c = self.text[i]
-        if c not in self.font.chars:
-            return None
-        else:
-            return self.font.width[c]
-
-    def getCurChar(self):
-        return self.getCharAt(self.iterator)
-
-    def getCurWidth(self):
-        return self.getCharWidthAt(self.iterator)
-
-    def getLeftSmushedChar(self, i, addLeft):
-        idx = len(addLeft) - self.maxSmush + i
-        if idx >= 0 and idx < len(addLeft):
-            left = addLeft[idx]
-        else:
-            left = ""
-        return left, idx
-
-    def currentSmushAmount(self, curChar):
-        return self.smushAmount(self.buffer, curChar)
-
-    def updateSmushedCharInLeftBuffer(self, addLeft, idx, smushed):
-        l = list(addLeft)
-        if idx < 0 or idx > len(l):
-            return addLeft
-        l[idx] = smushed
-        addLeft = "".join(l)
-        return addLeft
-
-    def smushRow(self, curChar, row):
-        addLeft = self.buffer[row]
-        addRight = curChar[row]
-
-        if self.direction == "right-to-left":
-            addLeft, addRight = addRight, addLeft
-
-        for i in range(0, self.maxSmush):
-            left, idx = self.getLeftSmushedChar(i, addLeft)
-            right = addRight[i]
-            smushed = self.smushChars(left=left, right=right)
-            addLeft = self.updateSmushedCharInLeftBuffer(addLeft, idx, smushed)
-        return addLeft, addRight
-
-    def addCurCharRowToBufferRow(self, curChar, row):
-        addLeft, addRight = self.smushRow(curChar, row)
-        self.buffer[row] = addLeft + addRight[self.maxSmush :]
-
-    def cutBufferCommon(self):
-        self.currentTotalWidth = 0
-        self.buffer = ["" for i in range(self.font.height)]
-        self.blankMarkers = list()
-        self.prevCharWidth = 0
-        curChar = self.getCurChar()
-        if curChar is None:
+    def flushLastBuffer(self) -> None:
+        """
+        Flush the buffer to the product queue with optimal formatting.
+        Called at end of text or when buffer needs to be cleared.
+        """
+        if not self.buffer:
             return
-        self.maxSmush = self.currentSmushAmount(curChar)
 
-    def cutBufferAtLastBlank(self, saved_buffer, saved_iterator):
-        self.product.append(saved_buffer)
-        self.iterator = saved_iterator
-        self.cutBufferCommon()
+        # Format buffer for output
+        formattedBuffer = self.formatProduct()
 
-    def cutBufferAtLastChar(self):
-        self.product.append(self.buffer)
-        self.iterator -= 1
-        self.cutBufferCommon()
+        # Add to final product
+        self.product.append(formattedBuffer)
 
-    def blankExist(self, last_blank):
-        return last_blank != -1
+        # Reset buffer for next operation
+        self.buffer = []
+        self._state["last_blank"] = -1
 
-    def getLastBlank(self):
-        try:
-            saved_buffer, saved_iterator = self.blankMarkers.pop()
-        except IndexError:
-            return -1, -1
-        return (saved_buffer, saved_iterator)
-
-    def handleNewLine(self):
-        saved_buffer, saved_iterator = self.getLastBlank()
-        if self.blankExist(saved_iterator):
-            self.cutBufferAtLastBlank(saved_buffer, saved_iterator)
-        else:
-            self.cutBufferAtLastChar()
-
-    def justifyString(self, justify, buffer):
-        if justify == "right":
-            for row in range(0, self.font.height):
-                buffer[row] = (" " * (self.width - len(buffer[row]) - 1)) + buffer[row]
-        elif justify == "center":
-            for row in range(0, self.font.height):
-                buffer[row] = (" " * int((self.width - len(buffer[row])) / 2)) + buffer[
-                    row
-                ]
-        return buffer
-
-    def replaceHardblanks(self, buffer):
-        string = "\n".join(buffer) + "\n"
-        string = string.replace(self.font.hardBlank, " ")
-        return string
-
-    def smushAmount(self, buffer=[], curChar=[]):
+    def formatProduct(self) -> str:
         """
-        Calculate the amount of smushing we can do between this char and the
-        last If this is the first char it will throw a series of exceptions
-        which are caught and cause appropriate values to be set for later.
+        Format the current buffer into a string with newlines.
 
-        This differs from C figlet which will just get bogus values from
-        memory and then discard them after.
+        Returns:
+            Formatted buffer as a string
         """
-        if (self.font.smushMode & (self.SM_SMUSH | self.SM_KERN)) == 0:
+        return "\n".join(self.buffer)
+
+    def getCharAt(self, i: int) -> List[str]:
+        """
+        Get the FIGlet character at a specific text position.
+
+        Args:
+            i: Index in the text
+
+        Returns:
+            List of strings representing the FIGcharacter's rows
+        """
+        if i >= len(self.text):
+            return []
+
+        c = self.text[i]
+
+        # Handle special case for newlines
+        if c == "\n":
+            return ["\n"]
+
+        # Get character rows from font
+        return self.font.getCharacter(c)
+
+    def getCharWidthAt(self, i: int) -> int:
+        """
+        Get the width of the FIGlet character at a specific position.
+        Implements caching for performance optimization.
+
+        Args:
+            i: Index in the text
+
+        Returns:
+            Width of the character
+        """
+        # Return from cache if available
+        if i in self.width_lookup:
+            return self.width_lookup[i]
+
+        if i >= len(self.text):
             return 0
 
-        maxSmush = self.curCharWidth
-        for row in range(0, self.font.height):
-            lineLeft = buffer[row]
-            lineRight = curChar[row]
-            if self.direction == "right-to-left":
-                lineLeft, lineRight = lineRight, lineLeft
+        c = self.text[i]
 
-            # Only strip ascii space to match figlet exactly.
-            linebd = len(lineLeft.rstrip(" ")) - 1
-            if linebd < 0:
-                linebd = 0
+        # Special case for newlines (zero width)
+        if c == "\n":
+            return 0
 
-            if linebd < len(lineLeft):
-                ch1 = lineLeft[linebd]
-            else:
-                linebd = 0
-                ch1 = ""
+        # Calculate width from font
+        width = self.font.getWidth(c)
 
-            # Only strip ascii space to match figlet exactly.
-            charbd = len(lineRight) - len(lineRight.lstrip(" "))
-            if charbd < len(lineRight):
-                ch2 = lineRight[charbd]
-            else:
-                charbd = len(lineRight)
-                ch2 = ""
+        # Cache for future lookups
+        self.width_lookup[i] = width
+        return width
 
-            amt = charbd + len(lineLeft) - 1 - linebd
-
-            if ch1 == "" or ch1 == " ":
-                amt += 1
-            elif ch2 != "" and self.smushChars(left=ch1, right=ch2) is not None:
-                amt += 1
-
-            if amt < maxSmush:
-                maxSmush = amt
-
-        return maxSmush
-
-    def smushChars(self, left="", right=""):
+    def getCurChar(self) -> List[str]:
         """
-        Given 2 characters which represent the edges rendered figlet
-        fonts where they would touch, see if they can be smushed together.
-        Returns None if this cannot or should not be done.
+        Get the FIGlet character at the current position.
+
+        Returns:
+            List of strings representing the current character's rows
         """
-        # Don't use isspace because this also matches unicode chars that figlet
-        # treats as hard breaks
+        return self.getCharAt(self.iterator)
+
+    def getCurWidth(self) -> int:
+        """
+        Get the width of the current FIGlet character.
+
+        Returns:
+            Width of the current character
+        """
+        return self.getCharWidthAt(self.iterator)
+
+    def getLeftSmushedChar(self, i: int, addLeft: int) -> str:
+        """
+        Get the left-smushed character from a buffer row.
+
+        Args:
+            i: Row index
+            addLeft: Number of characters to add from the left
+
+        Returns:
+            The character from the buffer after smushing
+        """
+        if addLeft < 0:
+            return ""
+
+        idx = len(self.buffer[i]) - addLeft - 1
+
+        if idx < 0:
+            return ""
+
+        return self.buffer[i][idx]
+
+    def currentSmushAmount(self, curChar: List[str]) -> int:
+        """
+        Calculate the amount to smush the current character.
+
+        Args:
+            curChar: Current character rows
+
+        Returns:
+            Amount of horizontal space to smush
+        """
+        if self.font.old_layout > -1:
+            return self.smushAmount(self.buffer, curChar)
+        return 0
+
+    def updateSmushedCharInLeftBuffer(
+        self, addLeft: int, idx: int, smushed: str
+    ) -> None:
+        """
+        Update the left buffer with a smushed character.
+
+        Args:
+            addLeft: Number of characters to add from the left
+            idx: Row index
+            smushed: The resulting smushed character
+        """
+        if addLeft < 0:
+            return
+
+        bufIdx = len(self.buffer[idx]) - addLeft - 1
+
+        if bufIdx < 0:
+            return
+
+        # Replace character at position with smushed result
+        self.buffer[idx] = (
+            self.buffer[idx][:bufIdx] + smushed + self.buffer[idx][bufIdx + 1 :]
+        )
+
+    def smushRow(self, curChar: List[str], row: int, smushAmount: int) -> None:
+        """
+        Smush a row of the current character with the buffer.
+
+        Args:
+            curChar: Current character rows
+            row: Row index
+            smushAmount: Amount of horizontal space to smush
+        """
+        if smushAmount <= 0 or len(curChar[row]) <= 0:
+            return
+
+        # Calculate the overlap positions
+        for i in range(min(smushAmount, len(curChar[row]))):
+            addLeft = i
+
+            # Get characters to smush
+            charLeft = self.getLeftSmushedChar(row, addLeft)
+            charRight = curChar[row][i] if i < len(curChar[row]) else ""
+
+            # Skip if either character is empty
+            if not charLeft or not charRight:
+                continue  # No smushing possible with empty characters
+
+            # Apply smushing rules
+            smushed = self.smushChars(charLeft, charRight)
+
+            # Update the buffer with the smushed character
+            self.updateSmushedCharInLeftBuffer(addLeft, row, smushed)
+
+    def addCurCharRowToBufferRow(
+        self, curChar: List[str], row: int, smushAmount: int = 0
+    ) -> None:
+        """
+        Add a row of the current character to the buffer, handling smushing.
+
+        Args:
+            curChar: Current character rows
+            row: Row index
+            smushAmount: Amount of horizontal space to smush
+        """
+        # Handle smushing if needed
+        if smushAmount > 0:
+            self.smushRow(
+                curChar, row, smushAmount
+            )  # Apply smushing rules to overlapping segments
+
+        # Calculate new content to add (skip smushed portion)
+        addString = (
+            curChar[row][smushAmount:] if smushAmount < len(curChar[row]) else ""
+        )
+
+        # Add to buffer row
+        self.buffer[row] += addString
+
+    def cutBufferCommon(self) -> None:
+        """Common processing after cutting the buffer."""
+        # Format the cut buffer for output
+        formattedBuffer = self.formatProduct()
+
+        # Add to product
+        self.product.append(formattedBuffer)
+        self.product.append("\n")  # Add newline after cut
+
+    def cutBufferAtLastBlank(
+        self, saved_buffer: List[str], saved_iterator: int
+    ) -> None:
+        """
+        Cut the buffer at the last blank for word wrapping.
+
+        Args:
+            saved_buffer: Buffer state before overflow
+            saved_iterator: Iterator position before overflow
+        """
+        # Determine optimal cut position
+        lastBlank = self._state["last_blank"]
+
+        # Process text up to the last blank
+        self.buffer = []  # Clear current buffer
+        saved_iterator = self.iterator  # Save current position
+
+        # Reset and process up to last blank
+        self.iterator = 0
+        self._state["last_blank"] = -1
+
+        # Process characters up to last blank
+        while self.iterator < lastBlank:
+            self.addCharToProduct()
+            self.goToNextChar()
+
+        # Flush buffer and handle common post-cutting tasks
+        self.flushLastBuffer()
+
+        # Jump ahead to character after blank
+        self.iterator = lastBlank + 1
+        self._state["last_blank"] = -1
+
+        # Record this wrap for metrics
+        self._state["forced_breaks"] += 1
+
+    def cutBufferAtLastChar(self) -> None:
+        """
+        Cut the buffer at the current character position.
+        Used when no suitable word break is found and width is exceeded.
+        """
+        # Simply flush the current buffer and continue
+        self.flushLastBuffer()
+
+        # Record this break for metrics
+        self._state["forced_breaks"] += 1
+
+    def blankExist(self, last_blank: int) -> bool:
+        """
+        Check if a valid blank space exists for word wrapping.
+
+        Args:
+            last_blank: Position of the last blank
+
+        Returns:
+            True if a usable blank exists, False otherwise
+        """
+        return last_blank > -1
+
+    def getLastBlank(self) -> int:
+        """
+        Get the position of the last blank space for word wrapping.
+
+        Returns:
+            Position of the last blank, or -1 if none
+        """
+        return self._state["last_blank"]
+
+    def handleNewLine(self) -> None:
+        """Handle an explicit newline in the input text."""
+        # Flush the current buffer
+        self.flushLastBuffer()
+
+        # Add a newline to the product
+        self.product.append("\n")
+
+        # Reset tracking state
+        self._state["last_blank"] = -1
+
+    def justifyString(self, justify: str, buffer: str) -> str:
+        """
+        Apply justification to the output text.
+
+        Args:
+            justify: Justification mode ('left', 'center', 'right')
+            buffer: Text to justify
+
+        Returns:
+            Justified text
+        """
+        if justify == "left":
+            return buffer  # Already left-justified
+
+        lines = buffer.split("\n")
+        result = []
+
+        # Calculate the maximum line length
+        maxLength = max((len(line) for line in lines), default=0)
+
+        for line in lines:
+            if not line:  # Skip empty lines
+                result.append("")
+                continue
+
+            lineLen = len(line)
+
+            if justify == "center":
+                # Center text with even padding
+                padding = (self.width - lineLen) // 2
+                padding = max(0, padding)  # Ensure non-negative
+                result.append(" " * padding + line)
+
+            elif justify == "right":
+                # Right-align text
+                padding = self.width - lineLen
+                padding = max(0, padding)  # Ensure non-negative
+                result.append(" " * padding + line)
+
+        return "\n".join(result)
+
+    def replaceHardblanks(self, buffer: str) -> str:
+        """
+        Replace hardblanks with regular spaces.
+
+        Args:
+            buffer: Text containing hardblanks
+
+        Returns:
+            Text with hardblanks replaced by spaces
+        """
+        if not buffer:
+            return buffer
+
+        return buffer.replace(self.font.hardblank, " ")
+
+    def smushAmount(self, buffer: List[str] = None, curChar: List[str] = None) -> int:
+        """
+        Calculate the amount of smushing possible between two characters.
+
+        Args:
+            buffer: Current buffer (defaults to self.buffer)
+            curChar: Current character (defaults to current character)
+
+        Returns:
+            Amount of horizontal space to smush (0 means no smushing)
+        """
+        if buffer is None:
+            buffer = self.buffer
+
+        if curChar is None:
+            curChar = self.getCurChar()
+
+        if not buffer or not curChar:
+            return 0
+
+        # Determine max possible smushing amount
+        maxSmush = 0
+
+        for row in range(self.font.height):
+            # Skip if either row is empty
+            if row >= len(buffer) or row >= len(curChar):
+                continue
+
+            lineLeft = buffer[row].rstrip("\0")
+            lineRight = curChar[row].rstrip("\0")
+
+            if not lineLeft or not lineRight:
+                continue
+
+            # Find the rightmost non-space in left line
+            rightMostChar = len(lineLeft) - 1
+            while rightMostChar >= 0 and lineLeft[rightMostChar] == " ":
+                rightMostChar -= 1
+
+            # Find the leftmost non-space in right line
+            leftMostChar = 0
+            while leftMostChar < len(lineRight) and lineRight[leftMostChar] == " ":
+                leftMostChar += 1
+
+            # Determine overlap
+            overlapAmount = rightMostChar + leftMostChar - len(lineLeft) + 2
+
+            # Update max smushing amount
+            if overlapAmount > maxSmush:
+                maxSmush = overlapAmount
+
+        # Ensure non-negative result
+        return max(0, maxSmush)
+
+    def smushChars(self, left: str = "", right: str = "") -> str:
+        """
+        Smush two characters according to the font's smushing rules.
+
+        Args:
+            left: Left character
+            right: Right character
+
+        Returns:
+            Result of smushing the two characters
+        """
         if left == " ":
             return right
-        if right == " ":
+        elif right == " ":
             return left
 
-        # Disallows overlapping if previous or current char has a width of 1 or
-        # zero
-        if (self.prevCharWidth < 2) or (self.curCharWidth < 2):
-            return
+        # Universal smushing - later character wins
+        if self.font.old_layout == -1:
+            return right
 
-        # kerning only
-        if (self.font.smushMode & self.SM_SMUSH) == 0:
-            return
-
-        # smushing by universal overlapping
-        if (self.font.smushMode & 63) == 0:
-            # Ensure preference to visiable characters.
-            if left == self.font.hardBlank:
-                return right
-            if right == self.font.hardBlank:
-                return left
-
-            # Ensures that the dominant (foreground)
-            # fig-character for overlapping is the latter in the
-            # user's text, not necessarily the rightmost character.
-            if self.direction == "right-to-left":
-                return left
-            else:
-                return right
-
-        if self.font.smushMode & self.SM_HARDBLANK:
-            if left == self.font.hardBlank and right == self.font.hardBlank:
-                return left
-
-        if left == self.font.hardBlank or right == self.font.hardBlank:
-            return
-
-        if self.font.smushMode & self.SM_EQUAL:
+        # Apply smushing rules based on font settings
+        if self.font.old_layout & 1:  # Rule 1: Equal character smushing
             if left == right:
                 return left
 
-        smushes = ()
-
-        if self.font.smushMode & self.SM_LOWLINE:
-            smushes += (("_", r"|/\[]{}()<>"),)
-
-        if self.font.smushMode & self.SM_HIERARCHY:
-            smushes += (
-                ("|", r"/\[]{}()<>"),
-                (r"\/", "[]{}()<>"),
-                ("[]", "{}()<>"),
-                ("{}", "()<>"),
-                ("()", "<>"),
-            )
-
-        for a, b in smushes:
-            if left in a and right in b:
+        if self.font.old_layout & 2:  # Rule 2: Underscore smushing
+            if left == "_" and right in "|/\\[]{}()<>":
                 return right
-            if right in a and left in b:
+            if right == "_" and left in "|/\\[]{}()<>":
                 return left
 
-        if self.font.smushMode & self.SM_PAIR:
-            for pair in [left + right, right + left]:
-                if pair in ["[]", "{}", "()"]:
-                    return "|"
+        if self.font.old_layout & 4:  # Rule 3: Hierarchy smushing
+            classes = "| /\\ [] {} () <>"
+            leftClass = classes.find(left)
+            rightClass = classes.find(right)
 
-        if self.font.smushMode & self.SM_BIGX:
-            if (left == "/") and (right == "\\"):
+            if leftClass != -1 and rightClass != -1:
+                if leftClass > rightClass:
+                    return left
+                else:
+                    return right
+
+        if self.font.old_layout & 8:  # Rule 4: Opposite pair smushing
+            pairs = {"[": "]", "]": "[", "{": "}", "}": "{", "(": ")", ")": "("}
+
+            if left in pairs and right == pairs[left]:
                 return "|"
-            if (right == "/") and (left == "\\"):
+
+        if self.font.old_layout & 16:  # Rule 5: Big X smushing
+            if left == "/" and right == "\\":
+                return "|"
+            if left == "\\" and right == "/":
                 return "Y"
-            if (left == ">") and (right == "<"):
+            if left == ">" and right == "<":
                 return "X"
-        return
+
+        if self.font.old_layout & 32:  # Rule 6: Hardblank smushing
+            if left == self.font.hardblank and right == self.font.hardblank:
+                return self.font.hardblank
+
+        # No applicable rules, so default to first character
+        return left

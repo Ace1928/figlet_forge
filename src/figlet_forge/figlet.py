@@ -9,8 +9,9 @@ import sys
 from typing import List
 
 from .core.figlet_font import FigletFont
-from .figlet_string import FigletString
+from .core.figlet_string import FigletString
 from .render.figlet_engine import FigletRenderingEngine
+from .version import DEFAULT_FONT, RESET_COLORS
 
 
 class Figlet:
@@ -23,7 +24,7 @@ class Figlet:
 
     def __init__(
         self,
-        font: str = "standard",
+        font: str = DEFAULT_FONT,
         direction: str = "auto",
         justify: str = "auto",
         width: int = 80,
@@ -62,7 +63,7 @@ class Figlet:
 
         # Setup the rendering direction
         if self.direction == "auto":
-            direction_value = self.Font.printDirection
+            direction_value = getattr(self.Font, "printDirection", 0)
             if direction_value == 0:
                 self.direction = "left-to-right"
             elif direction_value == 1:
@@ -148,7 +149,7 @@ class Figlet:
 
 
 def print_figlet(
-    text: str, font: str = "standard", colors: str = ":", **kwargs
+    text: str, font: str = DEFAULT_FONT, colors: str = ":", **kwargs
 ) -> None:
     """
     Print ASCII art text using the selected FIGlet font with optional colors.
@@ -178,5 +179,5 @@ def print_figlet(
 
     # Reset colors if needed
     if ansi_colors:
-        sys.stdout.write("\033[0m")
+        sys.stdout.write(RESET_COLORS)
         sys.stdout.flush()
