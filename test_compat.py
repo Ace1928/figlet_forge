@@ -75,9 +75,9 @@ def test_figlet_format() -> None:
             print(py_result)
 
             if ff_result == py_result:
-                print(f"{GREEN}✓ Results match!{RESET}")
+                print(f"{GREEN}✓ Match{RESET}")
             else:
-                print(f"{RED}✗ Results differ!{RESET}")
+                print(f"{RED}✗ Mismatch{RESET}")
 
 
 def test_figlet_class() -> None:
@@ -101,15 +101,15 @@ def test_figlet_class() -> None:
             test_text = "Test"
 
             ff_fig = ff_compat.Figlet(font=test_font)
-            ff_result = ff_fig.renderText(test_text)
-
             py_fig = pyfiglet.Figlet(font=test_font)
+
+            ff_result = ff_fig.renderText(test_text)
             py_result = py_fig.renderText(test_text)
 
             if ff_result == py_result:
-                print(f"{GREEN}✓ Rendering with font '{test_font}' matches!{RESET}")
+                print(f"{GREEN}✓ Figlet class rendering matches{RESET}")
             else:
-                print(f"{RED}✗ Rendering with font '{test_font}' differs!{RESET}")
+                print(f"{RED}✗ Figlet class rendering differs{RESET}")
 
 
 def test_figletstring_operations() -> None:
@@ -139,14 +139,14 @@ def test_figletstring_operations() -> None:
         py_reversed = py_text.reverse()
 
         if ff_text.flip() == py_flipped:
-            print(f"{GREEN}✓ Flip operation matches pyfiglet!{RESET}")
+            print(f"{GREEN}✓ Flip operation matches{RESET}")
         else:
-            print(f"{RED}✗ Flip operation differs from pyfiglet!{RESET}")
+            print(f"{RED}✗ Flip operation differs{RESET}")
 
         if ff_text.reverse() == py_reversed:
-            print(f"{GREEN}✓ Reverse operation matches pyfiglet!{RESET}")
+            print(f"{GREEN}✓ Reverse operation matches{RESET}")
         else:
-            print(f"{RED}✗ Reverse operation differs from pyfiglet!{RESET}")
+            print(f"{RED}✗ Reverse operation differs{RESET}")
 
 
 def main() -> None:

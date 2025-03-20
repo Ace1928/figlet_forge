@@ -1,6 +1,10 @@
-# ⚛️ Figlet Forge ⚡
+# 🔠 Figlet Forge
 
-> _"Typography crystallized into ASCII art."_
+> _"Typography crystallized into ASCII art perfection"_
+
+[![Python Version](https://img.shields.io/badge/python-3.7%2B-blue)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Made with Eidosian Principles](https://img.shields.io/badge/Made%20with-Eidosian_Principles-8A2BE2)](https://github.com/Ace1928)
 
 [![Version](https://img.shields.io/badge/Version-1.0.2-blue)](https://github.com/Ace1928/figlet_forge)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)

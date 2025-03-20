@@ -1,6 +1,48 @@
-# Changelog
+# Figlet Forge Changelog
 
-All notable changes to Figlet Forge will be documented in this file.
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.2] - 2023-11-20
+
+### Added
+
+- Full ANSI color support with RGB and named colors
+- Unicode character rendering capabilities
+- Advanced text transformation utilities
+- Performance optimizations for rendering
+- Complete compatibility layer for pyfiglet
+- Enhanced documentation and examples
+
+### Changed
+
+- Improved font loading mechanism with better error handling
+- Enhanced rendering engine with proper direction and justification support
+- Better support for different terminal environments
+
+### Fixed
+
+- Various edge cases in font rendering
+- Handling of special characters and control codes
+- Width calculation for complex layouts
+
+## [1.0.1] - 2023-10-15
+
+### Added
+
+- Initial compatibility layer implementation
+- Core rendering engine foundation
+- Basic color support
+
+## [1.0.0] - 2023-09-01
+
+### Added
+
+- Initial release with core functionality
+- Basic font support
+- CLI interface
 
 ## [1.0.2] - 2025-05-01
 

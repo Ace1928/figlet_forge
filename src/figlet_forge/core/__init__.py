@@ -15,6 +15,7 @@ from .exceptions import (
 from .figlet_builder import FigletBuilder, FigletProduct
 from .figlet_font import FigletFont
 from .figlet_string import FigletString
+from .utils import unicode_string
 
 __all__ = [
     "FigletError",
@@ -26,4 +27,5 @@ __all__ = [
     "FigletString",
     "FigletBuilder",
     "FigletProduct",
+    "unicode_string",
 ]
