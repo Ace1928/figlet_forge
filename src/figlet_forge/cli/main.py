@@ -1,4 +1,33 @@
-def main():
+#!/usr/bin/env python
+"""
+Main entry point for the Figlet Forge command line interface.
+Provides a comprehensive CLI for rendering ASCII art text with
+support for colors, unicode, and various layout options.
+"""
+
+import sys
+from optparse import OptionParser
+from typing import List, Optional
+
+from .. import COLOR_CODES, RESET_COLORS, Figlet, FigletFont
+from ..color import parse_color
+from ..core.exceptions import FontNotFound
+from ..version import __version__
+
+# Default font for rendering
+DEFAULT_FONT = "standard"
+
+
+def main(args: Optional[List[str]] = None) -> int:
+    """
+    Main entry point for the Figlet Forge CLI.
+
+    Args:
+        args: Command line arguments (uses sys.argv if None)
+
+    Returns:
+        Exit code (0 for success, 1 for error)
+    """
     parser = OptionParser(version=__version__, usage="%prog [options] [text..]")
     parser.add_option(
         "-f",
@@ -63,14 +92,14 @@ def main():
     )
     parser.add_option(
         "-l",
-        "--list_fonts",
+        "--list-fonts",
         action="store_true",
         default=False,
         help="show installed fonts list",
     )
     parser.add_option(
         "-i",
-        "--info_font",
+        "--info-font",
         action="store_true",
         default=False,
         help="show font's information, use with -f FONT",
@@ -92,23 +121,34 @@ def main():
                             --color=list\t\t\t # list all colors
                             COLOR = list[COLOR] | [0-255];[0-255];[0-255] (RGB)""",
     )
-    opts, args = parser.parse_args()
+    parser.add_option(
+        "-u",
+        "--unicode",
+        action="store_true",
+        default=False,
+        help="enable Unicode character support for rendering",
+    )
+
+    if args is None:
+        args = sys.argv[1:]
+
+    opts, args = parser.parse_args(args)
 
     if opts.list_fonts:
         print("\n".join(sorted(FigletFont.getFonts())))
-        exit(0)
+        return 0
 
     if opts.color == "list":
         print("[0-255];[0-255];[0-255] # RGB\n" + "\n".join(sorted(COLOR_CODES.keys())))
-        exit(0)
+        return 0
 
     if opts.info_font:
         print(FigletFont.infoFont(opts.font))
-        exit(0)
+        return 0
 
     if opts.load:
         FigletFont.installFonts(opts.load)
-        exit(0)
+        return 0
 
     if len(args) == 0:
         parser.print_help()
@@ -125,9 +165,10 @@ def main():
             direction=opts.direction,
             justify=opts.justify,
             width=opts.width,
+            unicode_aware=opts.unicode,
         )
     except FontNotFound:
-        print(f"pyfiglet error: requested font {opts.font!r} not found.")
+        print(f"figlet_forge error: requested font {opts.font!r} not found.")
         return 1
 
     r = f.renderText(text)
@@ -141,16 +182,23 @@ def main():
         r = r.normalize_surrounding_newlines()
 
     if sys.version_info > (3,):
-        # Set stdout to binary mode
-        sys.stdout = sys.stdout.detach()
+        # Set stdout to binary mode if needed for Python 3
+        try:
+            sys.stdout = sys.stdout.buffer
+        except AttributeError:
+            # Already in binary mode or redirected
+            pass
 
+    # Apply colors if specified
     ansiColors = parse_color(opts.color)
     if ansiColors:
         sys.stdout.write(ansiColors.encode("UTF-8"))
 
+    # Output the rendered text
     sys.stdout.write(r.encode("UTF-8"))
     sys.stdout.write(b"\n")
 
+    # Reset colors if needed
     if ansiColors:
         sys.stdout.write(RESET_COLORS)
 
