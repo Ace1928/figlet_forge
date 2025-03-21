@@ -1,8 +1,8 @@
 """
-Core components for Figlet Forge.
+Core module for Figlet Forge.
 
-This module provides the foundational classes and utilities used by
-the rendering engine and other components.
+This module provides the fundamental components of the Figlet Forge system,
+including font handling, string management, and text rendering.
 """
 
 from .exceptions import (
@@ -12,20 +12,17 @@ from .exceptions import (
     FontNotFound,
     InvalidColor,
 )
-from .figlet_builder import FigletBuilder, FigletProduct
 from .figlet_font import FigletFont
 from .figlet_string import FigletString
 from .utils import unicode_string
 
 __all__ = [
-    "FigletError",
-    "FontNotFound",
-    "FontError",
     "CharNotPrinted",
-    "InvalidColor",
+    "FigletError",
     "FigletFont",
     "FigletString",
-    "FigletBuilder",
-    "FigletProduct",
+    "FontError",
+    "FontNotFound",
+    "InvalidColor",
     "unicode_string",
 ]

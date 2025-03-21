@@ -1,13 +1,8 @@
 """
-Figlet Forge Command Line Interface
+Command-line interface for Figlet Forge.
 
-This module provides the command-line interface for Figlet Forge,
-enabling users to generate ASCII art text from the terminal with
-support for colors, unicode characters, and various layout options.
-
-The CLI maintains backward compatibility with the original pyfiglet
-while adding enhanced features such as ANSI color support and improved
-Unicode rendering.
+Provides tools for interacting with the Figlet Forge library
+through the command line.
 """
 
 import sys
@@ -18,8 +13,9 @@ from . import sample
 
 # Import the main CLI function from main.py
 from .main import main
+from .showcase import generate_showcase
 
-__all__ = ["main", "sample"]
+__all__ = ["main", "sample", "generate_showcase"]
 
 # Provide direct execution capability
 if __name__ == "__main__":

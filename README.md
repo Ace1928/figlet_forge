@@ -1,26 +1,18 @@
-# 🔠 Figlet Forge
+# ⚛️ Figlet Forge ⚡
 
-> _"Typography crystallized into ASCII art perfection"_
+> _"Form follows function; elegance emerges from precision."_
 
-[![Python Version](https://img.shields.io/badge/python-3.7%2B-blue)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Made with Eidosian Principles](https://img.shields.io/badge/Made%20with-Eidosian_Principles-8A2BE2)](https://github.com/Ace1928)
-
-[![Version](https://img.shields.io/badge/Version-1.0.2-blue)](https://github.com/Ace1928/figlet_forge)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.7%2B-blue)](https://www.python.org/)
-[![Forge System](https://img.shields.io/badge/Forge-System-8A2BE2)](https://github.com/Ace1928)
+[![Version](https://img.shields.io/badge/Version-0.1.0-blue)]() [![Python](https://img.shields.io/badge/Python-3.7%2B-blue)]() [![License](https://img.shields.io/badge/License-MIT-green)]()
 
 ```ascii
-   _______ _       __     __  ______
-  / ____(_) /____ / /__  / /_/ ____/___  _________  ____
- / /_  / / __/ _ \/ / _ \/ __/ /_  / __ \/ ___/ __ \/ __ \
-/ __/ / / /_/  __/ /  __/ /_/ __/ / /_/ / /  / /_/ / /_/ /
-/_/   /_/\__/\___/_/\___/\__/_/    \____/_/   \____/ .___/
-                                                  /_/
+  ╭─────────────────────────╮
+  │  EIDOSIAN TYPOGRAPHY    │
+  ╰─────────────────────────╯
 ```
 
-**Figlet Forge** is an Eidosian reimplementation extending the original pyfiglet package with enhanced features, while maintaining complete backward compatibility.
+## 🔥 Overview
+
+Figlet Forge is an Eidosian reimplementation of the classic FIGlet ASCII art generator, extending functionality with colorized ANSI support, Unicode rendering, intelligent fallbacks, and a comprehensive API—all while maintaining backward compatibility.
 
 ## ✨ Features
 

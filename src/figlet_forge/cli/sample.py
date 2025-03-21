@@ -775,3 +775,9 @@ def run_samples(
 
     # Display usage guide
     display_usage_guide(font_samples, color_samples)
+
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(run_samples(interactive=True))

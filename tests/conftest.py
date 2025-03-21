@@ -7,17 +7,14 @@ all test suites, following Eidosian principles of recursive optimization
 and structural integrity.
 """
 
-import os
 import sys
 from pathlib import Path
-from typing import Dict, Generator, List, Tuple
+from typing import Generator, List, Tuple
 
 import pytest
 
 # Ensure package can be imported
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
-# Import constants only after path setup
 
 # Test data constants
 TEST_TEXT = "Hello, Figlet!"
@@ -98,31 +95,22 @@ def figlet_factory():
 
 
 @pytest.fixture
-def mock_env_vars() -> Generator[Dict[str, str], None, None]:
+def mock_env_vars(monkeypatch):
     """
-    Temporarily modify environment variables for testing.
+    Set up mock environment variables.
 
-    Yields:
-        Dictionary to store original environment variables
+    Args:
+        monkeypatch: pytest's monkeypatch fixture
+
+    Returns:
+        Dictionary of environment variables
     """
-    original_vars = {}
+    env_vars = {"COLUMNS": "120", "LINES": "40"}
 
-    # Save any environment variables we'll modify
-    for var in ["COLUMNS", "LINES"]:
-        if var in os.environ:
-            original_vars[var] = os.environ[var]
+    for key, value in env_vars.items():
+        monkeypatch.setenv(key, value)
 
-    try:
-        yield original_vars
-    finally:
-        # Restore original environment variables
-        for var, value in original_vars.items():
-            os.environ[var] = value
-
-        # Remove any variables we added but weren't there originally
-        for var in ["COLUMNS", "LINES"]:
-            if var not in original_vars and var in os.environ:
-                del os.environ[var]
+    return env_vars
 
 
 @pytest.fixture
@@ -130,7 +118,7 @@ def sample_figlet_string():
     """Provide a sample FigletString for testing transformations."""
     from figlet_forge.core.figlet_string import FigletString
 
-    ascii_art = """
+    ascii_art = r"""
   ___ ___ ___
  | _ \_ _/ __|
  |  _/| | (_ |

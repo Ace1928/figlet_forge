@@ -7,7 +7,7 @@
 ║   █████╗  ██║██║  ███╗██║     █████╗     ██║       █████╗  ██║   ██║██████╔╝██║  ███╗█████╗     ║
 ║   ██╔══╝  ██║██║   ██║██║     ██╔══╝     ██║       ██╔══╝  ██║   ██║██╔══██╗██║   ██║██╔══╝     ║
 ║   ██║     ██║╚██████╔╝███████╗███████╗   ██║       ██║     ╚██████╔╝██║  ██║╚██████╔╝███████╗   ║
-║   ╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚══════╝   ╚═╝       ╚═╝      ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ║
+║   ╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚═╝       ╚═╝       ╚═╝      ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ║
 ║                                                                                                   ║
 ║ ╭────────────────────────────────────────────────────────────────────────────────────────────╮   ║
 ║ │           TEXT CRYSTALLIZATION ENGINE - DIGITAL TYPOGRAPHY FORGE                           │   ║
@@ -37,6 +37,9 @@ from .core.exceptions import (
 from .core.figlet_font import FigletFont
 from .figlet import Figlet, print_figlet
 from .figlet_string import FigletString
+
+# Import render functionality
+from .render.figlet_engine import RenderEngine
 
 # Import version information first to avoid circular imports
 from .version import (
@@ -70,6 +73,8 @@ __all__ = [
     "ColorMode",
     "ColorScheme",
     "parse_color",
+    # Rendering
+    "RenderEngine",
     # Constants
     "DEFAULT_FONT",
     "COLOR_CODES",

@@ -18,7 +18,7 @@ from typing import Dict, List, Set
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
-class TestRunner:
+class FigletTestRunner:
     """Runner for the Figlet Forge test suite with comprehensive features."""
 
     def __init__(self, options: argparse.Namespace) -> None:
@@ -355,7 +355,7 @@ def main() -> int:
         Exit code (0 for success, non-zero for failure)
     """
     args = parse_args()
-    runner = TestRunner(args)
+    runner = FigletTestRunner(args)
 
     try:
         success = runner.run_test_suite()

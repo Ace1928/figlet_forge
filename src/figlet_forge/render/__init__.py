@@ -1,10 +1,12 @@
 """
-Figlet Forge Rendering System.
+Rendering module for Figlet Forge.
 
-This module provides the rendering engine and utilities for transforming
-text into ASCII art with various formatting options and effects.
+This module provides rendering functionality for converting ASCII art
+and handling different output formats.
 """
 
-from .figlet_engine import FigletRenderingEngine
+from .figlet_engine import RenderEngine
 
-__all__ = ["FigletRenderingEngine"]
+__all__ = [
+    "RenderEngine",
+]

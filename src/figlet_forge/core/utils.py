@@ -1,65 +1,37 @@
 """
-Utility functions for Figlet Forge.
+Core utilities for Figlet Forge.
 
-This module provides common utility functions shared across the codebase,
-following the Eidosian principle of "Structure as Control" to prevent errors
-through architecture.
+This module provides common utility functions used throughout the package,
+focusing on text processing, Unicode handling, and system operations.
 """
 
 import os
-import subprocess
+import re
 import sys
-from typing import Any, Dict, Optional, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-
-def unicode_string(input_str: str) -> str:
-    """
-    Ensure proper handling of Unicode strings across Python versions.
-
-    Args:
-        input_str: Input string to process
-
-    Returns:
-        Properly encoded Unicode string
-    """
-    return str(input_str)
-
-
-def safe_read_file(filepath: str) -> str:
-    """
-    Safely read a file with proper error handling.
-
-    Args:
-        filepath: Path to the file to read
-
-    Returns:
-        File contents as string
-
-    Raises:
-        FileNotFoundError: If the file does not exist
-        PermissionError: If the file cannot be read
-        UnicodeDecodeError: If the file cannot be decoded
-    """
-    try:
-        with open(filepath, encoding="utf-8", errors="replace") as f:
-            return f.read()
-    except UnicodeDecodeError:
-        # Try again with latin-1 which can decode any byte sequence
-        with open(filepath, encoding="latin-1") as f:
-            return f.read()
+# Unicode-aware string type for compatibility with both Python 2 and 3
+unicode_string = str
 
 
 def get_terminal_size() -> Tuple[int, int]:
     """
-    Get the current terminal size with fallbacks for various environments.
+    Get the terminal size in a cross-platform way.
 
     Returns:
-        Tuple of (width, height) in characters
+        Tuple of (width, height) representing terminal dimensions
     """
-    # Default fallback values
-    default_size = (80, 24)
+    # Try environment variables first (useful for redirected output)
+    try:
+        columns = int(os.environ.get("COLUMNS", 0))
+        lines = int(os.environ.get("LINES", 0))
+        if columns > 0 and lines > 0:
+            return columns, lines
+    except (ValueError, TypeError):
+        pass
 
-    # Try using shutil.get_terminal_size (Python 3.3+)
+    # Try using shutil.get_terminal_size() (Python 3.3+)
     try:
         import shutil
 
@@ -68,57 +40,180 @@ def get_terminal_size() -> Tuple[int, int]:
     except (ImportError, AttributeError):
         pass
 
-    # Try environment variables
+    # Try using stty
     try:
-        return (
-            int(os.environ.get("COLUMNS", default_size[0])),
-            int(os.environ.get("LINES", default_size[1])),
+        import subprocess
+
+        process = subprocess.Popen(
+            ["stty", "size"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-    except (ValueError, TypeError):
+        output, error = process.communicate()
+        if process.returncode == 0:
+            lines, columns = map(int, output.decode().split())
+            return columns, lines
+    except (ImportError, OSError, ValueError):
         pass
 
-    # Final fallback
-    return default_size
+    # Default fallback
+    return 80, 25
 
 
-def normalize_path(path: str) -> str:
+def is_redirected() -> bool:
     """
-    Normalize a file path for consistent handling across platforms.
-
-    Args:
-        path: File path to normalize
+    Check if stdout is being redirected.
 
     Returns:
-        Normalized path with consistent separators
+        True if stdout is redirected, False otherwise
     """
-    return os.path.normpath(path)
+    try:
+        return not sys.stdout.isatty()
+    except AttributeError:
+        return False
+
+
+def normalize_newlines(text: str) -> str:
+    """
+    Normalize different newline styles to the platform's default.
+
+    Args:
+        text: Input text with potentially mixed newline styles
+
+    Returns:
+        Text with normalized newlines
+    """
+    if not text:
+        return text
+
+    # First convert all newlines to \n
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n")
+
+    # Then convert to platform-specific newlines if needed
+    if os.linesep != "\n":
+        normalized = normalized.replace("\n", os.linesep)
+
+    return normalized
 
 
 def strip_ansi_codes(text: str) -> str:
     """
-    Remove ANSI escape codes from a string.
-
-    Useful for getting the plain text version of colored output.
+    Remove ANSI escape codes from text.
 
     Args:
-        text: String with possible ANSI codes
+        text: Text potentially containing ANSI escape codes
 
     Returns:
-        String with all ANSI codes removed
+        Text with ANSI codes removed
     """
-    import re
-
+    # Pattern to match ANSI escape codes
     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
     return ansi_escape.sub("", text)
 
 
-def merge_dicts(dict1: Dict[str, Any], dict2: Dict[str, Any]) -> Dict[str, Any]:
+def get_char_width(char: str) -> int:
     """
-    Merge two dictionaries with dict2 values taking precedence.
+    Get the display width of a character, accounting for wide characters.
 
     Args:
-        dict1: Base dictionary
-        dict2: Dictionary with override values
+        char: Character to measure
+
+    Returns:
+        Width of the character in terminal spaces (1 or 2)
+    """
+    try:
+        import unicodedata
+
+        # East Asian Full-width (F), Wide (W) or Ambiguous (A) characters
+        eaw = unicodedata.east_asian_width(char)
+
+        if eaw in ("F", "W"):
+            return 2
+
+        # Treat ambiguous characters as width 1 for now
+        return 1
+    except (ImportError, UnicodeError):
+        return 1
+
+
+def find_fonts(search_paths: Optional[List[Path]] = None) -> List[str]:
+    """
+    Find all available font files.
+
+    Args:
+        search_paths: Optional list of paths to search for fonts
+
+    Returns:
+        List of font names found
+    """
+    from ..version import FONT_EXTENSIONS, FONT_SEARCH_PATHS
+
+    if search_paths is None:
+        search_paths = FONT_SEARCH_PATHS
+
+    fonts = set()
+
+    for path in search_paths:
+        if not path.exists():
+            continue
+
+        try:
+            for ext in FONT_EXTENSIONS:
+                for font_file in path.glob(f"*{ext}"):
+                    fonts.add(font_file.stem)
+        except Exception:
+            # Skip paths with permission issues
+            continue
+
+    return sorted(list(fonts))
+
+
+def ensure_dir(directory: Union[str, Path]) -> Path:
+    """
+    Ensure a directory exists, creating it if necessary.
+
+    Args:
+        directory: Directory path to ensure
+
+    Returns:
+        Path object pointing to the directory
+    """
+    path = Path(directory)
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def is_interactive() -> bool:
+    """
+    Check if running in an interactive environment.
+
+    Returns:
+        True if in interactive environment, False otherwise
+    """
+    return sys.stdin.isatty() and sys.stdout.isatty()
+
+
+# Additional utility functions to support tests
+
+
+def normalize_path(path: str) -> str:
+    """
+    Normalize a path for the current platform.
+
+    Args:
+        path: Path string to normalize
+
+    Returns:
+        Normalized path string
+    """
+    return os.path.normpath(path)
+
+
+def merge_dicts(dict1: Dict[Any, Any], dict2: Dict[Any, Any]) -> Dict[Any, Any]:
+    """
+    Merge two dictionaries, with dict2 values taking precedence.
+
+    Args:
+        dict1: First dictionary
+        dict2: Second dictionary (values override dict1)
 
     Returns:
         Merged dictionary
@@ -128,90 +223,19 @@ def merge_dicts(dict1: Dict[str, Any], dict2: Dict[str, Any]) -> Dict[str, Any]:
     return result
 
 
-# Import needed for circular imports in a clean way
-def lazy_import() -> Tuple[str, str, Any]:
-    """Import Figlet-related components lazily to avoid circular imports.
-
-    Returns:
-        Tuple containing DEFAULT_FONT, RESET_COLORS, and Figlet class
+def safe_read_file(file_path: str) -> str:
     """
-    from ..figlet import Figlet
-    from ..version import DEFAULT_FONT, RESET_COLORS
-
-    return DEFAULT_FONT, RESET_COLORS, Figlet
-
-
-def figlet_format(text: str, font: Optional[str] = None, **kwargs: Any) -> str:
-    """Format text in figlet style.
+    Safely read a file with proper error handling.
 
     Args:
-        text: The text to render in figlet style
-        font: Name of the figlet font to use
-        **kwargs: Additional parameters passed to Figlet
+        file_path: Path to the file
 
     Returns:
-        FigletString containing the rendered ASCII art
+        File contents as string
+
+    Raises:
+        FileNotFoundError: If the file doesn't exist
+        IOError: If there's an error reading the file
     """
-    DEFAULT_FONT, _, Figlet = lazy_import()
-    fig = Figlet(font=font or DEFAULT_FONT, **kwargs)
-    return fig.renderText(text)
-
-
-def print_figlet(
-    text: str, font: Optional[str] = None, colors: str = ":", **kwargs: Any
-) -> None:
-    """Print figlet-formatted text to stdout with optional colors.
-
-    This is a convenience function that creates a Figlet instance,
-    renders the text, and prints it with specified colors.
-
-    Args:
-        text: The text to render in figlet style
-        font: Name of the figlet font to use
-        colors: Color specification string in "foreground:background" format
-        **kwargs: Additional parameters passed to Figlet
-    """
-    DEFAULT_FONT, RESET_COLORS, _ = lazy_import()
-
-    # Generate the figlet text
-    result = figlet_format(text, font=font, **kwargs)
-
-    # Apply colors if specified
-    ansi_colors = None
-    if colors and colors != ":":
-        try:
-            from ..color import parse_color
-
-            ansi_colors = parse_color(colors)
-            if ansi_colors:
-                sys.stdout.write(ansi_colors)
-        except ImportError:
-            # Graceful fallback if color module not available
-            pass
-
-    # Print the result
-    print(result)
-
-    # Reset colors if needed
-    if ansi_colors:
-        sys.stdout.write(RESET_COLORS)
-        sys.stdout.flush()
-
-
-# Function to check if system unicode command is available
-def has_unicode_command() -> bool:
-    """Check if the system unicode command is available.
-
-    Returns:
-        True if the unicode command is available, False otherwise
-    """
-    try:
-        result = subprocess.run(
-            ["unicode", "--version"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            timeout=1,
-        )
-        return result.returncode == 0
-    except (FileNotFoundError, subprocess.SubprocessError):
-        return False
+    with open(file_path) as f:
+        return f.read()

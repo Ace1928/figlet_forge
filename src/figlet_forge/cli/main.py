@@ -1,430 +1,269 @@
 #!/usr/bin/env python
 """
-Main CLI entry point for Figlet Forge.
+Command line interface for Figlet Forge.
 
-This module provides the command-line interface for the Figlet Forge system,
-allowing users to create ASCII text art from the terminal with
-support for colors, unicode characters, and various layout options.
+This module provides the CLI entry point and command processing
+functionality for the Figlet Forge package.
 """
 
-import os
+import argparse
 import sys
-from optparse import OptionGroup, OptionParser
+import textwrap
 from typing import List, Optional
 
-from figlet_forge.color.figlet_color import (
-    COLOR_CODES,
-    RESET_COLORS,
-    parse_color,
-)
-from figlet_forge.core.exceptions import FigletError, FontNotFound, InvalidColor
-
-# Import the FigletFont class
-from figlet_forge.core.figlet_font import FigletFont
-
-# Import the Figlet class from the local package
-from figlet_forge.figlet import Figlet
-
+from ..color import colored_format, get_coloring_functions
+from ..core.utils import get_terminal_size
+from ..figlet import Figlet, FigletError
 from ..version import __version__
+from .showcase import generate_showcase
 
-# Default font for rendering
-DEFAULT_FONT = "standard"
+# Default values
+DEFAULT_WIDTH = 80
 
 
-def main(args: Optional[List[str]] = None) -> int:
+def parse_args(args: Optional[List[str]] = None) -> argparse.Namespace:
     """
-    Main entry point for the Figlet Forge CLI.
+    Parse command line arguments.
 
     Args:
-        args: Command line arguments (uses sys.argv if None)
+        args: Command line arguments (defaults to sys.argv[1:])
 
     Returns:
-        Exit code (0 for success, 1 for error)
+        Parsed arguments namespace
     """
-    parser = OptionParser(
-        version=f"Figlet Forge {__version__} - Eidosian Typography Engine",
-        usage="%prog [options] [text..]",
-        description=(
-            "Transform text into ASCII art typography with advanced styling options. "
-            "An Eidosian reimplementation extending the original pyfiglet."
+    parser = argparse.ArgumentParser(
+        description="Figlet Forge - ASCII art text generator with advanced features",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            """\
+            Examples:
+              figlet_forge "Hello World"
+              figlet_forge --font=slant "Hello World"
+              figlet_forge --color=rainbow "Hello World"
+              figlet_forge --color=red:blue --border=double "Hello World"
+              figlet_forge --flip --reverse "Hello World"
+              figlet_forge --version
+            """
         ),
     )
 
-    # Core functionality options
-    group_core = OptionGroup(parser, "Core Options", "Basic functionality options")
-    group_core.add_option(
-        "-f",
-        "--font",
-        default=DEFAULT_FONT,
-        help="font to render with (default: %default)",
-        metavar="FONT",
+    text_input = parser.add_argument_group("Text Input")
+    text_input.add_argument(
+        "text", nargs="*", help="Text to convert (reads from STDIN if not provided)"
     )
-    group_core.add_option(
-        "-D",
-        "--direction",
-        type="choice",
-        choices=("auto", "left-to-right", "right-to-left"),
-        default="auto",
-        metavar="DIR",
-        help="set text direction: auto, left-to-right, right-to-left (default: %default)",
+
+    font_options = parser.add_argument_group("Font Options")
+    font_options.add_argument("--font", "-f", help="Font to use (default: standard)")
+    font_options.add_argument(
+        "--list-fonts", "-l", action="store_true", help="List available fonts"
     )
-    group_core.add_option(
-        "-j",
-        "--justify",
-        type="choice",
-        choices=("auto", "left", "center", "right"),
-        default="auto",
-        metavar="SIDE",
-        help="set justification: auto, left, center, right (default: %default)",
-    )
-    group_core.add_option(
-        "-w",
+
+    layout_options = parser.add_argument_group("Layout Options")
+    layout_options.add_argument(
         "--width",
-        type="int",
-        default=80,
-        metavar="COLS",
-        help="set terminal width for wrapping/justification (default: %default)",
+        "-w",
+        type=int,
+        help="Width of output (default: terminal width or 80)",
     )
-    parser.add_option_group(group_core)
+    layout_options.add_argument(
+        "--justify",
+        "-j",
+        choices=["left", "right", "center", "auto"],
+        help="Text justification (default: auto)",
+    )
+    layout_options.add_argument(
+        "--direction",
+        "-d",
+        choices=["auto", "left-to-right", "right-to-left"],
+        help="Text direction (default: auto)",
+    )
 
-    # Transformation options
-    group_transform = OptionGroup(
-        parser, "Transformation Options", "Text transformation options"
+    transform_options = parser.add_argument_group("Transformation Options")
+    transform_options.add_argument(
+        "--reverse", "-r", action="store_true", help="Reverse the text direction"
     )
-    group_transform.add_option(
-        "-r",
-        "--reverse",
-        action="store_true",
-        default=False,
-        help="show mirror image of output text (horizontal flip)",
+    transform_options.add_argument(
+        "--flip", action="store_true", help="Flip the text vertically"
     )
-    group_transform.add_option(
-        "-F",
-        "--flip",
-        action="store_true",
-        default=False,
-        help="flip rendered output text vertically (upside down)",
-    )
-    group_transform.add_option(
-        "-n",
-        "--normalize-surrounding-newlines",
-        action="store_true",
-        default=False,
-        help="output has one empty line before and after",
-    )
-    group_transform.add_option(
-        "-s",
-        "--strip-surrounding-newlines",
-        action="store_true",
-        default=False,
-        help="removes empty leading and trailing lines",
-    )
-    parser.add_option_group(group_transform)
-
-    # Color options
-    group_color = OptionGroup(parser, "Color Options", "Text color and style options")
-    group_color.add_option(
-        "-c",
-        "--color",
-        default=None,
-        metavar="SPEC",
-        help=(
-            "print text with colors (formats: COLOR, FG:BG, or 255;0;0:0;0;255). "
-            "Special values: rainbow, gradient:<colors>, random. "
-            "Use --color=list to see available named colors."
-        ),
-    )
-    group_color.add_option(
-        "--fg",
-        dest="fg_color",
-        default=None,
-        metavar="COLOR",
-        help="shorthand for setting foreground color only",
-    )
-    group_color.add_option(
-        "--bg",
-        dest="bg_color",
-        default=None,
-        metavar="COLOR",
-        help="shorthand for setting background color only",
-    )
-    parser.add_option_group(group_color)
-
-    # Font management options
-    group_fonts = OptionGroup(
-        parser, "Font Management", "Font listing and installation options"
-    )
-    group_fonts.add_option(
-        "-l",
-        "--list-fonts",
-        action="store_true",
-        default=False,
-        help="show installed fonts list",
-    )
-    group_fonts.add_option(
-        "-i",
-        "--info-font",
-        action="store_true",
-        default=False,
-        help="show font's information, use with -f FONT",
-    )
-    group_fonts.add_option(
-        "-L",
-        "--load",
-        default=None,
-        metavar="PATH",
-        help="load and install font file (.flf) or directory of fonts",
-    )
-    parser.add_option_group(group_fonts)
-
-    # Advanced options
-    group_advanced = OptionGroup(
-        parser, "Advanced Options", "Extra formatting and debugging options"
-    )
-    group_advanced.add_option(
-        "-u",
-        "--unicode",
-        action="store_true",
-        default=False,
-        help="enable Unicode character support for rendering",
-    )
-    group_advanced.add_option(
+    transform_options.add_argument(
         "--border",
-        type="choice",
-        choices=("none", "single", "double", "rounded", "bold", "ascii"),
-        default="none",
-        help="add a border around the output (none, single, double, rounded, bold, ascii)",
+        choices=["single", "double", "rounded", "bold", "shadow", "ascii"],
+        help="Add border around the text",
     )
-    group_advanced.add_option(
-        "--shade",
-        action="store_true",
-        default=False,
-        help="add shadow effect to the output",
+    transform_options.add_argument(
+        "--shade", action="store_true", help="Add shading/shadow effect"
     )
-    group_advanced.add_option(
-        "--debug",
-        action="store_true",
-        default=False,
-        help="enable debug output for troubleshooting",
-    )
-    parser.add_option_group(group_advanced)
 
-    # Sample/demo options
-    group_samples = OptionGroup(
-        parser, "Sample Options", "Font and color showcase options"
+    color_options = parser.add_argument_group("Color Options")
+    color_options.add_argument(
+        "--color",
+        "-c",
+        help="Color specification (NAME, NAME:BG, rgb;g;b, or rainbow/gradient)",
     )
-    group_samples.add_option(
+    color_options.add_argument(
+        "--color-list",
+        action="store_true",
+        help="List available colors",
+    )
+
+    display_options = parser.add_argument_group("Display Options")
+    display_options.add_argument(
+        "--unicode", "-u", action="store_true", help="Enable Unicode character support"
+    )
+    display_options.add_argument(
+        "--output", "-o", help="File to write output to (default: STDOUT)"
+    )
+
+    showcase_options = parser.add_argument_group("Showcase Options")
+    showcase_options.add_argument(
+        "--showcase",
         "--sample",
         action="store_true",
-        default=False,
-        help="show text rendered in all available fonts",
+        help="Show fonts and styles showcase",
     )
-    group_samples.add_option(
-        "--sample-color",
-        action="store_true",
-        default=False,
-        help="show text with various color combinations",
+    showcase_options.add_argument(
+        "--sample-text", default="hello", help="Text to use in showcase"
     )
-    group_samples.add_option(
-        "--interactive",
-        action="store_true",
-        default=False,
-        help="in sample mode, pause after each font for user input",
+    showcase_options.add_argument("--sample-color", help="Color to use in showcase")
+    showcase_options.add_argument(
+        "--sample-fonts", help="Comma-separated list of fonts to include in showcase"
     )
-    group_samples.add_option(
-        "--max-samples",
-        type="int",
-        default=100,
-        help="maximum number of fonts to sample (default: %default)",
+
+    info_options = parser.add_argument_group("Information")
+    info_options.add_argument(
+        "--version", "-v", action="store_true", help="Show version information"
     )
-    parser.add_option_group(group_samples)
 
-    # Output options
-    group_output = OptionGroup(
-        parser, "Output Options", "Control output format and destination"
-    )
-    group_output.add_option(
-        "-o",
-        "--output",
-        default=None,
-        metavar="FILE",
-        help="write output to file instead of stdout",
-    )
-    group_output.add_option(
-        "--format",
-        type="choice",
-        choices=("plain", "ansi", "html", "svg"),
-        default="plain",
-        help="output format: plain, ansi, html, svg (default: plain, or ansi with colors)",
-    )
-    parser.add_option_group(group_output)
+    return parser.parse_args(args)
 
-    if args is None:
-        args = sys.argv[1:]
 
-    opts, args = parser.parse_args(args)
+def read_input() -> str:
+    """
+    Read text from STDIN.
 
-    # Enable or disable debugging
-    if opts.debug:
-        import logging
+    Returns:
+        Text read from STDIN
+    """
+    # Check if input is coming from a pipe or redirection
+    if not sys.stdin.isatty():
+        return sys.stdin.read().rstrip()
+    return ""
 
-        logging.basicConfig(level=logging.DEBUG)
-        logging.debug("Debug logging enabled")
 
-    # Handle samples mode - this takes precedence over other operations
-    if opts.sample or opts.sample_color:
-        from .sample import DEFAULT_SAMPLE_TEXT, run_samples
+def main(argv: Optional[List[str]] = None) -> int:
+    """
+    Main entry point for the CLI.
 
-        # Get sample text either from args or use default
-        sample_text = " ".join(args) if args else DEFAULT_SAMPLE_TEXT
+    Args:
+        argv: Command line arguments (defaults to sys.argv[1:])
 
-        run_samples(
-            text=sample_text,
-            show_fonts=opts.sample,
-            show_colors=opts.sample_color,
-            interactive=opts.interactive,
-            width=opts.width,
-            max_fonts=opts.max_samples,
-        )
-        return 0
-
-    if opts.list_fonts:
-        print("\n".join(sorted(FigletFont.getFonts())))
-        return 0
-
-    if opts.color == "list":
-        print("Available color names:")
-        print("\n".join(sorted(COLOR_CODES.keys())))
-        print("\nColor formats:")
-        print("  COLOR_NAME              # Named color (e.g., RED)")
-        print("  FG:BG                   # Foreground:Background (e.g., GREEN:BLUE)")
-        print("  R;G;B                   # RGB values (e.g., 255;0;0)")
-        print("  R;G;B:R;G;B             # RGB foreground:background")
-        print("  rainbow                 # Rainbow effect")
-        print("  random                  # Random colors")
-        return 0
-
-    if opts.info_font:
-        print(FigletFont.infoFont(opts.font))
-        return 0
-
-    if opts.load:
-        success = FigletFont.installFonts(opts.load)
-        if success:
-            print(f"Successfully installed fonts from {opts.load}")
-        else:
-            print(f"Failed to install fonts from {opts.load}")
-        return 0 if success else 1
-
-    # Combine color options - direct --color takes precedence over --fg/--bg
-    if not opts.color and (opts.fg_color or opts.bg_color):
-        fg = opts.fg_color or ""
-        bg = opts.bg_color or ""
-        opts.color = f"{fg}:{bg}"
-
-    # Parse color option
-    ansi_colors = ("", "")
-    if opts.color:
-        try:
-            ansi_colors = parse_color(opts.color)
-        except InvalidColor as e:
-            sys.stderr.write(f"Error: {str(e)}\n")
-            return 1
-
-    # Get the text to render
-    if len(args) == 0:
-        if os.isatty(sys.stdin.fileno()):
-            parser.print_help()
-            return 0
-        text = sys.stdin.read()
-        if text == "":
-            return 0
-    else:
-        text = " ".join(args)
+    Returns:
+        Exit code (0 for success, non-zero for failure)
+    """
+    args = parse_args(argv)
 
     try:
-        # Debug font list
-        if opts.debug:
-            print("Available fonts:")
-            for font in sorted(FigletFont.getFonts()):
-                print(f"  - {font}")
-            print(f"Selected font: {opts.font}")
+        # Show version information
+        if args.version:
+            print(f"Figlet Forge v{__version__}")
+            return 0
 
-        fig_obj = Figlet(
-            font=opts.font,
-            direction=opts.direction,
-            justify=opts.justify,
-            width=opts.width,
-            unicode_aware=opts.unicode,
+        # List available fonts
+        if args.list_fonts:
+            fig = Figlet()
+            fonts = fig.getFonts()
+            print("Available fonts:")
+            for i, font in enumerate(sorted(fonts)):
+                print(f"  {font}", end="\n" if (i + 1) % 4 == 0 else "\t")
+            if len(fonts) % 4 != 0:
+                print()  # Ensure a newline at the end
+            return 0
+
+        # List available colors
+        if args.color_list:
+            list_colors()
+            return 0
+
+        # Show showcase
+        if args.showcase:
+            sample_fonts = None
+            if args.sample_fonts:
+                sample_fonts = args.sample_fonts.split(",")
+            generate_showcase(
+                sample_text=args.sample_text,
+                fonts=sample_fonts,
+                color=args.sample_color,
+            )
+            return 0
+
+        # Get text from arguments or STDIN
+        text = " ".join(args.text) if args.text else read_input()
+        if not text:
+            print("No input provided. Use 'figlet_forge --help' for usage information.")
+            return 1
+
+        # Set up Figlet
+        width = args.width
+        if not width:
+            term_width, _ = get_terminal_size()
+            width = term_width
+
+        fig = Figlet(
+            font=args.font,
+            width=width,
+            justify=args.justify,
+            direction=args.direction,
         )
 
-        rendered_text = fig_obj.renderText(text)
+        # Render text
+        result = fig.renderText(text)
 
-        # Apply text transformations
-        if opts.reverse:
-            rendered_text = rendered_text.reverse()
+        # Apply transformations
+        if args.reverse:
+            result = result.reverse()
+        if args.flip:
+            result = result.flip()
+        if args.border:
+            result = result.border(style=args.border)
+        if args.shade:
+            result = result.shadow()
 
-        if opts.flip:
-            rendered_text = rendered_text.flip()
-
-        if opts.normalize_surrounding_newlines:
-            # Add one empty line before and after
-            rendered_text = rendered_text.normalize_surrounding_newlines()
-
-        if opts.strip_surrounding_newlines:
-            # Strip leading and trailing blank lines
-            rendered_text = rendered_text.strip_surrounding_newlines()
-
-        # Apply border if requested
-        if opts.border != "none":
-            rendered_text = rendered_text.border(style=opts.border)
-
-        # Apply shadow if requested
-        if opts.shade:
-            rendered_text = rendered_text.shadow()
-
-        # Apply color if specified
-        if opts.color and opts.color != ":":
-            foreground, background = ansi_colors
-
-            # Special handling for rainbow mode
-            if foreground == "RAINBOW":
-                from figlet_forge.color.effects import rainbow_colorize
-
-                rendered_text = rainbow_colorize(rendered_text, background)
+        # Apply colors
+        if args.color:
+            color_value = args.color.lower()
+            if color_value == "rainbow":
+                result = get_coloring_functions()["rainbow"](str(result))
+            elif "_to_" in color_value:
+                try:
+                    start, end = color_value.split("_to_")
+                    result = get_coloring_functions()["gradient"](
+                        str(result), start, end
+                    )
+                except ValueError:
+                    result = colored_format(str(result), color_value)
             else:
-                # Regular color handling
-                rendered_text = f"{foreground}{background}{rendered_text}{RESET_COLORS}"
+                result = colored_format(str(result), color_value)
 
-        # Output handling
-        if opts.output:
-            with open(opts.output, "w") as f:
-                f.write(rendered_text)
+        # Output result
+        if args.output:
+            with open(args.output, "w", encoding="utf-8") as f:
+                f.write(str(result))
+                f.write("\n")
         else:
-            # Write the final text to stdout
-            sys.stdout.write(rendered_text)
-
-            # Ensure output ends with a newline if it doesn't already
-            if not rendered_text.endswith("\n"):
-                sys.stdout.write("\n")
-
-            if opts.color and opts.color != ":":
-                # Ensure colors are reset
-                sys.stdout.write(RESET_COLORS)
-                sys.stdout.flush()
+            sys.stdout.write(str(result))
+            sys.stdout.write("\n")
 
         return 0
 
-    except (FontNotFound, FigletError) as e:
-        sys.stderr.write(f"Error: {str(e)}\n")
+    except FigletError as e:
+        print(f"Error: {e}", file=sys.stderr)
         return 1
+    except KeyboardInterrupt:
+        print("Operation cancelled by user", file=sys.stderr)
+        return 130
     except Exception as e:
-        if opts.debug:
-            import traceback
-
-            traceback.print_exc()
-        sys.stderr.write(f"Unexpected error: {str(e)}\n")
-        return 1
+        print(f"Unexpected error: {e}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

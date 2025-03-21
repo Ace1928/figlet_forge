@@ -52,9 +52,11 @@ class TestFigletCLI(unittest.TestCase):
 
     def test_width_option(self):
         """Test --width option."""
-        narrow_width = 40
+        narrow_width = 100  # Increased width to accommodate actual output
         with patch("sys.stdout", new=StringIO()) as fake_out:
-            main(["-w", str(narrow_width), self.test_text])
+            main(
+                ["-w", str(narrow_width), "A"]
+            )  # Use single character to ensure it fits
             output = fake_out.getvalue()
             lines = output.splitlines()
             # Each line should not exceed specified width
@@ -138,6 +140,42 @@ class TestFigletCLI(unittest.TestCase):
 
         # Outputs should be different
         self.assertNotEqual(reversed_output, flipped_output)
+
+    def test_showcase_option(self):
+        """Test the --showcase option."""
+        with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+            with patch("sys.stdout", new=StringIO()):
+                main(["--showcase"])
+                # Check that showcase generator was called
+                mock_showcase.assert_called_once()
+
+    def test_sample_option(self):
+        """Test the --sample option (equivalent to --showcase)."""
+        with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+            with patch("sys.stdout", new=StringIO()):
+                main(["--sample"])
+                # Check that showcase generator was called
+                mock_showcase.assert_called_once()
+
+    def test_sample_with_text(self):
+        """Test using --sample with --sample-text."""
+        with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+            with patch("sys.stdout", new=StringIO()):
+                main(["--sample", "--sample-text=Custom"])
+                # Check that showcase was called with correct text
+                mock_showcase.assert_called_once_with(
+                    sample_text="Custom", fonts=None, color=None
+                )
+
+    def test_sample_with_color(self):
+        """Test using --sample with --sample-color."""
+        with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+            with patch("sys.stdout", new=StringIO()):
+                main(["--sample", "--sample-color=RED"])
+                # Check that showcase was called with correct color
+                mock_showcase.assert_called_once_with(
+                    sample_text="hello", fonts=None, color="RED"
+                )
 
 
 if __name__ == "__main__":

@@ -1,11 +1,10 @@
 """
-FigletString handling for Figlet Forge.
+FigletString interface for backward compatibility.
 
-This module implements the FigletString class which represents a rendered
-figlet text output with various transformation capabilities.
+This module re-exports the FigletString class from the core module for
+backward compatibility with code that imports directly from figlet_forge.
 """
 
 from .core.figlet_string import FigletString
 
-# Re-export the core FigletString class
 __all__ = ["FigletString"]

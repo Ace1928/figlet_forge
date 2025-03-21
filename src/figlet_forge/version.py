@@ -1,8 +1,8 @@
 """
-Version information and constants for Figlet Forge.
+Figlet Forge version information and constants.
 
-This module provides version information, default settings, and constants
-used throughout the Figlet Forge package.
+This module provides version information and shared constants for the
+Figlet Forge package.
 """
 
 import os
@@ -11,6 +11,7 @@ from pathlib import Path
 
 # Version information
 __version__ = "0.1.0"
+VERSION = __version__
 __package_name__ = "figlet-forge"
 __author__ = "Lloyd Handyside"
 __author_email__ = "ace1928@gmail.com"
@@ -18,29 +19,56 @@ __description__ = "Advanced FIGlet text rendering with color and Unicode support
 __github_url__ = "https://github.com/Ace1928/figlet_forge"
 __docs_url__ = "https://github.com/Ace1928/figlet_forge/docs"
 
-# Default settings
+# Font configuration
 DEFAULT_FONT = "standard"
 
-# Color constants
-RESET_COLORS = "\033[0m"  # ANSI code to reset colors
+# Color configurations
+RESET_COLORS = "\033[0m"  # Color reset code
+
+# Width defaults
+DEFAULT_WIDTH = 80
+
+# Figlet-specific constants
+SHARED_DIRECTORY = "/usr/share"  # Base directory for shared files
+
+# Color codes for ANSI terminal colors
 COLOR_CODES = {
-    "BLACK": "30",
-    "RED": "31",
-    "GREEN": "32",
-    "YELLOW": "33",
-    "BLUE": "34",
-    "MAGENTA": "35",
-    "CYAN": "36",
-    "WHITE": "37",
-    "LIGHT_GRAY": "37",
-    "DARK_GRAY": "90",
-    "LIGHT_RED": "91",
-    "LIGHT_GREEN": "92",
-    "LIGHT_YELLOW": "93",
-    "LIGHT_BLUE": "94",
-    "LIGHT_MAGENTA": "95",
-    "LIGHT_CYAN": "96",
-    "RESET": "0",
+    "BLACK": "\033[30m",
+    "RED": "\033[31m",
+    "GREEN": "\033[32m",
+    "YELLOW": "\033[33m",
+    "BLUE": "\033[34m",
+    "MAGENTA": "\033[35m",
+    "CYAN": "\033[36m",
+    "WHITE": "\033[37m",
+    "LIGHT_BLACK": "\033[90m",
+    "LIGHT_RED": "\033[91m",
+    "LIGHT_GREEN": "\033[92m",
+    "LIGHT_YELLOW": "\033[93m",
+    "LIGHT_BLUE": "\033[94m",
+    "LIGHT_MAGENTA": "\033[95m",
+    "LIGHT_CYAN": "\033[96m",
+    "LIGHT_WHITE": "\033[97m",
+}
+
+# Background color codes
+BG_COLOR_CODES = {
+    "BLACK": "\033[40m",
+    "RED": "\033[41m",
+    "GREEN": "\033[42m",
+    "YELLOW": "\033[43m",
+    "BLUE": "\033[44m",
+    "MAGENTA": "\033[45m",
+    "CYAN": "\033[46m",
+    "WHITE": "\033[47m",
+    "LIGHT_BLACK": "\033[100m",
+    "LIGHT_RED": "\033[101m",
+    "LIGHT_GREEN": "\033[102m",
+    "LIGHT_YELLOW": "\033[103m",
+    "LIGHT_BLUE": "\033[104m",
+    "LIGHT_MAGENTA": "\033[105m",
+    "LIGHT_CYAN": "\033[106m",
+    "LIGHT_WHITE": "\033[107m",
 }
 
 # Directory structure

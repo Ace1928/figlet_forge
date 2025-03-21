@@ -12,16 +12,22 @@ from typing import Any, Dict
 
 import pytest
 
+from figlet_forge import Figlet
 from figlet_forge.core.utils import (
-    figlet_format,
     get_terminal_size,
     merge_dicts,
     normalize_path,
-    print_figlet,
     safe_read_file,
     strip_ansi_codes,
     unicode_string,
 )
+
+
+# For backward compatibility testing
+def figlet_format(text, **kwargs):
+    """Compatibility wrapper for the original pyfiglet function."""
+    fig = Figlet(**kwargs)
+    return fig.renderText(text)
 
 
 class TestUtils(unittest.TestCase):
@@ -173,6 +179,8 @@ def test_print_figlet(capfd: Any) -> None:
     Args:
         capfd: Pytest's built-in fixture to capture stdout/stderr
     """
+    from figlet_forge import print_figlet
+
     # Test basic output
     print_figlet("X")
     out, _ = capfd.readouterr()
