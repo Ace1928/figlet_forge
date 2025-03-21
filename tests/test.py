@@ -311,3 +311,80 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+```
+#!/usr/bin/env python3
+"""
+Main test runner for Figlet Forge.
+
+This script discovers and runs all tests for the Figlet Forge package,
+providing a convenient way to verify functionality.
+"""
+
+import os
+import sys
+import unittest
+from pathlib import Path
+
+# Add the src directory to the path for running tests
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+
+def run_tests():
+    """Discover and run all tests."""
+    test_loader = unittest.defaultTestLoader
+    test_suite = test_loader.discover(
+        start_dir=Path(__file__).parent,
+        pattern="test_*.py",
+        top_level_dir=Path(__file__).parent.parent,
+    )
+
+    # Create a test runner
+    test_runner = unittest.TextTestRunner(verbosity=2)
+
+    # Run tests and return the result
+    result = test_runner.run(test_suite)
+    return 0 if result.wasSuccessful() else 1
+
+
+def show_test_summary():
+    """Show a summary of available tests."""
+    test_dir = Path(__file__).parent
+    test_files = list(test_dir.glob("**/test_*.py"))
+
+    print(f"Found {len(test_files)} test files:")
+    for test_file in sorted(test_files):
+        relative_path = test_file.relative_to(test_dir)
+        print(f"  - {relative_path}")
+
+        # Try to display test methods in the file
+        try:
+            module_name = f"tests.{relative_path.as_posix()[:-3].replace('/', '.')}"
+            test_module = __import__(module_name, fromlist=["*"])
+            test_classes = [
+                obj for name, obj in vars(test_module).items()
+                if isinstance(obj, type) and issubclass(obj, unittest.TestCase)
+                and obj is not unittest.TestCase
+            ]
+
+            for test_class in test_classes:
+                print(f"    • {test_class.__name__}")
+                for name in dir(test_class):
+                    if name.startswith("test_"):
+                        print(f"      - {name}")
+        except (ImportError, AttributeError):
+            print(f"    • (Error loading tests)")
+
+    print("\nRun a specific test with:")
+    print("  python -m unittest tests.unit.test_figlet.TestFigletCore.test_basic_initialization")
+    print("\nRun all tests with:")
+    print("  python tests/test.py")
+
+
+if __name__ == "__main__":
+    # Check for --list option
+    if "--list" in sys.argv:
+        show_test_summary()
+        sys.exit(0)
+
+    # Run all tests
+    sys.exit(run_tests())

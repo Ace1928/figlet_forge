@@ -155,7 +155,7 @@ class FigletBuilder:
             # If the character itself is wider than allowed width, that's an error
             if char_width > self.width:
                 raise CharNotPrinted(
-                    message=f"Character '{char}' is too wide for the specified width",
+                    f"Character '{char}' exceeds maximum width",
                     width=self.width,
                     char=char,
                     required_width=char_width,

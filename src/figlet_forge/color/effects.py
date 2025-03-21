@@ -12,7 +12,7 @@ Design follows Eidosian principles:
 """
 
 import random
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Tuple
 
 from ..core.exceptions import InvalidColor
 from .figlet_color import COLOR_CODES, generate_gradient, rgb_from_name
@@ -33,96 +33,112 @@ def rainbow_colorize(text: str, background: Optional[str] = None) -> str:
         return ""
 
     rainbow_colors = ["RED", "YELLOW", "GREEN", "CYAN", "BLUE", "MAGENTA"]
+    bg_code = ""
+
+    # Set background color if provided
+    if background:
+        try:
+            bg_value = COLOR_CODES.get(background.upper())
+            if bg_value:
+                bg_code = f"\033[{int(bg_value) + 10}m"
+        except (KeyError, ValueError):
+            # Silently fail on invalid background
+            pass
+
+    # Process the text line by line to maintain structure
     result = []
-    color_index = 0
+    lines = text.splitlines()
 
-    for char in text:
-        if char.isspace():
-            result.append(char)
-            continue
+    for line in lines:
+        colored_line = []
+        color_index = 0
 
-        color = rainbow_colors[color_index % len(rainbow_colors)]
-        color_index += 1
+        for char in line:
+            if char.strip():  # Only colorize non-whitespace
+                color = rainbow_colors[color_index % len(rainbow_colors)]
+                fg_code = f"\033[{COLOR_CODES[color]}m"
+                colored_line.append(f"{fg_code}{bg_code}{char}\033[0m")
+                color_index += 1
+            else:
+                # Preserve whitespace without color
+                colored_line.append(char)
 
-        # Apply foreground color
-        ansi_code = f"\033[{COLOR_CODES[color]}m"
+        result.append("".join(colored_line))
 
-        # Apply background if specified
-        if background and background in COLOR_CODES:
-            bg_code = COLOR_CODES[background] + 10  # Convert to background code
-            ansi_code += f"\033[{bg_code}m"
-
-        result.append(f"{ansi_code}{char}\033[0m")
-
-    return "".join(result)
+    return "\n".join(result)
 
 
 def gradient_colorize(
-    text: str,
-    start_color: Union[str, Tuple[int, int, int]],
-    end_color: Union[str, Tuple[int, int, int]],
-    background: Optional[str] = None,
+    text: str, start_color: str, end_color: str, background: Optional[str] = None
 ) -> str:
     """
-    Apply a color gradient across text.
+    Apply a smooth gradient between two colors across the text.
 
     Args:
         text: The text to colorize
-        start_color: Starting color (name or RGB tuple)
-        end_color: Ending color (name or RGB tuple)
+        start_color: Starting color name or RGB tuple
+        end_color: Ending color name or RGB tuple
         background: Optional background color name
 
     Returns:
         ANSI-colored text with gradient effect
+
+    Raises:
+        InvalidColor: If provided colors are invalid
     """
     if not text:
         return ""
 
-    # Convert color names to RGB if needed
-    if isinstance(start_color, str):
-        start_color = rgb_from_name(start_color)
-    if isinstance(end_color, str):
-        end_color = rgb_from_name(end_color)
+    lines = text.splitlines()
+    if not lines:
+        return ""
 
-    # Get visible (non-space) character count for gradient calculation
-    visible_chars = sum(1 for c in text if not c.isspace())
-    if visible_chars <= 1:
-        visible_chars = 2  # Ensure at least 2 steps for gradient
+    # Get RGB values from color names
+    try:
+        start_rgb = (
+            rgb_from_name(start_color) if isinstance(start_color, str) else start_color
+        )
+        end_rgb = rgb_from_name(end_color) if isinstance(end_color, str) else end_color
+    except InvalidColor as e:
+        # Graceful fallback with error message
+        return f"\033[31mError: {str(e)}\033[0m\n{text}"
+
+    # Set background if provided
+    bg_code = ""
+    if background:
+        try:
+            bg_value = COLOR_CODES.get(background.upper())
+            if bg_value:
+                bg_code = f"\033[{int(bg_value) + 10}m"
+        except (KeyError, ValueError):
+            pass
+
+    # Count visible characters for gradient calculation
+    visible_chars = sum(sum(1 for c in line if c.strip()) for line in lines)
+    if visible_chars < 2:
+        # Not enough visible characters for gradient
+        return text
 
     # Generate gradient colors
-    colors = generate_gradient(start_color, end_color, visible_chars)
+    gradient = generate_gradient(start_rgb, end_rgb, visible_chars)
 
     # Apply gradient to text
     result = []
-    color_index = 0
+    char_count = 0
 
-    for char in text:
-        if char.isspace():
-            result.append(char)
-            continue
-
-        r, g, b = colors[color_index]
-        color_index += 1
-
-        # Apply foreground color
-        ansi_code = f"\033[38;2;{r};{g};{b}m"
-
-        # Apply background if specified
-        if background:
-            if background in COLOR_CODES:
-                bg_code = COLOR_CODES[background] + 10
-                ansi_code += f"\033[{bg_code}m"
+    for line in lines:
+        colored_line = []
+        for char in line:
+            if char.strip():  # Only colorize non-whitespace
+                r, g, b = gradient[char_count]
+                fg_code = f"\033[38;2;{r};{g};{b}m"
+                colored_line.append(f"{fg_code}{bg_code}{char}\033[0m")
+                char_count += 1
             else:
-                # Try as RGB format
-                try:
-                    bg_r, bg_g, bg_b = rgb_from_name(background)
-                    ansi_code += f"\033[48;2;{bg_r};{bg_g};{bg_b}m"
-                except InvalidColor:
-                    pass  # Ignore invalid background color
+                colored_line.append(char)
+        result.append("".join(colored_line))
 
-        result.append(f"{ansi_code}{char}\033[0m")
-
-    return "".join(result)
+    return "\n".join(result)
 
 
 def highlight_pattern(
@@ -235,38 +251,113 @@ def animate_prepare(
     return f"{color_code}{anim_code}{text}\033[0m"
 
 
-def random_colorize(text: str, exclude_colors: Optional[List[str]] = None) -> str:
+def random_colorize(text: str, background: Optional[str] = None) -> str:
     """
-    Apply random colors to each character in the text.
+    Apply random coloration to each character in the text.
 
     Args:
         text: The text to colorize
-        exclude_colors: Colors to exclude from randomization
+        background: Optional background color name
 
     Returns:
-        Text with random colors applied
+        ANSI-colored text with random colors
     """
     if not text:
         return ""
 
-    # Prepare available colors
-    available_colors = list(COLOR_CODES.keys())
-    if exclude_colors:
-        available_colors = [c for c in available_colors if c not in exclude_colors]
+    color_names = [c for c in COLOR_CODES.keys() if c != "RESET"]
+    bg_code = ""
 
-    # Remove non-color entries
-    for special in ["RESET", "DEFAULT"]:
-        if special in available_colors:
-            available_colors.remove(special)
+    # Set background if provided
+    if background:
+        try:
+            bg_value = COLOR_CODES.get(background.upper())
+            if bg_value:
+                bg_code = f"\033[{int(bg_value) + 10}m"
+        except (KeyError, ValueError):
+            pass
 
-    # Apply random colors
+    # Process text line by line
     result = []
-    for char in text:
-        if char.isspace():
-            result.append(char)
-            continue
+    lines = text.splitlines()
 
-        color = random.choice(available_colors)
-        result.append(f"\033[{COLOR_CODES[color]}m{char}\033[0m")
+    for line in lines:
+        colored_line = []
+        for char in line:
+            if char.strip():  # Only colorize non-whitespace
+                color = random.choice(color_names)
+                fg_code = f"\033[{COLOR_CODES[color]}m"
+                colored_line.append(f"{fg_code}{bg_code}{char}\033[0m")
+            else:
+                colored_line.append(char)
 
-    return "".join(result)
+        result.append("".join(colored_line))
+
+    return "\n".join(result)
+
+
+def pulse_colorize(
+    text: str, color: str, intensity_range: Tuple[float, float] = (0.4, 1.0)
+) -> str:
+    """
+    Create a pulsing effect by varying the intensity of a color.
+
+    Args:
+        text: The text to colorize
+        color: Base color name
+        intensity_range: Tuple of (min, max) intensity values (0.0-1.0)
+
+    Returns:
+        ANSI-colored text with pulsing effect
+
+    Raises:
+        InvalidColor: If provided color is invalid
+    """
+    if not text:
+        return ""
+
+    # Get base RGB values
+    try:
+        base_rgb = rgb_from_name(color) if isinstance(color, str) else color
+    except InvalidColor as e:
+        return f"\033[31mError: {str(e)}\033[0m\n{text}"
+
+    r, g, b = base_rgb
+    min_intensity, max_intensity = intensity_range
+
+    # Count visible characters
+    lines = text.splitlines()
+    visible_chars = sum(sum(1 for c in line if c.strip()) for line in lines)
+
+    # Generate intensity values in a sine-wave pattern
+    intensities = []
+    import math
+
+    for i in range(visible_chars):
+        # Create sine wave between min and max intensity
+        ratio = (math.sin(i * 0.5) + 1) / 2  # Value between 0 and 1
+        intensity = min_intensity + ratio * (max_intensity - min_intensity)
+        intensities.append(intensity)
+
+    # Apply pulsing effect
+    result = []
+    char_count = 0
+
+    for line in lines:
+        colored_line = []
+        for char in line:
+            if char.strip():
+                intensity = intensities[char_count % len(intensities)]
+                # Scale RGB values by intensity
+                pulse_r = int(r * intensity)
+                pulse_g = int(g * intensity)
+                pulse_b = int(b * intensity)
+                fg_code = f"\033[38;2;{pulse_r};{pulse_g};{pulse_b}m"
+                colored_line.append(f"{fg_code}{char}\033[0m")
+                char_count += 1
+            else:
+                colored_line.append(char)
+
+        result.append("".join(colored_line))
+
+    return "\n".join(result)

@@ -26,19 +26,36 @@ MAX_FONTS_SAMPLE = 100
 # Cache directory for samples
 CACHE_DIR = Path.home() / ".figlet_forge" / "cache"
 
-# Font usage hints - short descriptions of when to use specific fonts
+# Font usage hints - standardized descriptions of when to use specific fonts
 FONT_USAGE_HINTS = {
+    # Display fonts
     "standard": "The classic figlet font, perfect for general use",
     "slant": "Adds a dynamic, forward-leaning style to text",
     "small": "Compact representation when space is limited",
     "big": "Bold, attention-grabbing display for headlines",
     "mini": "Ultra-compact font for constrained spaces",
     "block": "Solid, impactful lettering for emphasis",
-    "script": "Elegant, cursive-like appearance for a sophisticated look",
-    "bubble": "Rounded, friendly letters for approachable messaging",
-    "digital": "Technical, LCD-like display for a technological feel",
+    "banner": "Wide, horizontally stretched text for announcements",
     "shadow": "Dimensional text with drop shadows for depth",
+    # Script-like fonts
+    "script": "Elegant, cursive-like appearance for a sophisticated look",
+    "smscript": "Small script font for elegant, compact text",
+    "smslant": "Small slanted font for compact, dynamic text",
+    # Technical fonts
+    "digital": "Technical, LCD-like display for a technological feel",
+    "binary": "Text styled like binary code for tech themes",
+    "hex": "Hexadecimal-inspired font for programming contexts",
+    # Stylized fonts
+    "bubble": "Rounded, friendly letters for approachable messaging",
+    "lean": "Condensed characters for fitting more text horizontally",
+    "ivrit": "Right-to-left oriented font for Hebrew-style text",
+    "smshadow": "Small shadow font for subtle dimensional effects",
+    "term": "Terminal-friendly font that works well in console outputs",
+    # Add more fonts as needed
 }
+
+# Default hint for fonts without specific usage hints
+DEFAULT_FONT_HINT = "A specialized decorative font for creative typography"
 
 # Color combination descriptions with standardized snake_case naming
 COLOR_COMBINATIONS = [
@@ -162,27 +179,56 @@ def generate_font_samples(
 
     # Get available fonts
     available_fonts = fonts or FigletFont.getFonts()
+    total_fonts = len(available_fonts)
+
+    # Print summary header
+    print(f"\n\033[1;36m{'═' * 80}\033[0m")
+    print(
+        f"\033[1;36m FONT SHOWCASE: Preparing to render text in {min(total_fonts, max_fonts)} fonts\033[0m"
+    )
+    print(f"\033[1;36m{'═' * 80}\033[0m\n")
 
     # Limit number of fonts to prevent overwhelming output
     if len(available_fonts) > max_fonts:
+        print(
+            f"\033[1;33mLimiting to {max_fonts} fonts out of {total_fonts} available\033[0m"
+        )
         available_fonts = available_fonts[:max_fonts]
 
     samples = {}
     failed_fonts = []
+    processed = 0
 
     # Generate samples for each font
     for font_name in available_fonts:
+        processed += 1
+        progress = processed * 100 // len(available_fonts)
+        print(
+            f"\r\033[KProcessing fonts: {progress}% complete ({processed}/{len(available_fonts)}) - Current: {font_name}",
+            end="",
+        )
+
         try:
             fig = Figlet(font=font_name, width=width)
             rendered = fig.renderText(text)
             samples[font_name] = rendered
-            # Print success message for debugging
-            print(f"✓ Loaded font: {font_name}")
+            # Print clear success indicator
+            print(f"\r\033[K\033[32m✓\033[0m Font loaded successfully: {font_name}")
         except Exception as e:
             # Record fonts that failed to load
             failed_fonts.append(font_name)
-            print(f"✗ Failed to load font: {font_name} - {str(e)}")
+            error_msg = str(e)
+            # Truncate very long error messages
+            if len(error_msg) > 80:
+                error_msg = error_msg[:77] + "..."
+            print(
+                f"\r\033[K\033[31m✗\033[0m Failed to load font: {font_name} - {error_msg}"
+            )
             continue
+
+    print(
+        f"\r\033[K\033[1;32mCompleted font processing: {len(samples)} succeeded, {len(failed_fonts)} failed\033[0m"
+    )
 
     # Cache the results
     save_to_cache("font", text, {"samples": samples, "failed_fonts": failed_fonts})
@@ -213,21 +259,33 @@ def generate_color_matrix(
         return cache["samples"]
 
     # Generate colored samples
+    print(f"\n\033[1;36m{'═' * 80}\033[0m")
+    print(
+        f"\033[1;36m COLOR SHOWCASE: Generating color combinations for '{text}' using '{font}' font\033[0m"
+    )
+    print(f"\033[1;36m{'═' * 80}\033[0m\n")
+
     try:
+        # Try to load the specified font
+        print(f"\033[KAttempting to load font: {font}...")
         fig = Figlet(font=font, width=width)
+        print(f"\033[K\033[32m✓\033[0m Font '{font}' loaded successfully")
         plain_text = fig.renderText(text)
 
         samples = {}
 
         # Add rainbow sample
+        print("\033[KGenerating rainbow color effect...")
         samples["rainbow"] = rainbow_colorize(plain_text)
 
         # Add gradient samples with standardized names
-        for start_color, end_color, name, _ in COLOR_COMBINATIONS:
+        for start_color, end_color, name, desc in COLOR_COMBINATIONS:
+            print(f"\033[KGenerating gradient: {name} ({desc})...")
             samples[name] = gradient_colorize(plain_text, start_color, end_color)
 
         # Add foreground/background combinations
-        for fg, bg, name, _ in FG_BG_PAIRS:
+        for fg, bg, name, desc in FG_BG_PAIRS:
+            print(f"\033[KGenerating color style: {name} ({desc})...")
             # Create ANSI color codes
             fg_code = f"\033[{COLOR_CODES[fg]}m" if fg in COLOR_CODES else ""
             bg_code = f"\033[{int(COLOR_CODES[bg]) + 10}m" if bg in COLOR_CODES else ""
@@ -236,22 +294,52 @@ def generate_color_matrix(
             # Apply colors
             samples[name] = f"{fg_code}{bg_code}{plain_text}{reset_code}"
 
+        print(
+            f"\033[K\033[1;32mCompleted color matrix with {len(samples)} styles\033[0m"
+        )
+
         # Cache the results
         save_to_cache("color", cache_key, {"samples": samples})
 
         return samples
 
     except Exception as e:
-        print(f"Error generating color matrix: {str(e)}")
-        # Return an empty dict if we can't generate colors
-        return {}
+        print(f"\033[K\033[1;31mError generating color matrix: {str(e)}\033[0m")
+        print(
+            "\033[K\033[1;33mFalling back to 'standard' font for color samples\033[0m"
+        )
+
+        try:
+            # Fallback to standard font
+            fallback_font = "standard"
+            fig = Figlet(font=fallback_font, width=width)
+            plain_text = fig.renderText(text)
+
+            # Create minimal samples with fallback
+            samples = {
+                "rainbow": rainbow_colorize(plain_text),
+                "red_to_blue": gradient_colorize(plain_text, "RED", "BLUE"),
+                "green_on_black": f"\033[{COLOR_CODES['GREEN']}m\033[{int(COLOR_CODES['BLACK']) + 10}m{plain_text}\033[0m",
+            }
+
+            print(
+                "\033[K\033[1;32mCreated limited color samples with fallback font\033[0m"
+            )
+            return samples
+
+        except Exception:
+            print(
+                "\033[K\033[1;31mCritical error: Could not generate any color samples\033[0m"
+            )
+            # Return an empty dict if we can't generate colors
+            return {}
 
 
 def display_font_sample(
     font_name: str, sample: str, with_color: bool = False, interactive: bool = False
 ) -> None:
     """
-    Display a font sample with formatting.
+    Display a font sample with standardized formatting.
 
     Args:
         font_name: Name of the font
@@ -269,13 +357,13 @@ def display_font_sample(
     header_end = "\033[0m" if with_color else ""
 
     # Get usage hint if available
-    usage_hint = FONT_USAGE_HINTS.get(font_name, "")
+    usage_hint = FONT_USAGE_HINTS.get(font_name.lower(), DEFAULT_FONT_HINT)
 
     # Print the header with standardized format
     print(f"\n{header_start}{'═' * header_width}")
     print(f" FONT: {font_name}")
-    if usage_hint:
-        print(f" INFO: {usage_hint}")
+    print(f" INFO: {usage_hint}")
+    print(f" USAGE: figlet_forge --font={font_name} 'Your Text'")
     print(f"{'═' * header_width}{header_end}\n")
 
     # Print the sample
@@ -283,14 +371,14 @@ def display_font_sample(
 
     # In interactive mode, wait for user to press Enter
     if interactive:
-        input("Press Enter for next font...")
+        input("\n\033[1;33mPress Enter for next font...\033[0m")
 
 
 def display_color_sample(
     color_name: str, sample: str, description: str = "", interactive: bool = False
 ) -> None:
     """
-    Display a color sample with formatting.
+    Display a color sample with standardized formatting.
 
     Args:
         color_name: Description of the color
@@ -299,81 +387,196 @@ def display_color_sample(
         interactive: Whether to wait for user input between samples
     """
     # Print header and sample with standardized format
-    print(f"\n\033[1;35m{'═' * 40}")  # Magenta header
+    header_width = min(80, max(len(color_name) + 20, len(description) + 10))
+
+    print(f"\n\033[1;35m{'═' * header_width}")  # Magenta header
     print(f" COLOR STYLE: {color_name}")
     if description:
         print(f" INFO: {description}")
-    print(f"{'═' * 40}\033[0m\n")
+    print(f" USAGE: figlet_forge --color={color_name} 'Your Text'")
+    print(f"{'═' * header_width}\033[0m\n")
 
     # Print the colored sample
     print(sample)
 
     # In interactive mode, wait for user to press Enter
     if interactive:
-        input("Press Enter for next color style...")
+        input("\n\033[1;33mPress Enter for next color style...\033[0m")
 
 
 def display_usage_guide(
     font_samples: Dict[str, str], color_samples: Dict[str, str]
 ) -> None:
     """
-    Display a usage guide for the user.
+    Display a usage guide for the user with clear next steps.
 
     Args:
         font_samples: Dictionary of font samples that were displayed
         color_samples: Dictionary of color samples that were displayed
     """
-    print("\n\033[1;32m═══ FIGLET FORGE USAGE GUIDE ═══\033[0m")
-    print("Use the following commands to create your own ASCII art:")
+    print("\n\033[1;32m" + "═" * 80 + "\033[0m")
+    print("\033[1;32m ⚛️ FIGLET FORGE USAGE GUIDE - THE EIDOSIAN WAY ⚡\033[0m")
+    print("\033[1;32m" + "═" * 80 + "\033[0m")
+
+    # Summary section
+    print("\n\033[1;36m📊 SHOWCASE SUMMARY:\033[0m")
+    print(
+        f"  • Displayed {len(font_samples)} fonts and {len(color_samples)} color styles"
+    )
+    print("  • Use the commands below to apply these styles to your own text")
 
     # Basic usage
-    print("\n\033[1mBasic Usage:\033[0m")
-    print("  figlet_forge 'Your Text Here'")
+    print("\n\033[1m📋 CORE USAGE PATTERNS:\033[0m")
+    print("  figlet_forge 'Your Text Here'              # Simple rendering")
+    print("  cat file.txt | figlet_forge                # Pipe text from stdin")
+    print("  figlet_forge 'Line 1\\nLine 2'              # Multi-line text")
 
-    # Font examples
+    # Font examples with clear formatting
     if font_samples:
-        print("\n\033[1mUsing Specific Fonts:\033[0m")
-        print("  figlet_forge --font=<font_name> 'Your Text'")
-        print("\n\033[1mAvailable Fonts:\033[0m")
-        # Show a sample of fonts (up to 10)
-        font_list = list(font_samples.keys())[:10]
-        for font in font_list:
-            print(f"  figlet_forge --font={font} 'Your Text'")
-        if len(font_samples) > 10:
-            print(f"  ... and {len(font_samples) - 10} more fonts")
+        print("\n\033[1m🔤 FONT METAMORPHOSIS:\033[0m")
+        print("  Command format: figlet_forge --font=<font_name> 'Your Text'")
+        print("\n  Available fonts you've just seen:")
 
-    # Color examples
+        # Group fonts by category for better organization
+        categories = {
+            "Display Fonts": ["big", "block", "banner", "shadow", "standard"],
+            "Script Fonts": ["script", "slant", "smscript"],
+            "Compact Fonts": ["small", "mini", "smslant"],
+            "Technical Fonts": ["digital", "binary", "hex"],
+            "Stylized Fonts": ["bubble", "ivrit", "lean"],
+        }
+
+        # Organize fonts by category
+        categorized_fonts = {}
+        uncategorized = []
+
+        for font in font_samples.keys():
+            found = False
+            for category, font_list in categories.items():
+                if font.lower() in font_list:
+                    if category not in categorized_fonts:
+                        categorized_fonts[category] = []
+                    categorized_fonts[category].append(font)
+                    found = True
+                    break
+
+            if not found:
+                uncategorized.append(font)
+
+        # Display fonts by category
+        for category, fonts in categorized_fonts.items():
+            if fonts:
+                print(f"\n    {category}:")
+                for font in fonts:
+                    hint = FONT_USAGE_HINTS.get(font.lower(), DEFAULT_FONT_HINT)
+                    # Truncate hint if it's too long
+                    if len(hint) > 50:
+                        hint = hint[:47] + "..."
+                    print(f"      figlet_forge --font={font} 'Your Text'  # {hint}")
+
+        # Display uncategorized fonts (limited to 10 for brevity)
+        if uncategorized:
+            print("\n    Other Fonts:")
+            for font in uncategorized[:10]:
+                print(f"      figlet_forge --font={font} 'Your Text'")
+
+            if len(uncategorized) > 10:
+                print(f"      ... and {len(uncategorized) - 10} more fonts")
+
+    # Color examples with clear formatting
     if color_samples:
-        print("\n\033[1mAdding Colors:\033[0m")
-        print("  figlet_forge --color=<color_style> 'Your Text'")
-        print("\n\033[1mAvailable Color Styles:\033[0m")
-        # Show color styles
-        for color in list(color_samples.keys())[:5]:
-            print(f"  figlet_forge --color={color} 'Your Text'")
-        if len(color_samples) > 5:
-            print(f"  ... and {len(color_samples) - 5} more color styles")
+        print("\n\033[1m🎨 CHROMATIC TRANSFORMATIONS:\033[0m")
+        print("  Command format: figlet_forge --color=<color_style> 'Your Text'")
+        print("\n  Available color styles you've just seen:")
 
-    # Combined example
-    if font_samples and color_samples:
-        font = next(iter(font_samples))
-        color = next(iter(color_samples))
-        print("\n\033[1mCombining Fonts and Colors:\033[0m")
-        print(f"  figlet_forge --font={font} --color={color} 'Your Text'")
+        # Rainbow style first (if available)
+        if "rainbow" in color_samples:
+            print(
+                "    • figlet_forge --color=rainbow 'Your Text'  # Dynamic multi-color effect"
+            )
 
-    # Additional options
-    print("\n\033[1mOther Useful Options:\033[0m")
-    print("  --width=<columns>     # Set output width")
-    print("  --reverse             # Mirror text horizontally")
-    print("  --flip                # Flip text vertically")
-    print("  --unicode             # Enable Unicode character support")
+        # Show gradient styles
+        gradients_shown = False
+        for _, _, name, desc in COLOR_COMBINATIONS:
+            if name in color_samples:
+                if not gradients_shown:
+                    print("\n    Gradient styles:")
+                    gradients_shown = True
+                print(f"    • figlet_forge --color={name} 'Your Text'  # {desc}")
 
-    # Help and examples
-    print("\n\033[1mFor More Help:\033[0m")
-    print("  figlet_forge --help   # Show all available options")
-    print("  figlet_forge --sample # View more font examples")
+        # Show foreground/background styles
+        fg_bg_shown = False
+        for _, _, name, desc in FG_BG_PAIRS:
+            if name in color_samples:
+                if not fg_bg_shown:
+                    print("\n    Foreground/background styles:")
+                    fg_bg_shown = True
+                print(f"    • figlet_forge --color={name} 'Your Text'  # {desc}")
 
-    # Version info
-    print(f"\n\033[1mFiglet Forge v{__version__}\033[0m - Eidosian Typography Engine")
+        print("\n    Custom RGB colors:")
+        print(
+            "    • figlet_forge --color=255;0;0 'Your Text'      # RGB red foreground"
+        )
+        print(
+            "    • figlet_forge --color=:0;0;255 'Your Text'     # RGB blue background"
+        )
+        print("    • figlet_forge --color=255;0;0:0;0;255 'Your Text'  # RGB fg:bg")
+
+    # Layout & alignment options
+    print("\n\033[1m📐 SPATIAL ARCHITECTURE:\033[0m")
+    print("  --width=120                  # Set output width")
+    print("  --justify=center             # Center-align text (left, right, center)")
+    print("  --direction=right-to-left    # Change text direction")
+
+    # Text transformations
+    print("\n\033[1m🔄 RECURSIVE TRANSFORMATIONS:\033[0m")
+    print("  --reverse                    # Mirror text horizontally")
+    print("  --flip                       # Flip text vertically (upside-down)")
+    print(
+        "  --border=single              # Add border (single, double, rounded, bold, ascii)"
+    )
+    print("  --shade                      # Add shadow effect")
+
+    # Combined examples
+    print("\n\033[1m✨ SYNTHESIS PATTERNS:\033[0m")
+    print("  # Rainbow colored slant font with border")
+    print("  figlet_forge --font=slant --color=rainbow --border=single 'Synthesis'")
+    print("\n  # Center-justified big green text on black background")
+    print("  figlet_forge --font=big --color=green_on_black --justify=center 'Elegant'")
+    print("\n  # Flipped and reversed text with shadow effect")
+    print("  figlet_forge --font=standard --reverse --flip --shade 'Recursion'")
+
+    # "What's Next" section - clear guidance for users
+    print("\n\033[1;33m" + "═" * 80 + "\033[0m")
+    print("\033[1;33m 🚀 WHAT'S NEXT?\033[0m")
+    print("\033[1;33m" + "═" * 80 + "\033[0m")
+
+    # Provide clear next steps
+    print("\n1. Try creating your own ASCII art:")
+    print("   figlet_forge --font=slant --color=rainbow 'Your Custom Text'")
+
+    print("\n2. Explore more options:")
+    print("   figlet_forge --help")
+
+    print("\n3. Save your creations:")
+    print(
+        "   figlet_forge --font=big --color=blue_on_black 'Hello' --output=banner.txt"
+    )
+
+    print("\n4. Combine with other tools:")
+    print("   figlet_forge 'Welcome' | lolcat")  # lolcat is a common colorization tool
+    print("   echo 'Hello' | figlet_forge --font=mini --border=rounded")
+
+    print("\n5. Create a login banner:")
+    print(
+        "   figlet_forge --font=big --color=green_on_black --border=double 'SYSTEM LOGIN' > /etc/motd"
+    )
+
+    # Version info with Eidosian flair
+    print(
+        f"\n\033[1m⚛️ Figlet Forge v{__version__} ⚡\033[0m - Eidosian Typography Engine"
+    )
+    print('\033[36m  "Form follows function; elegance emerges from precision."\033[0m')
 
 
 def run_samples(
@@ -385,7 +588,7 @@ def run_samples(
     max_fonts: int = MAX_FONTS_SAMPLE,
 ) -> None:
     """
-    Run the sample display process.
+    Run the sample display process with improved organization and feedback.
 
     Args:
         text: Text to render in samples
@@ -395,9 +598,26 @@ def run_samples(
         width: Width for rendering
         max_fonts: Maximum number of fonts to sample
     """
-    # Show welcome message
-    print("\n\033[1;32m═══ FIGLET FORGE SAMPLE SHOWCASE ═══\033[0m")
-    print("Exploring the typographic possibilities with Figlet Forge...")
+    # Show welcome message with high-level summary
+    print("\n\033[1;32m" + "═" * 80 + "\033[0m")
+    print("\033[1;32m FIGLET FORGE SAMPLE SHOWCASE\033[0m")
+    print("\033[1;32m" + "═" * 80 + "\033[0m")
+
+    # Show a summary of what will be displayed
+    showcase_types = []
+    if show_fonts:
+        showcase_types.append("fonts")
+    if show_colors:
+        showcase_types.append("color styles")
+
+    print("\n\033[1;36mSHOWCASE SUMMARY\033[0m")
+    print(f"• Exploring {' and '.join(showcase_types)} with Figlet Forge")
+    print(f"• Sample text: \"{text.replace('\\n', ' ')}\"")
+    print(f"• Width: {width} columns")
+    if show_fonts:
+        print(f"• Maximum fonts: {max_fonts}")
+    print(f"• Interactive mode: {'On' if interactive else 'Off'}")
+    print("\nScroll down to see samples and usage instructions...\n")
 
     font_samples = {}
     color_samples = {}
@@ -415,14 +635,17 @@ def run_samples(
         total_fonts = len(font_samples)
         total_failed = len(failed_fonts)
 
-        print("\n\033[1;32m=== FONT SHOWCASE SUMMARY ===\033[0m")
-        print(f"✓ Successfully loaded {total_fonts} fonts")
+        print("\n\033[1;32m" + "═" * 80 + "\033[0m")
+        print("\033[1;32m FONT SHOWCASE SUMMARY\033[0m")
+        print("\033[1;32m" + "═" * 80 + "\033[0m")
+        print(f"\n✅ Successfully loaded {total_fonts} fonts")
         if failed_fonts:
-            print(
-                f"✗ Failed to load {total_failed} fonts: {', '.join(failed_fonts[:5])}"
-            )
-            if len(failed_fonts) > 5:
-                print(f"  ... and {len(failed_fonts) - 5} more")
+            print(f"⚠️ {total_failed} fonts failed to load")
+            if total_failed > 0 and total_failed <= 5:
+                print(f"   Failed fonts: {', '.join(failed_fonts)}")
+            elif total_failed > 5:
+                print(f"   Failed fonts include: {', '.join(failed_fonts[:5])}...")
+                print(f"   ... and {total_failed - 5} more")
 
         # Show each font sample
         for font_name, sample in font_samples.items():
@@ -445,7 +668,18 @@ def run_samples(
                         width=width,
                     )
 
-                    for idx, (_, _, name, description) in enumerate(COLOR_COMBINATIONS):
+                    # First show rainbow effect if available
+                    if "rainbow" in color_matrix:
+                        displayed_colors.append("rainbow")
+                        display_color_sample(
+                            f"{font_name} - rainbow",
+                            color_matrix["rainbow"],
+                            description="Dynamic multi-color effect",
+                            interactive=False,
+                        )
+
+                    # Then show gradient effects
+                    for _, _, name, description in COLOR_COMBINATIONS:
                         if name in color_matrix:
                             displayed_colors.append(name)
                             display_color_sample(
@@ -455,7 +689,8 @@ def run_samples(
                                 interactive=False,
                             )
 
-                    for idx, (_, _, name, description) in enumerate(FG_BG_PAIRS):
+                    # Finally show foreground/background combinations
+                    for _, _, name, description in FG_BG_PAIRS:
                         if name in color_matrix:
                             displayed_colors.append(name)
                             display_color_sample(
@@ -467,10 +702,15 @@ def run_samples(
 
                     # Wait after all color variants are shown for this font
                     if interactive:
-                        input("\nPress Enter for next font with colors...")
+                        input(
+                            "\n\033[1;33mPress Enter for next font with colors...\033[0m"
+                        )
                 except Exception as e:
                     print(
                         f"\n\033[1;31mError generating color samples for {font_name}: {e}\033[0m"
+                    )
+                    print(
+                        "\033[1;33mSkipping color samples for this font and continuing...\033[0m"
                     )
             else:
                 # Just show the font without colors
@@ -481,6 +721,12 @@ def run_samples(
     elif show_colors:
         # If only showing colors without font samples, use standard font
         try:
+            print("\n\033[1;35m" + "═" * 80 + "\033[0m")
+            print(
+                "\033[1;35m COLOR SHOWCASE: Exploring color styles with 'standard' font\033[0m"
+            )
+            print("\033[1;35m" + "═" * 80 + "\033[0m\n")
+
             color_samples = generate_color_matrix(
                 text=text, font="standard", width=width
             )
@@ -496,6 +742,7 @@ def run_samples(
                 )
 
             # Gradients
+            print("\n\033[1m GRADIENT COLOR STYLES\033[0m")
             for start_color, end_color, name, description in COLOR_COMBINATIONS:
                 if name in color_samples:
                     displayed_colors.append(name)
@@ -507,6 +754,7 @@ def run_samples(
                     )
 
             # FG/BG combinations
+            print("\n\033[1m FOREGROUND/BACKGROUND COLOR STYLES\033[0m")
             for fg, bg, name, description in FG_BG_PAIRS:
                 if name in color_samples:
                     displayed_colors.append(name)
@@ -518,9 +766,12 @@ def run_samples(
                     )
         except Exception as e:
             print(f"\n\033[1;31mError generating color samples: {e}\033[0m")
+            print("\033[1;33mAttempting to continue with limited functionality\033[0m")
 
     # Show closing message
-    print("\n\033[1;32m═══ END OF SHOWCASE ═══\033[0m")
+    print("\n\033[1;32m" + "═" * 80 + "\033[0m")
+    print("\033[1;32m END OF SHOWCASE\033[0m")
+    print("\033[1;32m" + "═" * 80 + "\033[0m")
 
     # Display usage guide
     display_usage_guide(font_samples, color_samples)

@@ -1,9 +1,10 @@
 """
-Test package for figlet_forge.
+Test suite for Figlet Forge.
 
-This package contains unit, integration, and compatibility tests for the
-figlet_forge system, ensuring full functionality and backward compatibility
-with pyfiglet.
+This package contains tests for the Figlet Forge library, organized into:
+- Unit tests: Testing individual components in isolation
+- Integration tests: Testing components working together
+- Compatibility tests: Testing backward compatibility with pyfiglet
 """
 
 import os

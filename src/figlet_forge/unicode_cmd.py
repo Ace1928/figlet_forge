@@ -263,3 +263,197 @@ def is_available() -> bool:
         True if the unicode command is available, False otherwise
     """
     return shutil.which("unicode") is not None
+
+
+"""
+Unicode command handling for Figlet Forge.
+
+This module provides utilities for processing Unicode characters in
+figlet text, ensuring proper rendering across different terminals
+and environments.
+"""
+
+import sys
+import unicodedata
+from typing import List, Optional, Union
+
+
+def is_unicode_supported() -> bool:
+    """
+    Check if the current environment supports Unicode output.
+
+    Returns:
+        True if Unicode is likely supported, False otherwise
+    """
+    try:
+        # Check if stdout can handle Unicode
+        encoding = sys.stdout.encoding or "ascii"
+        return encoding.lower() in ("utf-8", "utf8", "utf_8")
+    except (AttributeError, Exception):
+        # Default to assume support on modern systems
+        return True
+
+
+def normalize_unicode(text: str) -> str:
+    """
+    Normalize Unicode text for consistent rendering.
+
+    Args:
+        text: Input text to normalize
+
+    Returns:
+        Normalized text using NFC form
+    """
+    try:
+        return unicodedata.normalize("NFC", text)
+    except Exception:
+        # Return original if normalization fails
+        return text
+
+
+def get_char_width(char: str) -> int:
+    """
+    Get the display width of a Unicode character.
+
+    Handles full-width and combining characters appropriately.
+
+    Args:
+        char: Unicode character to measure
+
+    Returns:
+        Display width in terminal columns (0, 1, or 2)
+    """
+    if not char or char == "":
+        return 0
+
+    # Handle common control and zero-width characters
+    if ord(char) < 32 or unicodedata.category(char).startswith("C"):
+        return 0
+
+    # Handle combining characters
+    if unicodedata.combining(char) > 0:
+        return 0
+
+    # Handle wide characters (CJK, etc.)
+    try:
+        east_asian_width = unicodedata.east_asian_width(char)
+        if east_asian_width in ("F", "W"):  # Full-width or Wide
+            return 2
+    except Exception:
+        pass
+
+    # Default to standard width
+    return 1
+
+
+def measure_string_width(text: str) -> int:
+    """
+    Measure the display width of a string with Unicode awareness.
+
+    Args:
+        text: String to measure
+
+    Returns:
+        Display width in terminal columns
+    """
+    if not text:
+        return 0
+
+    width = 0
+    for char in text:
+        width += get_char_width(char)
+    return width
+
+
+def truncate_to_width(text: str, width: int) -> str:
+    """
+    Truncate string to specified display width with Unicode awareness.
+
+    Args:
+        text: String to truncate
+        width: Maximum display width
+
+    Returns:
+        Truncated string fitting within width
+    """
+    if not text:
+        return ""
+
+    result = []
+    current_width = 0
+
+    for char in text:
+        char_width = get_char_width(char)
+        if current_width + char_width > width:
+            break
+        result.append(char)
+        current_width += char_width
+
+    return "".join(result)
+
+
+def is_full_width_char(char: str) -> bool:
+    """
+    Check if a character is full-width (takes 2 columns in terminal).
+
+    Args:
+        char: Character to check
+
+    Returns:
+        True if character is full-width, False otherwise
+    """
+    if not char or len(char) != 1:
+        return False
+
+    try:
+        east_asian_width = unicodedata.east_asian_width(char)
+        return east_asian_width in ("F", "W")  # Full-width or Wide
+    except Exception:
+        return False
+
+
+def get_unicode_block(char: str) -> str:
+    """
+    Determine which Unicode block a character belongs to.
+
+    Args:
+        char: Unicode character to check
+
+    Returns:
+        Name of the Unicode block, or "Unknown" if not determinable
+    """
+    if not char or len(char) != 1:
+        return "Unknown"
+
+    code = ord(char)
+    # Define common Unicode blocks
+    blocks = [
+        (0x0000, 0x007F, "Basic Latin"),
+        (0x0080, 0x00FF, "Latin-1 Supplement"),
+        (0x0100, 0x017F, "Latin Extended-A"),
+        (0x0180, 0x024F, "Latin Extended-B"),
+        (0x0250, 0x02AF, "IPA Extensions"),
+        (0x02B0, 0x02FF, "Spacing Modifier Letters"),
+        (0x0300, 0x036F, "Combining Diacritical Marks"),
+        (0x0370, 0x03FF, "Greek and Coptic"),
+        (0x0400, 0x04FF, "Cyrillic"),
+        (0x0500, 0x052F, "Cyrillic Supplement"),
+        (0x0530, 0x058F, "Armenian"),
+        (0x0590, 0x05FF, "Hebrew"),
+        (0x0600, 0x06FF, "Arabic"),
+        (0x0700, 0x074F, "Syriac"),
+        (0x0750, 0x077F, "Arabic Supplement"),
+        # CJK blocks
+        (0x3000, 0x303F, "CJK Symbols and Punctuation"),
+        (0x3040, 0x309F, "Hiragana"),
+        (0x30A0, 0x30FF, "Katakana"),
+        (0x3100, 0x312F, "Bopomofo"),
+        (0x4E00, 0x9FFF, "CJK Unified Ideographs"),
+        (0xFF00, 0xFFEF, "Halfwidth and Fullwidth Forms"),
+    ]
+
+    for start, end, name in blocks:
+        if start <= code <= end:
+            return name
+
+    return "Other"

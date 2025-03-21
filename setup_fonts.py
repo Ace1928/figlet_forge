@@ -35,57 +35,80 @@ def main():
     # Add any OS-specific directories
     if sys.platform == "win32":
         # Windows font locations
-        system_font_dirs.append(
-            Path(os.environ.get("APPDATA", "")) / "figlet" / "fonts"
+        system_font_dirs.extend(
+            [
+                Path(os.environ.get("APPDATA", "")) / "figlet" / "fonts",
+                Path(os.environ.get("PROGRAMFILES", "")) / "Figlet" / "fonts",
+            ]
         )
     elif sys.platform == "darwin":
         # macOS font locations
-        system_font_dirs.append(Path("/opt/local/share/figlet"))
-        system_font_dirs.append(
-            Path.home() / "Library" / "Application Support" / "figlet"
+        system_font_dirs.extend(
+            [
+                Path("/opt/local/share/figlet"),
+                Path.home() / "Library" / "figlet" / "fonts",
+            ]
+        )
+    else:
+        # Additional Linux/Unix font locations
+        system_font_dirs.extend(
+            [
+                Path("/opt/figlet/fonts"),
+                Path.home() / ".figlet" / "fonts",
+            ]
         )
 
-    # Track fonts we've copied
-    copied_fonts = []
-    missing_fonts = list(ESSENTIAL_FONTS)  # Start with all fonts as missing
+    fonts_found = False
+    fonts_missing = []
 
-    # Look in system directories
-    for directory in system_font_dirs:
-        if not directory.exists():
-            print(f"Directory doesn't exist: {directory}")
+    # Copy essential fonts from system directories
+    print("\n✨ Checking for essential fonts...\n")
+    for font_name in ESSENTIAL_FONTS:
+        font_filename = f"{font_name}.flf"
+        dest_file = fonts_dir / font_filename
+
+        # Check if font already exists in destination
+        if dest_file.exists():
+            print(f"✓ Font already installed: {font_name}")
+            fonts_found = True
             continue
 
-        print(f"Checking font directory: {directory}")
-        for font_name in list(
-            missing_fonts
-        ):  # Use a copy to safely modify during iteration
-            font_path = directory / f"{font_name}.flf"
-            if font_path.exists():
+        # Try to find font in system directories
+        font_found = False
+        for sys_dir in system_font_dirs:
+            src_file = sys_dir / font_filename
+            if src_file.exists():
                 try:
-                    dest_path = fonts_dir / f"{font_name}.flf"
-                    shutil.copy2(font_path, dest_path)
-                    print(f"Copied font: {font_name}")
-                    copied_fonts.append(font_name)
-                    missing_fonts.remove(font_name)
+                    shutil.copy2(src_file, dest_file)
+                    print(f"✓ Installed font: {font_name} from {sys_dir}")
+                    font_found = True
+                    fonts_found = True
+                    break
                 except Exception as e:
-                    print(f"Error copying {font_name}: {e}")
+                    print(f"! Error copying {font_name}: {e}")
 
-    # Report results
-    if not copied_fonts:
-        print("\nNo fonts could be found or copied.")
-        print("Please run get_figlet_fonts.py to download the required fonts.")
-        return 1
+        if not font_found:
+            fonts_missing.append(font_name)
 
-    print(
-        f"\n✅ Successfully copied {len(copied_fonts)} fonts: {', '.join(copied_fonts)}"
-    )
+    # Summary
+    print("\n--- Font Setup Summary ---")
+    if fonts_found:
+        print("✓ Successfully set up one or more fonts.")
+    else:
+        print("⚠ No fonts were found or installed.")
 
-    if missing_fonts:
-        print(f"\n⚠️ Some essential fonts are still missing: {', '.join(missing_fonts)}")
-        print("Please run get_figlet_fonts.py to download all required fonts.")
-        return 1
+    if fonts_missing:
+        print(f"\n⚠ Missing essential fonts: {', '.join(fonts_missing)}")
+        print("  You may need to install figlet fonts on your system.")
+        print("  Figlet Forge will use fallback rendering for missing fonts.\n")
 
-    return 0
+        # Suggestion for getting fonts
+        print(
+            "Suggestion: Run the get_figlet_fonts.py script to download standard fonts:"
+        )
+        print("  python get_figlet_fonts.py\n")
+
+    return 0 if fonts_found else 1
 
 
 if __name__ == "__main__":

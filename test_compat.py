@@ -1,172 +1,137 @@
 #!/usr/bin/env python3
 
 """
-Test script to verify figlet_forge compatibility with pyfiglet.
+Tests compatibility between Figlet Forge and the original pyfiglet.
 
-This script ensures that the figlet_forge compatibility layer works
-identically to the original pyfiglet package by running equivalent
-operations using both APIs.
+This standalone script verifies that Figlet Forge maintains
+compatibility with the pyfiglet API and rendering behavior.
 """
 
+import sys
+import unittest
+from pathlib import Path
 
-try:
-    import pyfiglet
-
-    PYFIGLET_AVAILABLE = True
-except ImportError:
-    print("Original pyfiglet not available for comparison.")
-    PYFIGLET_AVAILABLE = False
-
-# Import figlet_forge compatibility layer
-import figlet_forge.compat as ff_compat
-
-# Colors for output formatting
-GREEN = "\033[32m"
-RED = "\033[31m"
-RESET = "\033[0m"
-BOLD = "\033[1m"
+# Ensure we can import from the package
+sys.path.insert(0, str(Path(__file__).parent))
 
 
-def test_api_signatures() -> None:
-    """Test that all expected API functions and classes are available."""
-    print(f"\n{BOLD}Testing API signatures...{RESET}")
+class TestFigletCompatibility(unittest.TestCase):
+    """Test suite for compatibility between Figlet Forge and pyfiglet."""
 
-    expected_attributes = [
-        "Figlet",
-        "FigletFont",
-        "FigletString",
-        "figlet_format",
-        "print_figlet",
-    ]
+    def setUp(self):
+        """Set up test environment."""
+        # Try to import pyfiglet and figlet_forge
+        try:
+            import pyfiglet
 
-    missing = []
-    for attr in expected_attributes:
-        if not hasattr(ff_compat, attr):
-            missing.append(attr)
-            print(f"{RED}Missing: {attr}{RESET}")
-        else:
-            print(f"{GREEN}Found: {attr}{RESET}")
+            self.pyfiglet_available = True
+        except ImportError:
+            print("Warning: Original pyfiglet not available, skipping comparison tests")
+            self.pyfiglet_available = False
 
-    if missing:
-        print(f"\n{RED}Missing {len(missing)} API elements!{RESET}")
-    else:
-        print(f"\n{GREEN}All expected API elements are present.{RESET}")
+        try:
+            import figlet_forge
+            from figlet_forge.compat import Figlet as CompatFiglet
 
+            self.figlet_forge_available = True
+        except ImportError:
+            print("Error: Figlet Forge not available!")
+            self.figlet_forge_available = False
 
-def test_figlet_format() -> None:
-    """Test the figlet_format function for compatibility."""
-    print(f"\n{BOLD}Testing figlet_format function...{RESET}")
+    def test_api_compatibility(self):
+        """Test that the API interfaces are compatible."""
+        if not self.figlet_forge_available:
+            self.skipTest("Figlet Forge not available")
 
-    test_text = "Hello"
-    test_fonts = ["small", "standard", "slant"]
+        # Import from the compat module
+        from figlet_forge.compat import (
+            DEFAULT_FONT,
+            Figlet,
+            figlet_format,
+            renderText,
+        )
 
-    for font in test_fonts:
-        print(f"\nRendering with font '{font}':")
+        # Test the module attributes
+        self.assertIsInstance(DEFAULT_FONT, str)
+        self.assertEqual(figlet_format.__name__, "figlet_format")
+        self.assertEqual(renderText.__name__, "figlet_format")  # Should be aliased
 
-        # Render with figlet_forge compatibility layer
-        ff_result = ff_compat.figlet_format(test_text, font=font)
-        print(f"{GREEN}figlet_forge result:{RESET}")
-        print(ff_result)
+        # Test Figlet class
+        fig = Figlet()
+        self.assertEqual(fig.__class__.__name__, "Figlet")
 
-        # Compare with pyfiglet if available
-        if PYFIGLET_AVAILABLE:
-            py_result = pyfiglet.figlet_format(test_text, font=font)
-            print(f"{GREEN}pyfiglet result:{RESET}")
-            print(py_result)
+        # Test figlet_format function
+        result = figlet_format("Test")
+        self.assertIsInstance(result, str)
+        self.assertIn("Test", result.replace(" ", "").replace("\n", ""))
 
-            if ff_result == py_result:
-                print(f"{GREEN}✓ Match{RESET}")
-            else:
-                print(f"{RED}✗ Mismatch{RESET}")
+    def test_rendering_equivalence(self):
+        """Test that rendering produces equivalent results."""
+        if not self.pyfiglet_available or not self.figlet_forge_available:
+            self.skipTest("Both pyfiglet and Figlet Forge required for comparison")
 
+        import pyfiglet
 
-def test_figlet_class() -> None:
-    """Test the Figlet class for compatibility."""
-    print(f"\n{BOLD}Testing Figlet class...{RESET}")
+        from figlet_forge.compat import figlet_format as forge_format
 
-    # Test font listing
-    ff_fonts = set(ff_compat.Figlet().getFonts())
-    print(f"figlet_forge fonts available: {len(ff_fonts)}")
+        test_strings = ["Hello", "World", "Testing", "123"]
+        fonts = ["standard", "slant", "small"]
 
-    if PYFIGLET_AVAILABLE:
-        py_fonts = set(pyfiglet.Figlet().getFonts())
-        print(f"pyfiglet fonts available: {len(py_fonts)}")
+        for text in test_strings:
+            for font in fonts:
+                try:
+                    pyfiglet_result = pyfiglet.figlet_format(text, font=font)
+                    forge_result = forge_format(text, font=font)
 
-        common_fonts = ff_fonts.intersection(py_fonts)
-        print(f"Common fonts: {len(common_fonts)}")
+                    # Clean up strings for comparison
+                    py_clean = self._normalize_output(pyfiglet_result)
+                    forge_clean = self._normalize_output(forge_result)
 
-        if common_fonts:
-            # Test rendering with a common font
-            test_font = next(iter(common_fonts))
-            test_text = "Test"
+                    # Compare the results
+                    self.assertEqual(
+                        py_clean,
+                        forge_clean,
+                        f"Output differs for font '{font}' and text '{text}'",
+                    )
+                except Exception as e:
+                    self.fail(f"Error comparing outputs for font '{font}': {e}")
 
-            ff_fig = ff_compat.Figlet(font=test_font)
-            py_fig = pyfiglet.Figlet(font=test_font)
+    def test_font_loading(self):
+        """Test that font loading behaves consistently."""
+        if not self.figlet_forge_available:
+            self.skipTest("Figlet Forge not available")
 
-            ff_result = ff_fig.renderText(test_text)
-            py_result = py_fig.renderText(test_text)
+        from figlet_forge.compat import Figlet
 
-            if ff_result == py_result:
-                print(f"{GREEN}✓ Figlet class rendering matches{RESET}")
-            else:
-                print(f"{RED}✗ Figlet class rendering differs{RESET}")
+        # Test that default font loads
+        fig = Figlet()
+        self.assertIsNotNone(fig)
 
+        # Test loading specific font
+        fig = Figlet(font="slant")
+        self.assertEqual(fig.font, "slant")
 
-def test_figletstring_operations() -> None:
-    """Test FigletString operations for compatibility."""
-    print(f"\n{BOLD}Testing FigletString operations...{RESET}")
+        # Test getFonts method
+        fonts = fig.getFonts()
+        self.assertIsInstance(fonts, list)
+        self.assertTrue(len(fonts) > 0)
+        self.assertIn("standard", fonts)
 
-    ff_fig = ff_compat.Figlet(font="small")
-    ff_text = ff_fig.renderText("Flip")
-
-    # Test flip operation
-    print("Original:")
-    print(ff_text)
-
-    print("\nFlipped:")
-    flipped = ff_text.flip()
-    print(flipped)
-
-    print("\nReversed:")
-    reversed_text = ff_text.reverse()
-    print(reversed_text)
-
-    if PYFIGLET_AVAILABLE:
-        py_fig = pyfiglet.Figlet(font="small")
-        py_text = py_fig.renderText("Flip")
-
-        py_flipped = py_text.flip()
-        py_reversed = py_text.reverse()
-
-        if ff_text.flip() == py_flipped:
-            print(f"{GREEN}✓ Flip operation matches{RESET}")
-        else:
-            print(f"{RED}✗ Flip operation differs{RESET}")
-
-        if ff_text.reverse() == py_reversed:
-            print(f"{GREEN}✓ Reverse operation matches{RESET}")
-        else:
-            print(f"{RED}✗ Reverse operation differs{RESET}")
+    def _normalize_output(self, text: str) -> str:
+        """Normalize output for comparison by removing whitespace variations."""
+        # Remove trailing whitespace from each line
+        lines = [line.rstrip() for line in text.splitlines()]
+        # Remove empty lines from beginning and end
+        while lines and not lines[0].strip():
+            lines.pop(0)
+        while lines and not lines[-1].strip():
+            lines.pop(-1)
+        return "\n".join(lines)
 
 
-def main() -> None:
-    """Run all compatibility tests."""
-    print(f"{BOLD}FIGLET FORGE COMPATIBILITY TEST{RESET}")
-    print("-" * 40)
-
-    if PYFIGLET_AVAILABLE:
-        print(f"Testing against pyfiglet version: {pyfiglet.__version__}")
-
-    print(f"figlet_forge.compat version: {ff_compat.__version__}")
-    print("-" * 40)
-
-    # Run tests
-    test_api_signatures()
-    test_figlet_format()
-    test_figlet_class()
-    test_figletstring_operations()
-
-    print(f"\n{BOLD}Compatibility test complete!{RESET}")
+def main():
+    """Run the compatibility tests."""
+    unittest.main()
 
 
 if __name__ == "__main__":

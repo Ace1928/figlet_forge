@@ -1,36 +1,14 @@
-#!/bin/sh
-# ╔═══════════════════════════════════════════════════════════════════════════╗
-# ║ Figlet Forge - Eidosian Typography Engine                                 ║
-# ╚═══════════════════════════════════════════════════════════════════════════╝
-# An Eidosian reimplementation extending the original pyfiglet package
-# (itself a pure Python port of FIGlet) with:
-# - Full colorized ANSI code support for vibrant text art
-# - Unicode character rendering with comprehensive mapping
-# - Expanded font ecosystem with careful attention to licensing
-# - Intelligent fallbacks for complete backward compatibility
-# - Significant performance optimizations without sacrificing quality
-# - Enhanced maintainability through modern Python practices
-# - Comprehensive documentation for all use cases
-#
-# A central component of the Eidosian Forge ecosystem.
+#!/usr/bin/env python3
+"""
+Command-line interface for Figlet Forge.
 
-# Set path to ensure module visibility
-script_dir="$(dirname "$0")"
-cd "$script_dir"/.. || {
-  echo "Error: Cannot change to parent directory of $script_dir" >&2
-  exit 1
-}
+This script provides the main entry point for using Figlet Forge from the
+command line, offering text-to-ASCII art conversion with advanced options.
+"""
 
-# Capture current directory and export PYTHONPATH separately
-current_dir="$(pwd)"
-export PYTHONPATH="$current_dir${PYTHONPATH:+:$PYTHONPATH}"
+import sys
 
-# Check if module is available
-if ! python3 -c "import figlet_forge.cli" 2>/dev/null; then
-  # Try to use installed package if module not found in development environment
-  exec python3 -m figlet_forge.cli "$@"
-  exit $?
-fi
+from figlet_forge.cli.main import main
 
-# Execute the forge with explicit module reference
-python3 -m figlet_forge.cli "$@"
+if __name__ == "__main__":
+    sys.exit(main())

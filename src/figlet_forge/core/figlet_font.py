@@ -1,3 +1,4 @@
+import os
 import re
 import shutil
 import zipfile
@@ -86,7 +87,7 @@ class FigletFont:
             font_path = Path(self.font)
             self.searched_paths.append(font_path)
             if not font_path.exists():
-                print(f"Font not found at path: {font_path}")
+                print(f"⚠ Font not found at path: {font_path}")
                 raise FontNotFound(
                     f"Font file not found: {font_path}",
                     font_name=str(self.font),
@@ -96,7 +97,8 @@ class FigletFont:
             with open(font_path, "rb") as f:
                 self.data = f.read().decode("latin-1", "replace")
             self.base_dir = font_path.parent
-            print(f"✓ Loaded font from path: {font_path}")
+            self.font_name = font_path.stem
+            print(f"✓ Loaded font '{self.font_name}' from path: {font_path}")
             return
 
         # Check package resources
@@ -112,7 +114,8 @@ class FigletFont:
                     "figlet_forge.fonts", f"{self.font}.flf"
                 ) as f:
                     self.data = f.read()
-                    print(f"✓ Loaded font from package: {self.font}")
+                    self.font_name = str(self.font)
+                    print(f"✓ Loaded font '{self.font_name}' from package resources")
                     return
             except (ModuleNotFoundError, FileNotFoundError):
                 pass
@@ -142,7 +145,8 @@ class FigletFont:
                 with open(font_path, "rb") as f:
                     self.data = f.read().decode("latin-1", "replace")
                 self.base_dir = directory
-                print(f"✓ Loaded font from directory: {font_path}")
+                self.font_name = str(self.font)
+                print(f"✓ Loaded font '{self.font_name}' from directory: {directory}")
                 return
 
             # Then look for case-insensitive match
@@ -152,7 +156,10 @@ class FigletFont:
                     with open(file, "rb") as f:
                         self.data = f.read().decode("latin-1", "replace")
                     self.base_dir = directory
-                    print(f"✓ Loaded font with case-insensitive match: {file}")
+                    self.font_name = file.stem
+                    print(
+                        f"✓ Loaded font '{self.font_name}' with case-insensitive match: {file}"
+                    )
                     return
 
         # As a fallback, check if we're running from a zipped package
@@ -175,8 +182,9 @@ class FigletFont:
                                                 self.data = f.read().decode(
                                                     "latin-1", "replace"
                                                 )
+                                                self.font_name = str(self.font)
                                                 print(
-                                                    f"✓ Loaded font from zip: {font_path}"
+                                                    f"✓ Loaded font '{self.font_name}' from zip package"
                                                 )
                                                 return
                                 except Exception:
@@ -185,15 +193,20 @@ class FigletFont:
             pass
 
         # Font not found - provide detailed error with fallback suggestion
-        print(f"✗ Font '{self.font}' not found - using fallback")
+        print(f"⚠ Font '{self.font}' not found - attempting fallback to 'standard'")
 
         # Try to use 'standard' as fallback for better user experience
-        if self.font.lower() != "standard":
+        if str(self.font).lower() != "standard":
             try:
+                original_font = self.font
                 self.font = "standard"
-                return self.loadFont()
-            except Exception:
-                pass
+                self.loadFont()
+                print(
+                    f"✓ Successfully loaded fallback font 'standard' instead of '{original_font}'"
+                )
+                return
+            except Exception as e:
+                print(f"⚠ Fallback to 'standard' font also failed: {e}")
 
         # If we get here, even fallback failed
         raise FontNotFound(

@@ -441,8 +441,7 @@ class FigletString(str):
         # Split the string into lines, reverse each line and translate special chars
         result: List[str] = []
         for line in self.splitlines():
-            line = line.translate(self.__reverse_map__)
-            result.append(line[::-1])
+            result.append(line[::-1].translate(self.__reverse_map__))
 
         # Join lines back together and return as a new FigletString
         return cast(T, self.__class__("\n".join(result)))
@@ -469,8 +468,7 @@ class FigletString(str):
         # Process the text line by line and apply character translations
         result: List[str] = []
         for line in self.splitlines():
-            line = line.translate(self.__flip_map__)
-            result.append(line)
+            result.append(line.translate(self.__flip_map__))
 
         # Reverse the order of lines and return as a new FigletString
         return cast(T, self.__class__("\n".join(result[::-1])))
@@ -535,7 +533,7 @@ class FigletString(str):
               abc
         """
         if width is not None and width < 0:
-            raise ValueError("Width cannot be negative")
+            raise ValueError("Width must be non-negative")
 
         if not self:
             return cast(T, self.__class__(""))
@@ -546,18 +544,16 @@ class FigletString(str):
             return cast(T, self.__class__(""))
 
         if width is None:
-            # Find the maximum line width
+            # Calculate the maximum line width
             max_width = max(len(line) for line in lines)
-
-            # Center each line
-            result: List[str] = []
-            for line in lines:
-                padding = (max_width - len(line)) // 2
-                result.append(" " * padding + line)
-
-            return cast(T, self.__class__("\n".join(result)))
+            # Center each line relative to the maximum width
+            centered_lines = [line.center(max_width) for line in lines]
         else:
-            return cast(T, self.__class__(super().center(width)))
+            # Center each line to the specified width
+            centered_lines = [line.center(width) for line in lines]
+
+        # Join the centered lines and return as a new FigletString
+        return cast(T, self.__class__("\n".join(centered_lines)))
 
     def ljust(self, width: int) -> T:
         """
@@ -687,44 +683,34 @@ class FigletString(str):
             if y_pos < 0 or y_pos >= result_len:
                 continue
 
-            # For large negative x_offsets, we can skip a lot of work
-            if x_offset <= -len(other_line):
-                continue
-
+            # Get the base line
             base_line = result_lines[y_pos]
 
-            # Optimize for the case where we're appending to the end
-            if x_offset >= len(base_line):
-                if transparent:
-                    # For transparent overlay, we need to preserve spaces
-                    padding_needed = x_offset - len(base_line)
-                    new_segment = " " * padding_needed + other_line
-                    result_lines[y_pos] = base_line + new_segment
-                else:
-                    # For non-transparent overlay, we can just append with padding
-                    padding_needed = x_offset - len(base_line)
-                    result_lines[y_pos] = base_line + " " * padding_needed + other_line
-                continue
-
-            # Handle regular overlay case
+            # Create new line with overlay
             new_line = list(base_line)
-            effective_x_start = max(0, x_offset)
 
-            # Calculate how much of other_line is visible
-            other_visible_part = other_line[max(0, -x_offset) :]
+            # Extend the line if needed
+            if x_offset + len(other_line) > len(new_line):
+                new_line.extend([" "] * (x_offset + len(other_line) - len(new_line)))
 
-            # Ensure the line is wide enough
-            if len(new_line) < effective_x_start + len(other_visible_part):
-                new_line.extend(
-                    " " * (effective_x_start + len(other_visible_part) - len(new_line))
-                )
+            # Apply overlay characters
+            for j, char in enumerate(other_line):
+                x_pos = j + x_offset
 
-            # Apply the overlay
-            for j, char in enumerate(other_visible_part):
-                x_pos = effective_x_start + j
+                # Skip if outside horizontal bounds
+                if x_pos < 0:
+                    continue
+
+                # Apply character if not transparent or not a space
                 if not transparent or char != " ":
-                    new_line[x_pos] = char
+                    if x_pos < len(new_line):
+                        new_line[x_pos] = char
+                    else:
+                        while len(new_line) < x_pos:
+                            new_line.append(" ")
+                        new_line.append(char)
 
+            # Update the result line
             result_lines[y_pos] = "".join(new_line)
 
         return cast(T, self.__class__("\n".join(result_lines)))
@@ -792,10 +778,8 @@ class FigletString(str):
         # Perform the rotation
         rotated = []
         for col in range(width):
-            rotated_line = "".join(
-                padded_lines[height - row - 1][col] for row in range(height)
-            )
-            rotated.append(rotated_line)
+            new_line = "".join(padded_lines[height - i - 1][col] for i in range(height))
+            rotated.append(new_line)
 
         return cast(T, self.__class__("\n".join(rotated)))
 
@@ -831,8 +815,8 @@ class FigletString(str):
         # Perform the rotation
         rotated = []
         for col in range(width - 1, -1, -1):
-            rotated_line = "".join(padded_lines[row][col] for row in range(height))
-            rotated.append(rotated_line)
+            new_line = "".join(padded_lines[i][col] for i in range(height))
+            rotated.append(new_line)
 
         return cast(T, self.__class__("\n".join(rotated)))
 
@@ -874,9 +858,8 @@ class FigletString(str):
 
         # Validate style
         if style.lower() not in border_styles:
-            valid_styles = ", ".join(f'"{s}"' for s in border_styles.keys())
             raise ValueError(
-                f"Invalid border style: '{style}'. Valid styles are: {valid_styles}"
+                f"Invalid border style: {style}. Valid styles are: {', '.join(border_styles.keys())}"
             )
 
         # Get border characters for the selected style
@@ -892,7 +875,8 @@ class FigletString(str):
         # Add borders to content
         bordered_lines = [top_border]
         for line in lines:
-            bordered_lines.append(f"{chars['v']} {line.ljust(width - 4)} {chars['v']}")
+            padded_line = chars["v"] + " " + line.ljust(width - 4) + " " + chars["v"]
+            bordered_lines.append(padded_line)
         bordered_lines.append(bottom_border)
 
         return cast(T, self.__class__("\n".join(bordered_lines)))
@@ -920,7 +904,7 @@ class FigletString(str):
             return cast(T, self.__class__(self))
 
         if offset <= 0:
-            raise ValueError("Shadow offset must be a positive integer")
+            raise ValueError("Shadow offset must be positive")
 
         # Create shadow by replacing non-space characters with spaces
         shadow_lines = []
@@ -962,7 +946,7 @@ class FigletString(str):
             lines.pop(0)
 
         while lines and not lines[-1].strip():
-            lines.pop()
+            lines.pop(-1)
 
         if not lines:
             return cast(T, self.__class__(""))
@@ -970,15 +954,16 @@ class FigletString(str):
         # Find leftmost non-space character across all lines
         left_edge = float("inf")
         for line in lines:
-            if line.strip():  # Only consider non-empty lines
-                left_edge = min(left_edge, len(line) - len(line.lstrip()))
+            line_start = len(line) - len(line.lstrip())
+            if line.strip() and line_start < left_edge:
+                left_edge = line_start
 
         left_edge = 0 if left_edge == float("inf") else left_edge
 
         # Find rightmost non-space character across all lines
         right_edge = 0
         for line in lines:
-            if line.strip():  # Only consider non-empty lines
+            if line.strip():
                 right_edge = max(right_edge, len(line.rstrip()))
 
         # Trim each line
@@ -1033,15 +1018,10 @@ class FigletString(str):
     @property
     def dimensions(self) -> Tuple[int, int]:
         """
-        Get the width and height of the FIGlet text.
+        Get the width and height of the FigletString.
 
         Returns:
-            Tuple of (width, height) in characters
-
-        Example:
-            >>> fs = FigletString("ABC\\nDEF")
-            >>> fs.dimensions
-            (3, 2)
+            Tuple of (width, height)
         """
         lines = self.splitlines()
         height = len(lines)
@@ -1051,41 +1031,30 @@ class FigletString(str):
     @property
     def is_empty(self) -> bool:
         """
-        Check if the FIGlet text is empty or contains only whitespace.
+        Check if the FigletString is empty.
 
         Returns:
-            True if empty or whitespace-only, False otherwise
-
-        Example:
-            >>> FigletString("").is_empty
-            True
-            >>> FigletString("  \\n ").is_empty
-            True
-            >>> FigletString("A").is_empty
-            False
+            True if the string is empty or contains only whitespace
         """
-        return not self.strip()
+        return not bool(self.strip())
 
     @property
     def density(self) -> float:
         """
-        Calculate the character density of the ASCII art.
-
-        Returns the ratio of non-space characters to total characters.
+        Calculate the density of non-space characters in the FigletString.
 
         Returns:
-            Float between 0.0 (all spaces) and 1.0 (no spaces)
-
-        Example:
-            >>> FigletString("A B\\nCCC").density
-            0.6
+            Ratio of non-space characters to total characters
         """
         if not self:
             return 0.0
 
-        total_chars = len(self.replace("\n", ""))
-        if total_chars == 0:
-            return 0.0
+        total_chars = 0
+        non_space_chars = 0
 
-        non_space_chars = sum(1 for c in self if c != " " and c != "\n")
-        return non_space_chars / total_chars
+        for char in self:
+            total_chars += 1
+            if char != " " and char != "\n":
+                non_space_chars += 1
+
+        return non_space_chars / total_chars if total_chars > 0 else 0.0
