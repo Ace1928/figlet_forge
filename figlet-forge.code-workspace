@@ -371,55 +371,10 @@
       "typeguards",
       "unbased"
     ],
-    // ╭──────────────────────────────────────────────────────────────────╮
-    // │  EIDOSIAN FORGE - DEVELOPMENT ENVIRONMENT v3.14.7                │
-    // │  ⟡ Where code achieves sentience through structural perfection ⟡ │
-    // ╰──────────────────────────────────────────────────────────────────╯
-    // ┌─────────────────────────────────────────────────────┐
-    // │ CORE VISUAL & COGNITIVE FRAMEWORK                   │
-    // └─────────────────────────────────────────────────────┘
     "workbench.colorTheme": "GitHub Dark High Contrast",
-    // ┌─────────────────────────────────────────────────────┐
-    // │ INTERFACE DENSITY OPTIMIZATION                      │
-    // └─────────────────────────────────────────────────────┘
-    "window.menuBarVisibility": "compact",
     "window.commandCenter": true,
-    "breadcrumbs.enabled": false,
-    // ┌─────────────────────────────────────────────────────┐
-    // │ CURSOR ENGINEERING                                  │
-    // └─────────────────────────────────────────────────────┘
-    // ┌─────────────────────────────────────────────────────┐
-    // │ RESPONSE LATENCY OPTIMIZATION                       │
-    // └─────────────────────────────────────────────────────┘
-    // ┌─────────────────────────────────────────────────────┐
-    // │ CODE STRUCTURE VISUALIZATION                        │
-    // └─────────────────────────────────────────────────────┘
-    // ┌─────────────────────────────────────────────────────┐
-    // │ UTILITY OPTIMIZATIONS                               │
-    // └─────────────────────────────────────────────────────┘
-    // ┌─────────────────────────────────────────────────────┐
-    // │ AUTOMATION PROTOCOL                                 │
-    // └─────────────────────────────────────────────────────┘
-    // ┌─────────────────────────────────────────────────────┐
-    // │ TRUST PROTOCOL                                      │
-    // └─────────────────────────────────────────────────────┘
-    "security.workspace.trust.banner": "never",
-    "security.workspace.trust.emptyWindow": true,
-    "security.workspace.trust.enabled": false,
-    "security.workspace.trust.startupPrompt": "never",
-    // ┌─────────────────────────────────────────────────────┐
-    // │ ADVANCED INTELLIGENCE SYSTEMS                       │
-    // └─────────────────────────────────────────────────────┘
-    // ┌─────────────────────────────────────────────────────┐
-    // │ DOCUMENT STATE MANAGEMENT                           │
-    // └─────────────────────────────────────────────────────┘
-    // ┌─────────────────────────────────────────────────────┐
-    // │ VERSION CONTROL INTELLIGENCE                        │
-    // └─────────────────────────────────────────────────────┘
+    "breadcrumbs.enabled": true,
     "git.mergeEditor": true,
-    // ┌─────────────────────────────────────────────────────┐
-    // │ ICON SYSTEM ARCHITECTURE                            │
-    // └─────────────────────────────────────────────────────┘
     "workbench.iconTheme": "material-icon-theme",
     "material-icon-theme.folders.theme": "specific",
     "material-icon-theme.folders.color": "#42a5f5",
@@ -427,9 +382,6 @@
     "material-icon-theme.saturation": 0.85,
     "material-icon-theme.activeIconPack": "angular_ngrx",
     "material-icon-theme.hidesExplorerArrows": false,
-    // ┌─────────────────────────────────────────────────────┐
-    // │ CHROMATIC INFORMATION ARCHITECTURE                  │
-    // └─────────────────────────────────────────────────────┘
     "workbench.colorCustomizations": {
       "editor.lineHighlightBackground": "#ff930f1a",
       "editor.lineHighlightBorder": "#9fced11f",
@@ -440,15 +392,8 @@
       "terminal.tab.activeBorder": "#F4DB01",
       "statusBar.noFolderBackground": "#007acc"
     },
-    // ┌─────────────────────────────────────────────────────┐
-    // │ SPATIAL NAVIGATION ENGINEERING                      │
-    // └─────────────────────────────────────────────────────┘
     "workbench.list.smoothScrolling": true,
-    // ┌─────────────────────────────────────────────────────┐
-    // │ RECURSIVE ICON OPTIMIZATION                         │
-    // └─────────────────────────────────────────────────────┘
     "material-icon-theme.files.associations": {
-      // TypeScript/JavaScript Patterns
       "*.controller.ts": "angular-component",
       "*.service.ts": "angular-service",
       "*.utils.ts": "ngrx-effects",
@@ -510,9 +455,6 @@
       "README.md": "readme",
       "*.md": "markdown"
     },
-    // ┌─────────────────────────────────────────────────────┐
-    // │ CUSTOM ICON CLONE ARCHITECTURE                      │
-    // └─────────────────────────────────────────────────────┘
     "material-icon-theme.files.customClones": [
       {
         "name": "api-service",
@@ -577,9 +519,6 @@
         ]
       }
     ],
-    // ┌─────────────────────────────────────────────────────┐
-    // │ FOLDER HIERARCHY VISUALIZATION                      │
-    // └─────────────────────────────────────────────────────┘
     "material-icon-theme.folders.associations": {
       "interfaces": "typescript",
       "dto": "typescript",
@@ -614,34 +553,13 @@
       "hooks": "hook",
       "crates": "packages"
     },
-    // ╭──────────────────────────────────────────────────────────────────╮
-    // │  LANGUAGE-SPECIFIC OPTIMIZATIONS - TYPED PRECISION MODULES       │
-    // ╰──────────────────────────────────────────────────────────────────╯
-    // ┌─────────────────────────────────────────────────────┐
-    // │ TYPESCRIPT/JAVASCRIPT INTELLIGENCE MATRIX           │
-    // └─────────────────────────────────────────────────────┘
     "emmet.includeLanguages": {
       "javascript": "javascriptreact",
       "typescript": "typescriptreact"
     },
-    // ┌─────────────────────────────────────────────────────┐
-    // │ ANGULAR FRAMEWORK PRECISION SYSTEM                  │
-    // └─────────────────────────────────────────────────────┘
     "angular.enable-strict-mode-prompt": false,
     "angular.view-engine": false,
-    "angular.experimental-ivy": true,
-    // ┌─────────────────────────────────────────────────────┐
-    // │ WEB TECHNOLOGY SCHEMA INTEGRATION                   │
-    // └─────────────────────────────────────────────────────┘
-    // ┌─────────────────────────────────────────────────────┐
-    // │ JSON & CONFIGURATION SCHEMA ENFORCEMENT             │
-    // └─────────────────────────────────────────────────────┘
     "json.validate.enable": true,
-    // ┌─────────────────────────────────────────────────────┐
-    // │ RUST OPTIMIZATION PROTOCOL                          │
-    // └─────────────────────────────────────────────────────┘
-    "rust-analyzer.checkOnSave.command": "clippy",
-    "rust-analyzer.cargo.allFeatures": true,
     "rust-analyzer.inlayHints.typeHints.enable": true,
     "rust-analyzer.inlayHints.parameterHints.enable": true,
     "rust-analyzer.procMacro.enable": true,
@@ -650,35 +568,11 @@
       "2021"
     ],
     "rust-analyzer.check.command": "clippy",
-    // ┌─────────────────────────────────────────────────────┐
-    // │ TOML CONFIGURATION PROTOCOL                         │
-    // └─────────────────────────────────────────────────────┘
-    // ┌─────────────────────────────────────────────────────┐
-    // │ MARKDOWN SEMANTIC ENHANCEMENT                       │
-    // └─────────────────────────────────────────────────────┘
     "markdown.extension.toc.levels": "2..6",
     "markdown.extension.toc.updateOnSave": true,
-    // ┌─────────────────────────────────────────────────────┐
-    // │ PYTHON INTELLIGENCE MATRIX                          │
-    // └─────────────────────────────────────────────────────┘
-    "python.formatting.provider": "black",
-    "python.linting.enabled": true,
-    "python.linting.pylintEnabled": true,
-    "python.linting.mypyEnabled": true,
-    // ┌─────────────────────────────────────────────────────┐
-    // │ C/C++ OPTIMIZATION PROTOCOL                         │
-    // └─────────────────────────────────────────────────────┘
     "C_Cpp.enhancedColorization": "enabled",
-    // ┌─────────────────────────────────────────────────────┐
-    // │ GO LANGUAGE PRECISION SYSTEM                        │
-    // └─────────────────────────────────────────────────────┘
     "go.useLanguageServer": true,
-    // ┌─────────────────────────────────────────────────────┐
-    // │ JAVA/KOTLIN ANDROID DEVELOPMENT MATRIX              │
-    // └─────────────────────────────────────────────────────┘
     "java.configuration.updateBuildConfiguration": "automatic",
-    "java.imports.organize.starThreshold": 5,
-    "java.imports.organize.staticStarThreshold": 3,
     "java.completion.enabled": true,
     "java.completion.guessMethodArguments": "auto",
     "java.completion.importOrder": [
@@ -691,25 +585,5 @@
     "kotlin.languageServer.enabled": true,
     "kotlin.debugAdapter.enabled": true,
     "kotlin.trace.server": "off",
-    // ┌─────────────────────────────────────────────────────┐
-    // │ SHELL SCRIPT OPTIMIZATION PROTOCOL                  │
-    // └─────────────────────────────────────────────────────┘
-    // VIM Integration Protocol
-    "vim.leader": "<space>",
-    "vim.easymotion": true,
-    "vim.visualModeKeyBindings": [],
-    "vim.visualModeKeyBindingsNonRecursive": [],
-    "vim.insertModeKeyBindings": [],
-    "vim.normalModeKeyBindingsNonRecursive": [
-      {
-        "before": [
-          "t",
-          "t"
-        ],
-        "commands": [
-          "workbench.action.closeEditorsInGroup"
-        ]
-      }
-    ]
   }
 }
