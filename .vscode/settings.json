@@ -1156,8 +1156,6 @@
   // │ EIDOSIAN PERFORMANCE OPTIMIZATION MATRIX            │
   // └─────────────────────────────────────────────────────┘
   "workbench.editor.closeOnFileDelete": true,
-  "workbench.editor.limit.enabled": true,
-  "workbench.editor.limit.value": 8,
   "workbench.editor.limit.perEditorGroup": true,
   "files.watcherExclude": {
     "**/.git/objects/**": true,
@@ -1210,15 +1208,12 @@
   "editor.gotoLocation.multipleReferences": "peek",
   "editor.gotoLocation.multipleTypeDefinitions": "peek",
   "editor.stickyScroll.scrollWithEditor": true,
-  "editor.experimental.pasteActions.enabled": true,
-  "editor.experimental.useCustomCodeActionMenu": true,
   "editor.multiCursorModifier": "alt",
   "editor.multiCursorMergeOverlapping": true,
   "editor.suggest.showStatusBar": true,
   "editor.inlayHints.enabled": "on",
   "editor.inlayHints.fontSize": 12,
   "editor.inlayHints.padding": true,
-  "workbench.editor.enablePreview": false,
   "explorer.autoReveal": "focusNoScroll",
   "explorer.sortOrder": "type",
   "editor.codeLens": true,
@@ -1258,7 +1253,6 @@
   "diffEditor.diffAlgorithm": "advanced",
   "diffEditor.experimental.showMoves": true,
   "scm.inputFontSize": 13,
-  "scm.alwaysShowActions": true,
   "scm.alwaysShowRepositories": true,
   // ┌─────────────────────────────────────────────────────┐
   // │ AI ASSISTANCE CONFIGURATION MATRIX                  │
@@ -1448,16 +1442,8 @@
   // │ SYNCHRONIZATION & WORKSPACE PROTOCOL                │
   // └─────────────────────────────────────────────────────┘
   "settingsSync.keybindingsPerPlatform": true,
-  "settingsSync.ignoredSettings": [
-    "-window.zoomLevel",
-    "workbench.colorTheme",
-    "terminal.integrated.env.linux",
-    "terminal.integrated.env.osx",
-    "terminal.integrated.env.windows"
-  ],
   "workbench.settings.openDefaultKeybindings": true,
   "workbench.settings.enableNaturalLanguageSearch": true,
-  "workbench.settings.editor": "ui",
   "workbench.settings.settingsSearchTocBehavior": "filter",
   "workbench.settings.useSplitJSON": true,
   // ┌─────────────────────────────────────────────────────┐
@@ -1470,59 +1456,6 @@
   "javascript.suggest.autoImports": true,
   "javascript.suggest.enabled": true,
   "javascript.suggest.paths": true,
-  // VSCode Vim
-  "vim.easymotion": true,
-  "vim.incsearch": true,
-  "vim.useSystemClipboard": true,
-  "vim.useCtrlKeys": true,
-  "vim.hlsearch": true,
-  "vim.leader": "<space>",
-  "vim.insertModeKeyBindings": [
-    {
-      "before": [
-        "j",
-        "j"
-      ],
-      "after": [
-        "<Esc>"
-      ]
-    }
-  ],
-  "vim.normalModeKeyBindingsNonRecursive": [
-    {
-      "before": [
-        "<leader>",
-        "f"
-      ],
-      "commands": [
-        "workbench.action.quickOpen"
-      ]
-    },
-    {
-      "before": [
-        "<leader>",
-        "w"
-      ],
-      "commands": [
-        "workbench.action.files.save"
-      ]
-    },
-    {
-      "before": [
-        "<leader>",
-        "q"
-      ],
-      "commands": [
-        "workbench.action.closeActiveEditor"
-      ]
-    }
-  ],
-  "vim.handleKeys": {
-    "<C-c>": false,
-    "<C-v>": false,
-    "<C-a>": false,
-    "<C-f>": false
-  },
   // Advanced Spell Checker
   "cSpell.allowCompoundWords": true,
   "cSpell.ignorePaths": [
@@ -1615,7 +1548,6 @@
   "terminal.integrated.enableMultiLinePasteWarning": "always",
   "terminal.integrated.sendKeybindingsToShell": true,
   // Quick panel to rearrange layout (for Insiders or newer stable releases)
-  "workbench.experimental.layoutControl.enabled": true,
   // Zen Mode extras
   "zenMode.hideCommandCenter": true,
   "zenMode.restoreOnDebugStop": true,
