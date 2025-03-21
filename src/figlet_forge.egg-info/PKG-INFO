@@ -1,0 +1,175 @@
+Metadata-Version: 2.4
+Name: figlet_forge
+Version: 0.1.2
+Summary: Eidosian reimplementation extending pyfiglet with colorized ANSI support, Unicode rendering and intelligent fallbacks
+Home-page: https://github.com/Ace1928/figlet_forge
+Author: Lloyd Handyside
+Author-email: Lloyd Handyside <ace1928@gmail.com>
+Maintainer-email: Lloyd Handyside <ace1928@gmail.com>, Eidos <syntheticeidos@gmail.com>
+License: MIT
+Project-URL: Homepage, https://github.com/Ace1928/figlet_forge
+Project-URL: Bug Tracker, https://github.com/Ace1928/figlet_forge/issues
+Project-URL: Documentation, https://figlet-forge.readthedocs.io/
+Project-URL: Source Code, https://github.com/Ace1928/figlet_forge
+Project-URL: Changelog, https://github.com/Ace1928/figlet_forge/blob/main/CHANGELOG.md
+Project-URL: Original Project, https://github.com/pwaller/pyfiglet
+Project-URL: Eidosian Forge, https://github.com/Ace1928/eidosian_forge
+Project-URL: Neuroforge, https://neuroforge.io
+Keywords: figlet,ascii-art,text,forge,eidosian,typography,cli,ansi,color,unicode,terminal-art,pyfiglet-extension,text-rendering,backwards-compatible
+Classifier: Development Status :: 4 - Beta
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Text Processing :: Fonts
+Classifier: Topic :: Artistic Software
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Intended Audience :: Developers
+Classifier: Environment :: Console
+Classifier: Typing :: Typed
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: pyfiglet>=0.8.0
+Requires-Dist: rich>=12.0.0
+Requires-Dist: typer>=0.7.0
+Requires-Dist: colorama>=0.4.6
+Requires-Dist: wcwidth>=0.2.6
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: isort>=5.12.0; extra == "dev"
+Requires-Dist: mypy>=1.0.0; extra == "dev"
+Requires-Dist: ruff>=0.0.256; extra == "dev"
+Requires-Dist: pre-commit>=3.3.0; extra == "dev"
+Requires-Dist: tox>=4.0.0; extra == "dev"
+Requires-Dist: bandit>=1.7.5; extra == "dev"
+Requires-Dist: pyright>=1.1.0; extra == "dev"
+Requires-Dist: coverage>=7.2.0; extra == "dev"
+Provides-Extra: docs
+Requires-Dist: sphinx>=6.0.0; extra == "docs"
+Requires-Dist: sphinx-rtd-theme>=1.2.0; extra == "docs"
+Requires-Dist: sphinx-autodoc-typehints>=1.23.0; extra == "docs"
+Requires-Dist: myst-parser>=2.0.0; extra == "docs"
+Provides-Extra: full
+Requires-Dist: pillow>=9.5.0; extra == "full"
+Requires-Dist: pygments>=2.15.0; extra == "full"
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-python
+
+# 🔠 Figlet Forge
+
+> _"Typography crystallized into ASCII art perfection"_
+
+[![Python Version](https://img.shields.io/badge/python-3.7%2B-blue)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Made with Eidosian Principles](https://img.shields.io/badge/Made%20with-Eidosian_Principles-8A2BE2)](https://github.com/Ace1928)
+
+[![Version](https://img.shields.io/badge/Version-1.0.2-blue)](https://github.com/Ace1928/figlet_forge)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.7%2B-blue)](https://www.python.org/)
+[![Forge System](https://img.shields.io/badge/Forge-System-8A2BE2)](https://github.com/Ace1928)
+
+```ascii
+   _______ _       __     __  ______
+  / ____(_) /____ / /__  / /_/ ____/___  _________  ____
+ / /_  / / __/ _ \/ / _ \/ __/ /_  / __ \/ ___/ __ \/ __ \
+/ __/ / / /_/  __/ /  __/ /_/ __/ / /_/ / /  / /_/ / /_/ /
+/_/   /_/\__/\___/_/\___/\__/_/    \____/_/   \____/ .___/
+                                                  /_/
+```
+
+**Figlet Forge** is an Eidosian reimplementation extending the original pyfiglet package with enhanced features, while maintaining complete backward compatibility.
+
+## ✨ Features
+
+- **📊 Full colorized ANSI code support** for vibrant text art with foreground and background colors
+- **🌍 Unicode character rendering** with comprehensive mapping for global language support
+- **🗃️ Expanded font ecosystem** with careful attention to licensing and compatibility
+- **🔄 Intelligent fallbacks** for complete backward compatibility with older systems
+- **🚀 Significant performance optimizations** without sacrificing quality
+- **🧩 Enhanced maintainability** through modern Python practices and typing
+- **📚 Comprehensive documentation** for all use cases
+- **♻️ Full backward compatibility** with pyfiglet
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+pip install figlet-forge
+```
+
+### Basic Usage
+
+```python
+from figlet_forge import Figlet
+from figlet_forge import print_figlet
+
+# Simple rendering
+fig = Figlet(font="slant")
+result = fig.renderText("Hello, world!")
+print(result)
+
+# Colorized output
+print_figlet("Colorful Text", font="big", colors="RED:BLUE")
+```
+
+## 🔮 Advanced Features
+
+### Color Support
+
+```python
+# Syntax: foreground:background
+print_figlet("Warning!", font="standard", colors="RED:YELLOW")
+
+# RGB support
+print_figlet("Custom", font="slant", colors="255;128;0:0;0;128")
+```
+
+### Unicode Support
+
+```python
+# Enable Unicode rendering
+fig = Figlet(font="standard", unicode_aware=True)
+print(fig.renderText("こんにちは世界"))
+
+# Right-to-left languages
+fig = Figlet(font="standard", direction="right-to-left")
+print(fig.renderText("مرحبا بالعالم"))
+```
+
+## 📋 Command Line Interface
+
+```bash
+# Basic usage
+figlet_forge "Hello world"
+
+# Select a font with colors
+figlet_forge -f slant -c "RED:BLUE" "Cool Text"
+
+# Unicode support with centered justification
+figlet_forge -u -w 60 -j center "こんにちは世界"
+```
+
+## 📚 Documentation
+
+Full documentation is available at [figlet-forge.readthedocs.io](https://figlet-forge.readthedocs.io/)
+
+## 🤝 Contributing
+
+Contributions are welcome! Check out our [contribution guidelines](CONTRIBUTING.md) to get started.
+
+## 📜 License
+
+Figlet Forge is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Original pyfiglet copyright © 2007-2023 belongs to the original pyfiglet authors.
+Figlet Forge extensions copyright © 2023-2025 Lloyd Handyside and Eidosian Forge contributors.

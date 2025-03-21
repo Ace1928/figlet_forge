@@ -1,210 +1,735 @@
-from .utils import unicode_string
+from typing import Iterable, List, Optional, Tuple, TypeVar, Union, cast
+
+T = TypeVar("T", bound="FigletString")
 
 
-class FigletString(unicode_string):
+class FigletString(str):
     """
     Rendered figlet font
 
     A specialized string class for ASCII art text that provides
     transformation operations specifically designed for FIGlet output.
     Maintains the structural integrity of ASCII art during manipulation.
+
+    FigletString inherits from str but adds methods that are aware of the
+    multi-line nature of ASCII art, preserving its structure during transformations.
+
+    Key features:
+    - Horizontal mirroring with character translation (reverse)
+    - Vertical flipping with character translation (flip)
+    - Line-aware justification (center, ljust, rjust)
+    - Border and shadow effects
+    - Rotation and scaling transformations
+    - Intelligent overlay and composition
+
+    Example:
+        >>> # Create a FigletString
+        >>> fs = FigletString(" _   _ \\n| | | |\\n|_| |_|")
+        >>> print(fs)
+         _   _
+        | | | |
+        |_| |_|
+
+        >>> # Apply transformations
+        >>> print(fs.reverse())
+         _   _
+        | | | |
+        |_| |_|
+
+        >>> # Add a border
+        >>> print(fs.border())
+        ┌─────────┐
+        │  _   _  │
+        │ | | | | │
+        │ |_| |_| │
+        └─────────┘
     """
 
-    # translation map for reversing ascii art / -> \, etc.
-    __reverse_map__ = (
-        "\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f"
-        "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
-        " !\"#$%&')(*+,-.\\"
-        "0123456789:;>=<?"
-        "@ABCDEFGHIJKLMNO"
-        "PQRSTUVWXYZ]/[^_"
-        "`abcdefghijklmno"
-        "pqrstuvwxyz}|{~\x7f"
-        "\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f"
-        "\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f"
-        "\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf"
-        "\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf"
-        "\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf"
-        "\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf"
-        "\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef"
-        "\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff"
+    # Translation maps for transforming ASCII art
+    # These maps are used by the reverse() and flip() methods to maintain
+    # visual integrity when transforming ASCII/Unicode art
+
+    # Map for horizontal mirroring (left-to-right reversal)
+    # Each character is mapped to its mirror counterpart across vertical axis
+    __reverse_map__ = str.maketrans(
+        {
+            # Basic paired characters
+            ord("("): ")",
+            ord(")"): "(",
+            ord("["): "]",
+            ord("]"): "[",
+            ord("{"): "}",
+            ord("}"): "{",
+            ord("<"): ">",
+            ord(">"): "<",
+            ord("/"): "\\",
+            ord("\\"): "/",
+            # Directional symbols and arrows
+            ord("→"): "←",
+            ord("←"): "→",
+            ord("⇒"): "⇐",
+            ord("⇐"): "⇒",
+            ord("»"): "«",
+            ord("«"): "»",
+            ord("⟶"): "⟵",
+            ord("⟵"): "⟶",
+            ord("⟹"): "⟸",
+            ord("⟸"): "⟹",
+            ord("⇢"): "⇠",
+            ord("⇠"): "⇢",
+            ord("⤑"): "⬸",
+            ord("⬸"): "⤑",
+            ord("⤍"): "⤏",
+            ord("⤏"): "⤍",
+            ord("⇜"): "⇝",
+            ord("⇝"): "⇜",
+            ord("↔"): "↔",  # Self-symmetric
+            ord("⟷"): "⟷",  # Self-symmetric
+            ord("⟺"): "⟺",  # Self-symmetric
+            # Unicode brackets and parentheses
+            ord("❮"): "❯",
+            ord("❯"): "❮",
+            ord("❰"): "❱",
+            ord("❱"): "❰",
+            ord("⟨"): "⟩",
+            ord("⟩"): "⟨",
+            ord("「"): "」",
+            ord("」"): "「",
+            ord("『"): "』",
+            ord("』"): "『",
+            ord("⦅"): "⦆",
+            ord("⦆"): "⦅",
+            ord("⦗"): "⦘",
+            ord("⦘"): "⦗",
+            ord("〈"): "〉",
+            ord("〉"): "〈",
+            ord("《"): "》",
+            ord("》"): "《",
+            ord("⸢"): "⸣",
+            ord("⸣"): "⸢",
+            ord("⸤"): "⸥",
+            ord("⸥"): "⸤",
+            ord("⟦"): "⟧",
+            ord("⟧"): "⟦",
+            ord("⟪"): "⟫",
+            ord("⟫"): "⟪",
+            # Question/exclamation marks and specialized punctuation
+            ord("¿"): "?",
+            ord("?"): "¿",
+            ord("¡"): "!",
+            ord("!"): "¡",
+            ord("‹"): "›",
+            ord("›"): "‹",
+            # Box drawing and geometric elements
+            ord("⌜"): "⌝",
+            ord("⌝"): "⌜",
+            ord("⌞"): "⌟",
+            ord("⌟"): "⌞",
+            ord("⎡"): "⎤",
+            ord("⎤"): "⎡",
+            ord("⎣"): "⎦",
+            ord("⎦"): "⎣",
+            ord("⎧"): "⎫",
+            ord("⎫"): "⎧",
+            ord("⎩"): "⎭",
+            ord("⎭"): "⎩",
+            ord("◀"): "▶",
+            ord("▶"): "◀",
+            ord("◁"): "▷",
+            ord("▷"): "◁",
+            ord("◢"): "◣",
+            ord("◣"): "◢",
+            ord("◤"): "◥",
+            ord("◥"): "◤",
+            ord("◿"): "◺",
+            ord("◺"): "◿",
+            ord("◸"): "◹",
+            ord("◹"): "◸",
+            ord("⏩"): "⏪",
+            ord("⏪"): "⏩",
+            ord("⏭"): "⏮",
+            ord("⏮"): "⏭",
+            ord("⏴"): "⏵",
+            ord("⏵"): "⏴",
+            ord("⊣"): "⊢",
+            ord("⊢"): "⊣",
+            # Math symbols with directional components
+            ord("∈"): "∋",
+            ord("∋"): "∈",
+            ord("≤"): "≥",
+            ord("≥"): "≤",
+            ord("∠"): "⦣",
+            ord("⦣"): "∠",
+            ord("⊂"): "⊃",
+            ord("⊃"): "⊂",
+            ord("⊆"): "⊇",
+            ord("⊇"): "⊆",
+            ord("⊏"): "⊐",
+            ord("⊐"): "⊏",
+            ord("⊑"): "⊒",
+            ord("⊒"): "⊑",
+            ord("∝"): "∽",
+            ord("∽"): "∝",
+            # ASCII letters with possible sensible mirror mapping
+            ord("d"): "b",
+            ord("b"): "d",
+            ord("q"): "p",
+            ord("p"): "q",
+            # Self-symmetric characters (maintain for completeness)
+            ord("A"): "A",  # Self-symmetric with axis
+            ord("H"): "H",  # Self-symmetric
+            ord("I"): "I",  # Self-symmetric
+            ord("M"): "M",  # Self-symmetric
+            ord("O"): "O",  # Self-symmetric
+            ord("T"): "T",  # Self-symmetric
+            ord("U"): "U",  # Self-symmetric
+            ord("V"): "V",  # Self-symmetric
+            ord("W"): "W",  # Self-symmetric
+            ord("X"): "X",  # Self-symmetric
+            ord("Y"): "Y",  # Self-symmetric
+            ord("o"): "o",  # Self-symmetric
+            ord("v"): "v",  # Self-symmetric
+            ord("w"): "w",  # Self-symmetric
+            ord("x"): "x",  # Self-symmetric
+            ord("|"): "|",  # Self-symmetric
+            ord("¦"): "¦",  # Self-symmetric
+        }
     )
 
-    # translation map for flipping ascii art ^ -> v, etc.
-    __flip_map__ = (
-        "\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f"
-        "\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
-        " !\"#$%&'()*+,-.\\"
-        "0123456789:;<=>?"
-        "@VBCDEFGHIJKLWNO"
-        "bQbSTUAMXYZ[/]v-"
-        "`aPcdefghijklwno"
-        "pqrstu^mxyz{|}~\x7f"
-        "\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f"
-        "\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f"
-        "\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf"
-        "\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf"
-        "\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf"
-        "\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf"
-        "\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef"
-        "\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff"
+    # Translation map for vertical flipping (upside down)
+    # Maps characters to their upside-down equivalents across horizontal axis
+    __flip_map__ = str.maketrans(
+        {
+            # Latin uppercase letters with clear upside-down pairs
+            ord("A"): "V",
+            ord("V"): "A",
+            ord("M"): "W",
+            ord("W"): "M",
+            ord("T"): "⊥",
+            ord("⊥"): "T",
+            ord("U"): "∩",
+            ord("∩"): "U",
+            ord("Y"): "⅄",
+            ord("⅄"): "Y",
+            ord("B"): "ꓭ",  # With custom flip
+            ord("ꓭ"): "B",
+            ord("C"): "Ɔ",
+            ord("Ɔ"): "C",
+            ord("D"): "ꓷ",
+            ord("ꓷ"): "D",
+            ord("E"): "Ǝ",
+            ord("Ǝ"): "E",
+            ord("F"): "Ⅎ",
+            ord("Ⅎ"): "F",
+            ord("G"): "⅁",
+            ord("⅁"): "G",
+            ord("J"): "ſ",
+            ord("ſ"): "J",
+            ord("L"): "⅂",
+            ord("⅂"): "L",
+            ord("P"): "Ԁ",
+            ord("Ԁ"): "P",
+            ord("Q"): "Ò",
+            ord("Ò"): "Q",
+            ord("R"): "ꓤ",
+            ord("ꓤ"): "R",
+            # Self-symmetric uppercase letters (maintain for completeness)
+            ord("N"): "N",  # Symmetric around horizontal axis with transformation
+            ord("X"): "X",  # Symmetric around center
+            ord("H"): "H",  # Symmetric around center
+            ord("I"): "I",  # Symmetric around center
+            ord("O"): "O",  # Symmetric around center
+            ord("S"): "S",  # Similar when flipped with some distortion
+            ord("Z"): "Z",  # Similar when flipped with some distortion
+            # Latin lowercase letters with upside-down pairs
+            ord("b"): "q",
+            ord("q"): "b",
+            ord("d"): "p",
+            ord("p"): "d",
+            ord("n"): "u",
+            ord("u"): "n",
+            ord("m"): "w",
+            ord("w"): "m",
+            ord("a"): "ɐ",
+            ord("ɐ"): "a",
+            ord("c"): "ɔ",
+            ord("ɔ"): "c",
+            ord("e"): "ǝ",
+            ord("ǝ"): "e",
+            ord("f"): "ɟ",
+            ord("ɟ"): "f",
+            ord("g"): "ƃ",
+            ord("ƃ"): "g",
+            ord("h"): "ɥ",
+            ord("ɥ"): "h",
+            ord("i"): "ᴉ",
+            ord("ᴉ"): "i",
+            ord("j"): "ɾ",
+            ord("ɾ"): "j",
+            ord("k"): "ʞ",
+            ord("ʞ"): "k",
+            ord("l"): "ʃ",
+            ord("ʃ"): "l",
+            ord("r"): "ɹ",
+            ord("ɹ"): "r",
+            ord("t"): "ʇ",
+            ord("ʇ"): "t",
+            ord("y"): "ʎ",
+            ord("ʎ"): "y",
+            ord("v"): "ʌ",
+            ord("ʌ"): "v",
+            ord("z"): "z",  # Reasonably symmetric
+            ord("x"): "x",  # Symmetric
+            ord("o"): "o",  # Symmetric
+            ord("s"): "s",  # Reasonably symmetric
+            # Numbers with flipped versions
+            ord("1"): "Ɩ",
+            ord("Ɩ"): "1",
+            ord("2"): "ᄅ",
+            ord("ᄅ"): "2",
+            ord("3"): "Ɛ",
+            ord("Ɛ"): "3",
+            ord("4"): "ᔭ",
+            ord("ᔭ"): "4",
+            ord("5"): "ϛ",
+            ord("ϛ"): "5",
+            ord("6"): "9",
+            ord("9"): "6",
+            ord("7"): "ㄥ",
+            ord("ㄥ"): "7",
+            ord("8"): "8",  # Symmetric around center
+            ord("0"): "0",  # Symmetric around center
+            # Directional symbols and arrows
+            ord("^"): "v",
+            ord("v"): "^",
+            ord("/"): "\\",
+            ord("\\"): "/",
+            ord("↑"): "↓",
+            ord("↓"): "↑",
+            ord("⇑"): "⇓",
+            ord("⇓"): "⇑",
+            ord("⇧"): "⇩",
+            ord("⇩"): "⇧",
+            ord("△"): "▽",
+            ord("▽"): "△",
+            ord("▲"): "▼",
+            ord("▼"): "▲",
+            ord("⬆"): "⬇",
+            ord("⬇"): "⬆",
+            ord("⭡"): "⭣",
+            ord("⭣"): "⭡",
+            ord("⤊"): "⤋",
+            ord("⤋"): "⤊",
+            ord("↕"): "↕",  # Self-symmetric
+            ord("⇕"): "⇕",  # Self-symmetric
+            # Brackets and parentheses
+            ord("("): ")",
+            ord(")"): "(",
+            ord("["): "]",
+            ord("]"): "[",
+            ord("{"): "}",
+            ord("}"): "{",
+            ord("⎛"): "⎝",
+            ord("⎝"): "⎛",
+            ord("⎞"): "⎠",
+            ord("⎠"): "⎞",
+            ord("⌈"): "⌊",
+            ord("⌊"): "⌈",
+            ord("⌉"): "⌋",
+            ord("⌋"): "⌉",
+            ord("⌊"): "⌈",
+            ord("⌈"): "⌊",
+            ord("⌋"): "⌉",
+            ord("⌉"): "⌋",
+            # Punctuation and symbols
+            ord("-"): "_",
+            ord("_"): "-",
+            ord("."): "˙",
+            ord("˙"): ".",
+            ord(","): "'",
+            ord("'"): ",",
+            ord("!"): "¡",
+            ord("¡"): "!",
+            ord("?"): "¿",
+            ord("¿"): "?",
+            ord(":"): ":",  # Symmetric around horizontal axis
+            ord(";"): "؛",
+            ord("؛"): ";",
+            ord("‿"): "⁀",
+            ord("⁀"): "‿",
+            ord("⁓"): "⁓",  # Self-symmetric
+            ord("="): "=",  # Self-symmetric
+            ord("+"): "+",  # Self-symmetric
+            ord("*"): "✱",  # Approximate flip
+            ord("✱"): "*",
+            # Mathematical and other symbols
+            ord("⌢"): "⌣",
+            ord("⌣"): "⌢",
+            ord("⋀"): "⋁",
+            ord("⋁"): "⋀",
+            ord("∧"): "∨",
+            ord("∨"): "∧",
+            ord("⊕"): "⊕",  # Symmetric around center
+            ord("⊗"): "⊗",  # Symmetric around center
+            ord("⊥"): "⊤",
+            ord("⊤"): "⊥",
+            ord("≻"): "≺",
+            ord("≺"): "≻",
+            ord("∫"): "∫",  # Approximately symmetric
+            ord("∬"): "∬",  # Approximately symmetric
+            ord("∮"): "∮",  # Symmetric
+            ord("∞"): "∞",  # Symmetric
+            ord("○"): "○",  # Symmetric
+            ord("◎"): "◎",  # Symmetric
+            ord("□"): "□",  # Symmetric
+            ord("◇"): "◇",  # Symmetric
+            ord("⊙"): "⊙",  # Symmetric
+            ord("⊲"): "⊳",  # Flipped horizontally
+            ord("⊳"): "⊲",  # Flipped horizontally
+        }
     )
 
-    def reverse(self):
+    def __new__(cls, text: str) -> "FigletString":
+        """
+        Create a new FigletString instance.
+
+        Args:
+            text: The string content to wrap in a FigletString
+
+        Returns:
+            A new FigletString instance
+        """
+        return super(FigletString, cls).__new__(cls, text)
+
+    def __str__(self) -> str:
+        """
+        Return the string representation of this FigletString.
+
+        Returns:
+            The string content
+        """
+        return self
+
+    def __repr__(self) -> str:
+        """
+        Return the official string representation of this FigletString.
+
+        Returns:
+            The string content (for REPL display)
+        """
+        return self
+
+    def reverse(self) -> T:
         """
         Reverse the FIGlet text horizontally (mirror image).
+
+        Creates a mirror image by reversing each line and translating
+        direction-sensitive characters using the __reverse_map__.
 
         Returns:
             A new FigletString with reversed content
 
         Example:
-            /\  becomes  /\
-            \/           \/
+            >>> fs = FigletString("/\\\\\\n\\/")
+            >>> print(fs.reverse())
+            /\\
+            \\/
         """
         if not self:
-            return self
+            return cast(T, self.__class__(""))
 
         # Split the string into lines, reverse each line and translate special chars
-        result = []
+        result: List[str] = []
         for line in self.splitlines():
             line = line.translate(self.__reverse_map__)
             result.append(line[::-1])
 
         # Join lines back together and return as a new FigletString
-        return self.__class__("\n".join(result))
+        return cast(T, self.__class__("\n".join(result)))
 
-    def flip(self):
+    def flip(self) -> T:
         """
         Flip the FIGlet text vertically (upside down).
+
+        Creates an upside-down version by reversing the line order and
+        translating characters using the __flip_map__ to maintain visual integrity.
 
         Returns:
             A new FigletString with flipped content
 
         Example:
-            /\  becomes  \/
-            \/           /\
+            >>> fs = FigletString("/\\\\\\n\\/")
+            >>> print(fs.flip())
+            \\/
+            /\\
         """
         if not self:
-            return self
+            return cast(T, self.__class__(""))
 
         # Process the text line by line and apply character translations
-        result = []
+        result: List[str] = []
         for line in self.splitlines():
             line = line.translate(self.__flip_map__)
             result.append(line)
 
         # Reverse the order of lines and return as a new FigletString
-        return self.__class__("\n".join(result[::-1]))
+        return cast(T, self.__class__("\n".join(result[::-1])))
 
-    def strip_surrounding_newlines(self):
-        """
+    def strip_surrounding_newlines(self) -> T:
+        r"""
         Remove empty lines from the beginning and end of the FIGlet text.
 
-        Returns:
-            A new FigletString with extra lines removed
-        """
-        return self.__class__(self.strip("\n"))
+        Keeps internal empty lines intact, only removing external padding.
 
-    def normalize_surrounding_newlines(self):
+        Returns:
+            A new FigletString with outer empty lines removed
+
+        Example:
+            >>> fs = FigletString("\n\n  ABC  \n\n")
+            >>> print(fs.strip_surrounding_newlines())
+              ABC
         """
+        return cast(T, self.__class__(self.strip("\n")))
+
+    def normalize_surrounding_newlines(self) -> T:
+        r"""
         Ensure exactly one empty line at the beginning and end of the FIGlet text.
 
+        This standardizes the text format for consistent visual spacing.
+
         Returns:
-            A new FigletString with normalized line spacing
+            A new FigletString with exactly one newline at start and end
+
+        Example:
+            >>> fs = FigletString("ABC\nDEF")
+            >>> print(repr(fs.normalize_surrounding_newlines()))
+            '\nABC\nDEF\n'
         """
         # Strip all surrounding newlines first
         text = self.strip("\n")
         # Add exactly one newline at beginning and end
-        return self.__class__(f"\n{text}\n")
+        return cast(T, self.__class__(f"\n{text}\n"))
 
-    def center(self, width=None):
+    def center(self, width: Optional[int] = None) -> T:
         """
         Center each line of the FIGlet text within the specified width.
+
+        If no width is provided, uses the width of the widest line and
+        centers all other lines relative to it.
 
         Args:
             width: Width to center within (default: use widest line)
 
         Returns:
             A new FigletString with centered content
+
+        Raises:
+            ValueError: If width is negative
+
+        Example:
+            >>> fs = FigletString("ABC\\nD")
+            >>> print(fs.center())
+            ABC
+             D
+            >>> print(FigletString("abc").center(7))
+              abc
         """
+        if width is not None and width < 0:
+            raise ValueError("Width cannot be negative")
+
         if not self:
-            return self
+            return cast(T, self.__class__(""))
 
         lines = self.splitlines()
 
-        # Calculate width if not provided
+        if not lines:
+            return cast(T, self.__class__(""))
+
         if width is None:
-            width = max(len(line) for line in lines)
+            # Find the maximum line width
+            max_width = max(len(line) for line in lines)
 
-        # Center each line
-        result = []
-        for line in lines:
-            padding = (width - len(line)) // 2
-            result.append(" " * padding + line)
+            # Center each line
+            result: List[str] = []
+            for line in lines:
+                padding = (max_width - len(line)) // 2
+                result.append(" " * padding + line)
 
-        return self.__class__("\n".join(result))
+            return cast(T, self.__class__("\n".join(result)))
+        else:
+            return cast(T, self.__class__(super().center(width)))
 
-    def join(self, iterable):
+    def ljust(self, width: int) -> T:
+        """
+        Returns a string left-justified within a specified width.
+
+        Pads the string with spaces on the right to reach the specified width.
+
+        Args:
+            width: The desired total width
+
+        Returns:
+            A new FigletString left-justified in the given width
+
+        Raises:
+            ValueError: If width is negative
+
+        Example:
+            >>> FigletString("abc").ljust(7)
+            'abc    '
+        """
+        if width < 0:
+            raise ValueError("Width cannot be negative")
+
+        return cast(T, self.__class__(super().ljust(width)))
+
+    def rjust(self, width: int) -> T:
+        """
+        Returns a string right-justified within a specified width.
+
+        Pads the string with spaces on the left to reach the specified width.
+
+        Args:
+            width: The desired total width
+
+        Returns:
+            A new FigletString right-justified in the given width
+
+        Raises:
+            ValueError: If width is negative
+
+        Example:
+            >>> FigletString("abc").rjust(7)
+            '    abc'
+        """
+        if width < 0:
+            raise ValueError("Width cannot be negative")
+
+        return cast(T, self.__class__(super().rjust(width)))
+
+    def join(self, iterable: Iterable[str]) -> T:
         """
         Join FigletStrings vertically, with self as separator.
 
+        Uses the current string as a delimiter between elements of the iterable.
+
         Args:
-            iterable: Collection of FigletStrings to join
+            iterable: Collection of strings to join
 
         Returns:
             A new FigletString with joined content
-        """
-        return self.__class__(super(FigletString, self).join(iterable))
 
-    def overlay(self, other, x_offset=0, y_offset=0, transparent=True):
+        Example:
+            >>> separator = FigletString("---")
+            >>> result = separator.join(["ABC", "DEF"])
+            >>> print(result)
+            ABC
+            ---
+            DEF
+        """
+        return cast(T, self.__class__(super().join(iterable)))
+
+    def overlay(
+        self,
+        other: Union[str, "FigletString"],
+        x_offset: int = 0,
+        y_offset: int = 0,
+        transparent: bool = True,
+    ) -> T:
         """
         Overlay another FigletString on top of this one.
 
+        Places the 'other' string on top of this one at the specified offset,
+        with options for handling transparency of space characters.
+
         Args:
             other: FigletString to overlay
-            x_offset: Horizontal offset
-            y_offset: Vertical offset
+            x_offset: Horizontal offset (can be negative)
+            y_offset: Vertical offset (can be negative)
             transparent: Whether spaces in other should be transparent
 
         Returns:
             A new FigletString with the overlay applied
+
+        Example:
+            >>> base = FigletString("XXXXX\\nXXXXX\\nXXXXX")
+            >>> overlay = FigletString("YY\\nYY")
+            >>> print(base.overlay(overlay, x_offset=1, y_offset=1))
+            XXXXX
+            XYYX
+            XYYX
         """
         if not other:
-            return self.__class__(self)
+            return cast(T, self.__class__(self))
+
+        # Convert to FigletString if needed
+        if not isinstance(other, FigletString):
+            other = self.__class__(other)
 
         self_lines = self.splitlines()
         other_lines = other.splitlines()
-        result_lines = list(self_lines)  # Create a copy
 
         # Handle empty base
         if not self_lines:
-            return self.__class__(other)
+            return cast(T, self.__class__(other))
 
-        # Apply overlay
+        # Create a copy of base lines to modify
+        result_lines = list(self_lines)
+
+        # Pre-calculate lengths to avoid repeated calls
+        result_len = len(result_lines)
+
+        # Apply overlay with optimized line manipulation
         for i, other_line in enumerate(other_lines):
-            if i + y_offset < 0 or i + y_offset >= len(result_lines):
+            y_pos = i + y_offset
+
+            # Skip if outside vertical bounds
+            if y_pos < 0 or y_pos >= result_len:
                 continue
 
-            base_line = result_lines[i + y_offset]
+            # For large negative x_offsets, we can skip a lot of work
+            if x_offset <= -len(other_line):
+                continue
 
-            # Create new line with overlay
+            base_line = result_lines[y_pos]
+
+            # Optimize for the case where we're appending to the end
+            if x_offset >= len(base_line):
+                if transparent:
+                    # For transparent overlay, we need to preserve spaces
+                    padding_needed = x_offset - len(base_line)
+                    new_segment = " " * padding_needed + other_line
+                    result_lines[y_pos] = base_line + new_segment
+                else:
+                    # For non-transparent overlay, we can just append with padding
+                    padding_needed = x_offset - len(base_line)
+                    result_lines[y_pos] = base_line + " " * padding_needed + other_line
+                continue
+
+            # Handle regular overlay case
             new_line = list(base_line)
-            for j, char in enumerate(other_line):
-                if j + x_offset < 0:
-                    continue
-                if j + x_offset >= len(new_line):
-                    # Extend line if needed
-                    new_line.extend(" " * (j + x_offset - len(new_line) + 1))
+            effective_x_start = max(0, x_offset)
 
-                # Apply character from overlay if not transparent or not space
+            # Calculate how much of other_line is visible
+            other_visible_part = other_line[max(0, -x_offset) :]
+
+            # Ensure the line is wide enough
+            if len(new_line) < effective_x_start + len(other_visible_part):
+                new_line.extend(
+                    " " * (effective_x_start + len(other_visible_part) - len(new_line))
+                )
+
+            # Apply the overlay
+            for j, char in enumerate(other_visible_part):
+                x_pos = effective_x_start + j
                 if not transparent or char != " ":
-                    new_line[j + x_offset] = char
+                    new_line[x_pos] = char
 
-            result_lines[i + y_offset] = "".join(new_line)
+            result_lines[y_pos] = "".join(new_line)
 
-        return self.__class__("\n".join(result_lines))
+        return cast(T, self.__class__("\n".join(result_lines)))
 
-    def __add__(self, other):
+    def __add__(self, other: Union[str, "FigletString"]) -> T:
         """
         Concatenate this FigletString with another string.
 
@@ -213,5 +738,354 @@ class FigletString(unicode_string):
 
         Returns:
             A new FigletString with combined content
+
+        Example:
+            >>> FigletString("Hello") + " World"
+            'Hello World'
         """
-        return self.__class__(super(FigletString, self).__add__(other))
+        return cast(T, self.__class__(super().__add__(other)))
+
+    def strip(self) -> T:
+        """
+        Returns a string with leading and trailing whitespace removed.
+
+        Removes whitespace from both ends of the string.
+
+        Returns:
+            A new FigletString with whitespace removed
+
+        Example:
+            >>> FigletString("  abc  ").strip()
+            'abc'
+        """
+        return cast(T, self.__class__(super().strip()))
+
+    def rotate_90_clockwise(self) -> T:
+        """
+        Rotate the FIGlet text 90 degrees clockwise.
+
+        This transforms horizontal text into vertical text reading from top to bottom.
+
+        Returns:
+            A new FigletString with rotated content
+
+        Example:
+            >>> fs = FigletString("AB\\nCD")
+            >>> print(fs.rotate_90_clockwise())
+            CA
+            DB
+        """
+        if not self:
+            return cast(T, self.__class__(""))
+
+        lines = self.splitlines()
+        if not lines:
+            return cast(T, self.__class__(""))
+
+        # Determine the dimensions
+        width = max(len(line) for line in lines)
+        height = len(lines)
+
+        # Pad lines to equal width for consistent rotation
+        padded_lines = [line.ljust(width) for line in lines]
+
+        # Perform the rotation
+        rotated = []
+        for col in range(width):
+            rotated_line = "".join(
+                padded_lines[height - row - 1][col] for row in range(height)
+            )
+            rotated.append(rotated_line)
+
+        return cast(T, self.__class__("\n".join(rotated)))
+
+    def rotate_90_counterclockwise(self) -> T:
+        """
+        Rotate the FIGlet text 90 degrees counterclockwise.
+
+        This transforms horizontal text into vertical text reading from bottom to top.
+
+        Returns:
+            A new FigletString with rotated content
+
+        Example:
+            >>> fs = FigletString("AB\\nCD")
+            >>> print(fs.rotate_90_counterclockwise())
+            BD
+            AC
+        """
+        if not self:
+            return cast(T, self.__class__(""))
+
+        lines = self.splitlines()
+        if not lines:
+            return cast(T, self.__class__(""))
+
+        # Determine the dimensions
+        width = max(len(line) for line in lines)
+        height = len(lines)
+
+        # Pad lines to equal width for consistent rotation
+        padded_lines = [line.ljust(width) for line in lines]
+
+        # Perform the rotation
+        rotated = []
+        for col in range(width - 1, -1, -1):
+            rotated_line = "".join(padded_lines[row][col] for row in range(height))
+            rotated.append(rotated_line)
+
+        return cast(T, self.__class__("\n".join(rotated)))
+
+    def border(self, style: str = "single") -> T:
+        """
+        Add a border around the FIGlet text.
+
+        Args:
+            style: Border style - "single", "double", "rounded", "bold", or "ascii"
+
+        Returns:
+            A new FigletString with a border
+
+        Raises:
+            ValueError: If an invalid border style is specified
+
+        Example:
+            >>> fs = FigletString("Hello")
+            >>> print(fs.border())
+            ┌───────┐
+            │ Hello │
+            └───────┘
+        """
+        if not self:
+            return cast(T, self.__class__(""))
+
+        lines = self.splitlines()
+        if not lines:
+            return cast(T, self.__class__(""))
+
+        # Determine border characters based on style
+        border_styles = {
+            "single": {"tl": "┌", "tr": "┐", "bl": "└", "br": "┘", "h": "─", "v": "│"},
+            "double": {"tl": "╔", "tr": "╗", "bl": "╚", "br": "╝", "h": "═", "v": "║"},
+            "rounded": {"tl": "╭", "tr": "╮", "bl": "╰", "br": "╯", "h": "─", "v": "│"},
+            "bold": {"tl": "┏", "tr": "┓", "bl": "┗", "br": "┛", "h": "━", "v": "┃"},
+            "ascii": {"tl": "+", "tr": "+", "bl": "+", "br": "+", "h": "-", "v": "|"},
+        }
+
+        # Validate style
+        if style.lower() not in border_styles:
+            valid_styles = ", ".join(f'"{s}"' for s in border_styles.keys())
+            raise ValueError(
+                f"Invalid border style: '{style}'. Valid styles are: {valid_styles}"
+            )
+
+        # Get border characters for the selected style
+        chars = border_styles[style.lower()]
+
+        # Calculate width based on the widest line
+        width = max(len(line) for line in lines) + 4  # Add padding (2 on each side)
+
+        # Create the border
+        top_border = chars["tl"] + chars["h"] * (width - 2) + chars["tr"]
+        bottom_border = chars["bl"] + chars["h"] * (width - 2) + chars["br"]
+
+        # Add borders to content
+        bordered_lines = [top_border]
+        for line in lines:
+            bordered_lines.append(f"{chars['v']} {line.ljust(width - 4)} {chars['v']}")
+        bordered_lines.append(bottom_border)
+
+        return cast(T, self.__class__("\n".join(bordered_lines)))
+
+    def shadow(self, offset: int = 1) -> T:
+        """
+        Add a shadow effect to the FIGlet text.
+
+        Args:
+            offset: Distance to offset the shadow (default: 1)
+
+        Returns:
+            A new FigletString with shadow effect
+
+        Raises:
+            ValueError: If offset is less than or equal to 0
+
+        Example:
+            >>> fs = FigletString("Hello")
+            >>> print(fs.shadow())
+            Hello
+             ello
+        """
+        if not self:
+            return cast(T, self.__class__(self))
+
+        if offset <= 0:
+            raise ValueError("Shadow offset must be a positive integer")
+
+        # Create shadow by replacing non-space characters with spaces
+        shadow_lines = []
+        for line in self.splitlines():
+            shadow_line = "".join(" " if char != " " else " " for char in line)
+            shadow_lines.append(shadow_line)
+
+        shadow = self.__class__("\n".join(shadow_lines))
+
+        # Overlay shadow with original text
+        result = shadow.overlay(self, x_offset=-offset, y_offset=-offset)
+
+        return cast(T, result)
+
+    def trim(self) -> T:
+        """
+        Trim excess whitespace around the FIGlet text.
+
+        Removes empty columns from left and right, and empty rows from top and bottom,
+        creating the most compact representation of the ASCII art.
+
+        Returns:
+            A trimmed FigletString
+
+        Example:
+            >>> fs = FigletString("  ABC  \\n      \\n")
+            >>> print(fs.trim())
+            ABC
+        """
+        if not self:
+            return cast(T, self.__class__(""))
+
+        lines = self.splitlines()
+        if not lines:
+            return cast(T, self.__class__(""))
+
+        # Remove empty lines from top and bottom
+        while lines and not lines[0].strip():
+            lines.pop(0)
+
+        while lines and not lines[-1].strip():
+            lines.pop()
+
+        if not lines:
+            return cast(T, self.__class__(""))
+
+        # Find leftmost non-space character across all lines
+        left_edge = float("inf")
+        for line in lines:
+            if line.strip():  # Only consider non-empty lines
+                left_edge = min(left_edge, len(line) - len(line.lstrip()))
+
+        left_edge = 0 if left_edge == float("inf") else left_edge
+
+        # Find rightmost non-space character across all lines
+        right_edge = 0
+        for line in lines:
+            if line.strip():  # Only consider non-empty lines
+                right_edge = max(right_edge, len(line.rstrip()))
+
+        # Trim each line
+        trimmed_lines = [line[left_edge:right_edge] for line in lines]
+
+        return cast(T, self.__class__("\n".join(trimmed_lines)))
+
+    def scale(self, horizontal_factor: int = 2, vertical_factor: int = 1) -> T:
+        """
+        Scale the FIGlet text by specified factors.
+
+        Args:
+            horizontal_factor: Factor to scale horizontally (each character becomes this many characters)
+            vertical_factor: Factor to scale vertically (each line becomes this many lines)
+
+        Returns:
+            A scaled FigletString
+
+        Raises:
+            ValueError: If scaling factors are not positive integers
+
+        Example:
+            >>> fs = FigletString("AB\\nCD")
+            >>> print(fs.scale(2, 2))
+            AABB
+            AABB
+            CCDD
+            CCDD
+        """
+        if not self:
+            return cast(T, self.__class__(""))
+
+        if horizontal_factor <= 0 or vertical_factor <= 0:
+            raise ValueError("Scaling factors must be positive integers")
+
+        lines = self.splitlines()
+        if not lines:
+            return cast(T, self.__class__(""))
+
+        # Scale horizontally first
+        h_scaled = []
+        for line in lines:
+            h_scaled.append("".join(char * horizontal_factor for char in line))
+
+        # Then scale vertically
+        v_scaled = []
+        for line in h_scaled:
+            v_scaled.extend([line] * vertical_factor)
+
+        return cast(T, self.__class__("\n".join(v_scaled)))
+
+    @property
+    def dimensions(self) -> Tuple[int, int]:
+        """
+        Get the width and height of the FIGlet text.
+
+        Returns:
+            Tuple of (width, height) in characters
+
+        Example:
+            >>> fs = FigletString("ABC\\nDEF")
+            >>> fs.dimensions
+            (3, 2)
+        """
+        lines = self.splitlines()
+        height = len(lines)
+        width = max((len(line) for line in lines), default=0)
+        return (width, height)
+
+    @property
+    def is_empty(self) -> bool:
+        """
+        Check if the FIGlet text is empty or contains only whitespace.
+
+        Returns:
+            True if empty or whitespace-only, False otherwise
+
+        Example:
+            >>> FigletString("").is_empty
+            True
+            >>> FigletString("  \\n ").is_empty
+            True
+            >>> FigletString("A").is_empty
+            False
+        """
+        return not self.strip()
+
+    @property
+    def density(self) -> float:
+        """
+        Calculate the character density of the ASCII art.
+
+        Returns the ratio of non-space characters to total characters.
+
+        Returns:
+            Float between 0.0 (all spaces) and 1.0 (no spaces)
+
+        Example:
+            >>> FigletString("A B\\nCCC").density
+            0.6
+        """
+        if not self:
+            return 0.0
+
+        total_chars = len(self.replace("\n", ""))
+        if total_chars == 0:
+            return 0.0
+
+        non_space_chars = sum(1 for c in self if c != " " and c != "\n")
+        return non_space_chars / total_chars

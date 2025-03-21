@@ -1,0 +1,2 @@
+[console_scripts]
+figlet_forge = figlet_forge.cli:main

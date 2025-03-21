@@ -39,6 +39,9 @@ class FigletFont:
         self.reMagicNumber = re.compile(r"^flf2.")
         self.reEndMarker = re.compile(r"(.)\s*$")
         self.base_dir = None  # Will be determined during loading
+        self.searched_paths: List[Path] = (
+            []
+        )  # Track searched paths for better diagnostics
 
         self.height = 0  # Height of every character
         self.hardblank = ""  # Hard blank character
@@ -60,7 +63,9 @@ class FigletFont:
             ord("ß"): 0xE1,
         }
 
+        # Load the font immediately
         self.loadFont()
+        self.parseFont()  # Parse after loading
 
     def loadFont(self) -> None:
         """
@@ -79,21 +84,40 @@ class FigletFont:
             isinstance(self.font, str) and ("/" in self.font or "\\" in self.font)
         ):
             font_path = Path(self.font)
+            self.searched_paths.append(font_path)
             if not font_path.exists():
-                raise FontNotFound(f"Font file not found: {font_path}")
+                print(f"Font not found at path: {font_path}")
+                raise FontNotFound(
+                    f"Font file not found: {font_path}",
+                    font_name=str(self.font),
+                    searched_paths=[str(p) for p in self.searched_paths],
+                )
 
             with open(font_path, "rb") as f:
                 self.data = f.read().decode("latin-1", "replace")
             self.base_dir = font_path.parent
+            print(f"✓ Loaded font from path: {font_path}")
             return
 
         # Check package resources
         try:
-            with resources.open_text("figlet_forge.fonts", f"{self.font}.flf") as f:
-                self.data = f.read()
-                return
-        except (ModuleNotFoundError, FileNotFoundError):
-            pass  # Continue to next search method
+            import importlib.resources as pkg_resources
+
+            try:
+                package_path = Path("figlet_forge/fonts") / f"{self.font}.flf"
+                self.searched_paths.append(package_path)
+
+                # Try with pkg_resources which works with both Python 3.7+
+                with pkg_resources.open_text(
+                    "figlet_forge.fonts", f"{self.font}.flf"
+                ) as f:
+                    self.data = f.read()
+                    print(f"✓ Loaded font from package: {self.font}")
+                    return
+            except (ModuleNotFoundError, FileNotFoundError):
+                pass
+        except ImportError:
+            pass
 
         # Search in standard font directories
         from ..version import SHARED_DIRECTORY
@@ -110,24 +134,73 @@ class FigletFont:
             if not directory.exists():
                 continue
 
+            self.searched_paths.append(directory)
+
             # Look for exact match first
             font_path = directory / f"{self.font}.flf"
             if font_path.exists():
                 with open(font_path, "rb") as f:
                     self.data = f.read().decode("latin-1", "replace")
                 self.base_dir = directory
+                print(f"✓ Loaded font from directory: {font_path}")
                 return
 
             # Then look for case-insensitive match
             for file in directory.glob("*.flf"):
+                self.searched_paths.append(file)
                 if file.stem.lower() == self.font.lower():
                     with open(file, "rb") as f:
                         self.data = f.read().decode("latin-1", "replace")
                     self.base_dir = directory
+                    print(f"✓ Loaded font with case-insensitive match: {file}")
                     return
 
-        # Font not found
-        raise FontNotFound(f"Font '{self.font}' not found after exhaustive search")
+        # As a fallback, check if we're running from a zipped package
+        try:
+            import site
+            import zipfile
+
+            for site_dir in site.getsitepackages():
+                for root, dirs, files in os.walk(site_dir):
+                    if "figlet_forge" in root:
+                        for file in files:
+                            if file.endswith(".zip"):
+                                try:
+                                    with zipfile.ZipFile(os.path.join(root, file)) as z:
+                                        font_path = (
+                                            f"figlet_forge/fonts/{self.font}.flf"
+                                        )
+                                        if font_path in z.namelist():
+                                            with z.open(font_path) as f:
+                                                self.data = f.read().decode(
+                                                    "latin-1", "replace"
+                                                )
+                                                print(
+                                                    f"✓ Loaded font from zip: {font_path}"
+                                                )
+                                                return
+                                except Exception:
+                                    pass
+        except Exception:
+            pass
+
+        # Font not found - provide detailed error with fallback suggestion
+        print(f"✗ Font '{self.font}' not found - using fallback")
+
+        # Try to use 'standard' as fallback for better user experience
+        if self.font.lower() != "standard":
+            try:
+                self.font = "standard"
+                return self.loadFont()
+            except Exception:
+                pass
+
+        # If we get here, even fallback failed
+        raise FontNotFound(
+            f"Font '{self.font}' not found after exhaustive search",
+            font_name=str(self.font),
+            searched_paths=[str(p) for p in self.searched_paths],
+        )
 
     def parseFont(self) -> None:
         """

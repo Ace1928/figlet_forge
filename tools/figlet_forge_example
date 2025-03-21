@@ -1,9 +1,11 @@
-#!/bin/sh
-# ╔═══════════════════════════════════════════════════════════════════════════╗
-# ║ Figlet Forge - Eidosian Typography Engine                                 ║
-# ╚═══════════════════════════════════════════════════════════════════════════╝
-# An Eidosian reimplementation extending the original pyfiglet package
-# (itself a pure Python port of FIGlet) with:
+#!/bin/bash
+# ╔══════════════════════════════════════════════════════════════════════════════════╗
+# ║ █▀▀ █ █▀▀ █   █▀▀ ▀█▀   █▀▀ █▀█ █▀█ █▀▀ █▀▀                                     ║
+# ║ █▀▀ █ █ █ █   █▀▀  █    █▀  █ █ █▀▄ █ █ █▀▀                                     ║
+# ║ ▀   ▀ ▀▀▀ ▀▀▀ ▀▀▀ ▀▀▀   ▀   ▀▀▀ ▀ ▀ ▀▀▀ ▀▀▀                                     ║
+# ║ Eidosian Typography Engine - A modern reimagining of the classic FIGlet tool     ║
+# ╚══════════════════════════════════════════════════════════════════════════════════╝
+# An Eidosian reimplementation extending the original pyfiglet package with:
 # - Full colorized ANSI code support for vibrant text art
 # - Unicode character rendering with comprehensive mapping
 # - Expanded font ecosystem with careful attention to licensing
@@ -11,11 +13,13 @@
 # - Significant performance optimizations without sacrificing quality
 # - Enhanced maintainability through modern Python practices
 # - Comprehensive documentation for all use cases
-# - Full backward compatibility with pyfiglet
+# - Full backward compatibility with pyfiglet and original figlet
 #
 # A central component of the Eidosian Forge ecosystem.
+# Version: 1.0.0
 
-FIGLET_FORGE='./figlet_forge'
+# Configuration variables
+FIGLET_FORGE="${FIGLET_FORGE:-./figlet_forge}"
 OUTPUT='/tmp/figlet_forge_example.log'
 TEXT='figlet_forge'
 LOG=0
@@ -23,71 +27,567 @@ COLOR=0
 UNICODE=0
 WIDTH=0
 DIRECTION=""
+PYTHON_DEMO=0
+FONT_SHOWCASE=0
+DIRECTION_DEMO=0
+WIDTH_DEMO=0
+COLOR_DEMO=0
+TRANSFORMATION_DEMO=0
+ALL_DEMOS=0
+INTERACTIVE=0
+RANDOM_FONT=0
+SECTION_DELAY=1
+ANIMATION_SPEED=0.5
+
+# ANSI color codes for enhanced output
+RESET="\033[0m"
+BOLD="\033[1m"
+GREEN="\033[32m"
+BLUE="\033[34m"
+CYAN="\033[36m"
+MAGENTA="\033[35m"
+YELLOW="\033[33m"
+RED="\033[31m"
+BG_BLUE="\033[44m"
 
 cd "$(dirname "$0")" || exit
+
+# Check for figlet_forge executable
 if [ ! -f "$FIGLET_FORGE" ]; then
-    echo "Error! Can't find $FIGLET_FORGE!"
+    echo -e "${RED}${BOLD}Error! Can't find $FIGLET_FORGE!${RESET}"
+    echo "Please ensure the figlet_forge executable is present or set the FIGLET_FORGE environment variable."
     exit 1
 fi
 
+# Print a section banner
+print_banner() {
+    local text="$1"
+    local width=80
+    local separator=$(printf "%${width}s" | tr ' ' '═')
+
+    echo -e "\n${BLUE}${separator}${RESET}"
+    echo -e "${CYAN}${BOLD} 🔷 ${text} ${RESET}" | sed -e :a -e "s/^.\{1,$(($width-4))\}$/& /;ta"
+    echo -e "${BLUE}${separator}${RESET}\n"
+    sleep $SECTION_DELAY
+}
+
+# Print a subsection header
+print_subsection() {
+    local text="$1"
+    echo -e "\n${MAGENTA}${BOLD}▶ ${text}${RESET}\n"
+    sleep $(echo "$SECTION_DELAY / 2" | bc -l)
+}
+
+# Run Python demonstration script
+run_python_demo() {
+    print_banner "FIGLET FORGE PYTHON API DEMONSTRATION"
+    echo -e "${YELLOW}Creating Python demo script...${RESET}"
+
+    # Create the Python demo script
+    cat > /tmp/figlet_forge_demo.py << 'EOF'
+#!/usr/bin/env python3
+"""
+Figlet Forge Demo Script
+
+A comprehensive demonstration of Figlet Forge capabilities.
+"""
+
+import sys
+import time
+import random
+import os
+from pathlib import Path
+
+# Ensure the package is in the path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+try:
+    # Import from our package
+    from figlet_forge.figlet import Figlet
+    from figlet_forge.color.figlet_color import COLOR_CODES
+except ImportError:
+    print("Could not import figlet_forge. Make sure it's installed.")
+    print("Try: pip install figlet-forge")
+    sys.exit(1)
+
+def print_banner(text):
+    """Print a section banner."""
+    print("\n" + "=" * 80)
+    print(f" 🔷 {text} ".center(80, "="))
+    print("=" * 80)
+
+def list_available_fonts():
+    """Get a list of available fonts."""
+    fig = Figlet()
+    return [font for font in fig.getFonts() if font != ""]
+
+def main():
+    """Run the Figlet Forge demonstration."""
+    print_banner("FIGLET FORGE DEMONSTRATION")
+
+    print("\nPreparing to demonstrate Figlet Forge capabilities...")
+    time.sleep(1)
+
+    # Basic demonstration with default font
+    print_banner("BASIC USAGE")
+    basic_text = "Eidosian Forge"
+    fig = Figlet()
+    rendered = fig.renderText(basic_text)
+    print(rendered)
+    print("\nThis is the default 'standard' font.")
+    time.sleep(1)
+
+    # Demonstrate different fonts
+    print_banner("FONT SHOWCASE")
+    fonts = ["slant", "small", "big", "block", "mini"]
+    for font in fonts:
+        try:
+            print(f"\n• Font: {font}")
+            fig = Figlet(font=font)
+            rendered = fig.renderText(font)
+            print(rendered)
+            time.sleep(0.5)
+        except Exception as e:
+            print(f"Error loading font '{font}': {e}")
+
+    # Demonstrate text direction
+    print_banner("TEXT DIRECTION")
+    directions = ["auto", "left_to_right", "right_to_left"]
+    for direction in directions:
+        try:
+            print(f"\n• Direction: {direction}")
+            fig = Figlet(direction=direction)
+            rendered = fig.renderText("Direction")
+            print(rendered)
+            time.sleep(0.5)
+        except Exception as e:
+            print(f"Error with direction '{direction}': {e}")
+
+    # Demonstrate width settings
+    print_banner("WIDTH SETTINGS")
+    widths = [80, 60, 40]
+    for width in widths:
+        try:
+            print(f"\n• Width: {width}")
+            fig = Figlet(width=width)
+            rendered = fig.renderText("Width: " + str(width))
+            print(rendered)
+            time.sleep(0.5)
+        except Exception as e:
+            print(f"Error with width {width}: {e}")
+
+    # Demonstrate colors (simulated in description)
+    print_banner("COLOR CAPABILITIES")
+    print("\nFiglet Forge supports various colors:")
+    for color in sorted(COLOR_CODES.keys()):
+        print(f"  - {color}")
+    print("\nTo use colors, run figlet_forge with the --color option:")
+    print("  figlet_forge 'Hello' --color=RED")
+    print("  figlet_forge 'World' --color=CYAN:BLUE  # foreground:background")
+    print("  figlet_forge 'Rainbow' --color=rainbow  # special rainbow mode")
+
+    print_banner("TRANSFORMATION SHOWCASE")
+    text = "Transform"
+    fig = Figlet(font="standard")
+    normal = fig.renderText(text)
+
+    print("\nNormal:")
+    print(normal)
+
+    print("\nReversed:")
+    print(fig.reverse(normal))
+
+    print_banner("WHAT'S NEXT?")
+    print("\nTry these commands to create your own ASCII art:")
+    print("  figlet_forge 'Your Text'")
+    print("  figlet_forge --font=slant 'Custom Font'")
+    print("  figlet_forge --color=rainbow 'Colorful Text'")
+    print("  figlet_forge --help  # For more options")
+
+    print("\nThank you for trying Figlet Forge!")
+
+if __name__ == "__main__":
+    main()
+EOF
+
+    # Execute the Python demo
+    echo -e "${GREEN}Running Python demo...${RESET}\n"
+    python3 /tmp/figlet_forge_demo.py
+
+    # Clean up
+    rm -f /tmp/figlet_forge_demo.py
+}
+
+# Print samples of all fonts
 print_samples() {
     if [ "$LOG" -eq 1 ]; then
-        rm -f "$OUTPUT" 2>/dev/null
-        output="$OUTPUT"
+        echo -e "${GREEN}Logging output to ${output}${RESET}"
     else
         output='/dev/null'
     fi
 
     # Get font list from figlet_forge
+    echo -e "${YELLOW}Fetching available fonts...${RESET}"
     fonts="$("$FIGLET_FORGE" --list-fonts | sed -e "s/[',]//g" -e 's/^\[//g' -e 's/\]$//g')"
 
     # Define color options if requested
     color_opt=""
     if [ "$COLOR" -eq 1 ]; then
-        color_opt="--color rainbow"
+        color_opt="--color=rainbow"
+        echo -e "${GREEN}Enabling rainbow color mode${RESET}"
     fi
 
     # Define unicode option if requested
     unicode_opt=""
     if [ "$UNICODE" -eq 1 ]; then
         unicode_opt="--unicode"
+        echo -e "${GREEN}Enabling Unicode character rendering${RESET}"
     fi
 
     # Define width option if specified
     width_opt=""
     if [ "$WIDTH" -gt 0 ]; then
-        width_opt="--width $WIDTH"
+        width_opt="--width=$WIDTH"
+        echo -e "${GREEN}Setting width to ${WIDTH}${RESET}"
     fi
 
     # Define direction option if specified
     direction_opt=""
     if [ -n "$DIRECTION" ]; then
-        direction_opt="--direction $DIRECTION"
+        direction_opt="--direction=$DIRECTION"
+        echo -e "${GREEN}Setting direction to ${DIRECTION}${RESET}"
     fi
 
-    for font in $fonts; do
-        echo "Font: $font" | tee -a "$output"
-        "$FIGLET_FORGE" "$color_opt" $unicode_opt "$width_opt" "$direction_opt" -f "$font" "$TEXT" | tee -a "$output"
+    # If random font is selected, pick one randomly
+    if [ "$RANDOM_FONT" -eq 1 ]; then
+        font_array=($fonts)
+        font_count=${#font_array[@]}
+        if [ "$font_count" -gt 0 ]; then
+            random_index=$((RANDOM % font_count))
+            selected_font="${font_array[$random_index]}"
+            echo -e "${GREEN}Randomly selected font: ${BOLD}${selected_font}${RESET}"
+            "$FIGLET_FORGE" $color_opt $unicode_opt "$width_opt" "$direction_opt" -f "$selected_font" "$TEXT" | tee -a "$output"
+        else
+            echo -e "${RED}No fonts available${RESET}"
+        fi
         echo "" | tee -a "$output"
-    done
+    else
+        # Show samples for all fonts
+        for font in $fonts; do
+            echo -e "${CYAN}${BOLD}═══ Font: $font ═══${RESET}" | tee -a "$output"
+            if ! "$FIGLET_FORGE" $color_opt $unicode_opt "$width_opt" "$direction_opt" -f "$font" "$TEXT" 2>/dev/null | tee -a "$output"; then
+                echo -e "${RED}Error rendering font: $font${RESET}" | tee -a "$output"
+            fi
+            echo "" | tee -a "$output"
+
+            # Optional pause between fonts
+            if [ "$INTERACTIVE" -eq 1 ]; then
+                read -p "Press Enter for next font..."
+            fi
+        done
+    fi
 }
 
+# Demonstrate different fonts
+font_showcase_demo() {
+    print_banner "FONT SHOWCASE DEMONSTRATION"
+
+    # Get a selection of interesting fonts
+    fonts=("standard" "slant" "small" "big" "block" "mini" "script" "shadow" "digital" "bubble")
+
+    for font in "${fonts[@]}"; do
+        print_subsection "Font: $font"
+        if ! "$FIGLET_FORGE" -f "$font" "$TEXT" 2>/dev/null; then
+            echo -e "${RED}Error: Font '$font' could not be rendered${RESET}"
+            echo -e "${YELLOW}Try using figlet_forge --load to install missing fonts${RESET}"
+        fi
+        sleep $ANIMATION_SPEED
+    done
+
+    # What's next guidance
+    echo -e "\n${GREEN}${BOLD}To use these fonts in your own text:${RESET}"
+    echo -e "${YELLOW}figlet_forge --font=<font_name> 'Your Text'${RESET}"
+    echo "Example: figlet_forge --font=slant 'Hello World'"
+}
+
+# Demonstrate different text directions
+direction_demo() {
+    print_banner "TEXT DIRECTION DEMONSTRATION"
+
+    directions=("auto" "left-to-right" "right-to-left")
+
+    for direction in "${directions[@]}"; do
+        print_subsection "Direction: $direction"
+        if ! "$FIGLET_FORGE" --direction="$direction" "$TEXT" 2>/dev/null; then
+            echo -e "${RED}Error demonstrating direction: $direction${RESET}"
+        fi
+        sleep $ANIMATION_SPEED
+    done
+
+    # What's next guidance
+    echo -e "\n${GREEN}${BOLD}To set text direction:${RESET}"
+    echo -e "${YELLOW}figlet_forge --direction=<direction> 'Your Text'${RESET}"
+    echo "Example: figlet_forge --direction=right-to-left 'Hello World'"
+}
+
+# Demonstrate width settings
+width_demo() {
+    print_banner "WIDTH SETTINGS DEMONSTRATION"
+
+    widths=(80 60 40)
+
+    for width in "${widths[@]}"; do
+        print_subsection "Width: $width"
+        if ! "$FIGLET_FORGE" --width="$width" "$TEXT" 2>/dev/null; then
+            echo -e "${RED}Error demonstrating width: $width${RESET}"
+        fi
+        sleep $ANIMATION_SPEED
+    done
+
+    # What's next guidance
+    echo -e "\n${GREEN}${BOLD}To set output width:${RESET}"
+    echo -e "${YELLOW}figlet_forge --width=<columns> 'Your Text'${RESET}"
+    echo "Example: figlet_forge --width=40 'Hello World'"
+}
+
+# Demonstrate color capabilities
+color_demo() {
+    print_banner "COLOR CAPABILITIES DEMONSTRATION"
+
+    print_subsection "Basic Colors"
+    colors=("RED" "GREEN" "BLUE" "CYAN" "MAGENTA" "YELLOW" "WHITE")
+
+    for color in "${colors[@]}"; do
+        echo -e "${YELLOW}Color: $color${RESET}"
+        if ! "$FIGLET_FORGE" --color="$color" -f standard "$TEXT" 2>/dev/null; then
+            echo -e "${RED}Error demonstrating color: $color${RESET}"
+        fi
+        sleep $ANIMATION_SPEED
+    done
+
+    print_subsection "Special Color Modes"
+    echo -e "${YELLOW}Rainbow Mode:${RESET}"
+    "$FIGLET_FORGE" --color=rainbow -f standard "$TEXT"
+    sleep $ANIMATION_SPEED
+
+    echo -e "\n${YELLOW}Foreground:Background Mode:${RESET}"
+    "$FIGLET_FORGE" --color="CYAN:BLUE" -f small "FG:BG Colors"
+    sleep $ANIMATION_SPEED
+
+    # What's next guidance
+    echo -e "\n${GREEN}${BOLD}To apply colors:${RESET}"
+    echo -e "${YELLOW}figlet_forge --color=<color> 'Your Text'${RESET}"
+    echo "Example: figlet_forge --color=RED 'Hello World'"
+    echo "Example: figlet_forge --color=CYAN:BLUE 'Hello World'"
+    echo "Example: figlet_forge --color=rainbow 'Hello World'"
+}
+
+# Demonstrate text transformations
+transformation_demo() {
+    print_banner "TRANSFORMATION DEMONSTRATION"
+
+    print_subsection "Original Text"
+    "$FIGLET_FORGE" -f standard "Transform"
+
+    print_subsection "Reversed Text"
+    "$FIGLET_FORGE" -f standard --reverse "Transform"
+
+    print_subsection "Flipped Text"
+    "$FIGLET_FORGE" -f standard --flip "Transform"
+
+    # What's next guidance
+    echo -e "\n${GREEN}${BOLD}To transform text:${RESET}"
+    echo -e "${YELLOW}figlet_forge --reverse 'Your Text'${RESET}"
+    echo -e "${YELLOW}figlet_forge --flip 'Your Text'${RESET}"
+}
+
+# Run interactive mode
+interactive_mode() {
+    print_banner "INTERACTIVE MODE"
+
+    echo -e "Welcome to the ${CYAN}${BOLD}Figlet Forge Interactive Mode${RESET}!"
+    echo -e "This mode allows you to interactively explore Figlet Forge capabilities.\n"
+
+    # Get text to display
+    echo -en "${YELLOW}Enter text to display (default: $TEXT): ${RESET}"
+    read -r user_text
+    if [ -n "$user_text" ]; then
+        TEXT="$user_text"
+    fi
+
+    # Get font
+    echo -en "\n${YELLOW}Available fonts:${RESET}\n"
+    fonts=($("$FIGLET_FORGE" --list-fonts | sed -e "s/[',]//g" -e 's/^\[//g' -e 's/\]$//g'))
+
+    # Display a selection of fonts
+    selected_fonts=("standard" "slant" "small" "big" "block")
+    for i in "${!selected_fonts[@]}"; do
+        echo -e "$((i+1)). ${selected_fonts[$i]}"
+    done
+    echo -e "$((${#selected_fonts[@]}+1)). Other (specify)"
+    echo -e "$((${#selected_fonts[@]}+2)). Random"
+
+    echo -en "\n${YELLOW}Select font (1-$((${#selected_fonts[@]}+2))): ${RESET}"
+    read -r font_choice
+
+    font="standard"  # Default
+    if [[ $font_choice -ge 1 && $font_choice -le ${#selected_fonts[@]} ]]; then
+        font="${selected_fonts[$((font_choice-1))]}"
+    elif [ "$font_choice" -eq $((${#selected_fonts[@]}+1)) ]; then
+        echo -en "${YELLOW}Enter font name: ${RESET}"
+        read -r font
+    elif [ "$font_choice" -eq $((${#selected_fonts[@]}+2)) ]; then
+        random_index=$((RANDOM % ${#fonts[@]}))
+        font="${fonts[$random_index]}"
+        echo -e "${GREEN}Randomly selected font: ${BOLD}${font}${RESET}"
+    fi
+
+    # Get color
+    echo -en "\n${YELLOW}Enable color? (y/n): ${RESET}"
+    read -r color_choice
+    color_opt=""
+    if [[ "$color_choice" == "y" || "$color_choice" == "Y" ]]; then
+        echo -en "${YELLOW}Choose color (RED, GREEN, BLUE, CYAN, MAGENTA, YELLOW, rainbow): ${RESET}"
+        read -r color_value
+        case "$color_value" in
+            "")
+                color_opt="--color=rainbow"  # Default to rainbow if empty
+                ;;
+            *)
+                color_opt="--color=$color_value"
+                ;;
+        esac
+    fi
+
+    # Get width
+    echo -en "\n${YELLOW}Specify width? (y/n): ${RESET}"
+    read -r width_choice
+    width_opt=""
+    if [[ "$width_choice" == "y" || "$width_choice" == "Y" ]]; then
+        echo -en "${YELLOW}Enter width (columns): ${RESET}"
+        read -r width_value
+        width_opt="--width $width_value"
+    fi
+
+    # Get direction
+    echo -en "\n${YELLOW}Specify text direction? (y/n): ${RESET}"
+    read -r direction_choice
+    direction_opt=""
+    if [[ "$direction_choice" == "y" || "$direction_choice" == "Y" ]]; then
+        echo -en "${YELLOW}Choose direction (auto, left-to-right, right-to-left): ${RESET}"
+        read -r direction_value
+        case "$direction_value" in
+            "auto"|"left-to-right"|"right-to-left")
+                direction_opt="--direction=$direction_value"
+                ;;
+            *)
+                echo -e "${RED}Invalid direction. Using default.${RESET}"
+                ;;
+        esac
+    fi
+
+    # Get Unicode
+    echo -en "\n${YELLOW}Enable Unicode support? (y/n): ${RESET}"
+    read -r unicode_choice
+    unicode_opt=""
+    if [[ "$unicode_choice" == "y" || "$unicode_choice" == "Y" ]]; then
+        unicode_opt="--unicode"
+    fi
+
+    print_banner "YOUR CUSTOM FIGLET"
+    echo -e "${GREEN}Executing:${RESET} $FIGLET_FORGE $color_opt $unicode_opt $width_opt $direction_opt -f $font \"$TEXT\""
+
+    # Execute the command
+    if ! "$FIGLET_FORGE" "$color_opt" $unicode_opt "$width_opt" "$direction_opt" -f "$font" "$TEXT" 2>/dev/null; then
+        echo -e "${RED}Error rendering with selected options${RESET}"
+        echo -e "${YELLOW}Try different font or options${RESET}"
+    fi
+
+    # What's next guidance
+    echo -e "\n${GREEN}${BOLD}Command to reproduce this output:${RESET}"
+    echo -e "${CYAN}$FIGLET_FORGE $color_opt $unicode_opt $width_opt $direction_opt -f $font \"$TEXT\"${RESET}"
+}
+
+# Run all demos
+run_all_demos() {
+    print_banner "FIGLET FORGE COMPREHENSIVE DEMONSTRATION"
+
+    echo -e "${YELLOW}This demonstration will showcase all Figlet Forge capabilities.${RESET}"
+    echo -e "${YELLOW}Press Ctrl+C at any time to exit.${RESET}\n"
+    sleep 1
+
+    font_showcase_demo
+    direction_demo
+    width_demo
+    color_demo
+    transformation_demo
+
+    print_banner "DEMONSTRATION COMPLETE"
+    echo -e "${GREEN}Thank you for exploring Figlet Forge!${RESET}"
+    echo -e "For more options, run: $0 -h"
+
+    # Final summary and guide
+    echo -e "\n${CYAN}${BOLD}═══ FIGLET FORGE USAGE GUIDE ═══${RESET}"
+    echo -e "\n${BOLD}Basic Usage:${RESET}"
+    echo "  $FIGLET_FORGE 'Your Text'"
+    echo -e "\n${BOLD}Font Options:${RESET}"
+    echo "  $FIGLET_FORGE --font=standard 'Standard Font'"
+    echo "  $FIGLET_FORGE --font=slant 'Slant Font'"
+    echo "  $FIGLET_FORGE --font=small 'Small Font'"
+    echo -e "\n${BOLD}Color Options:${RESET}"
+    echo "  $FIGLET_FORGE --color=RED 'Red Text'"
+    echo "  $FIGLET_FORGE --color=CYAN:BLUE 'Cyan on Blue'"
+    echo "  $FIGLET_FORGE --color=rainbow 'Rainbow Effect'"
+    echo -e "\n${BOLD}Transformations:${RESET}"
+    echo "  $FIGLET_FORGE --reverse 'Reversed Text'"
+    echo "  $FIGLET_FORGE --flip 'Flipped Text'"
+    echo -e "\n${BOLD}For More Help:${RESET}"
+    echo "  $FIGLET_FORGE --help"
+}
+
+# Display usage information
 usage() {
-    echo "Figlet Forge Example - Showcase the Eidosian Typography Engine"
-    echo "Usage: $0 [options] [text ...]"
-    echo ""
-    echo "Options:"
-    echo "-l                  Create log file"
-    echo "-o [path_to_file]   Specify the path of log file (default: $OUTPUT)"
-    echo "-c                  Enable colorized ANSI output"
-    echo "-u                  Enable Unicode character rendering"
-    echo "-w [width]          Specify output width"
-    echo "-d [direction]      Specify text direction (auto, left-to-right, right-to-left)"
-    echo "-h                  Show this help message"
+    cat <<EOF
+${BOLD}${BG_BLUE} Figlet Forge - Eidosian Typography Engine ${RESET}
+
+${BOLD}DESCRIPTION${RESET}
+  A powerful tool for creating ASCII text art with extensive
+  customization options and full compatibility with figlet and pyfiglet.
+
+${BOLD}USAGE${RESET}
+  $(basename "$0") [options] [text]
+
+${BOLD}OPTIONS${RESET}
+  ${BOLD}-l${RESET}                  Create log file
+  ${BOLD}-o${RESET} [path_to_file]   Specify the path of log file (default: $OUTPUT)
+  ${BOLD}-c${RESET}                  Add color to the output
+  ${BOLD}-u${RESET}                  Enable Unicode character support
+  ${BOLD}-w${RESET} [width]          Set width for the output
+  ${BOLD}-d${RESET} [direction]      Set direction (auto, left-to-right, right-to-left)
+  ${BOLD}-p${RESET}                  Run Python API demonstration
+  ${BOLD}-f${RESET}                  Run font showcase
+  ${BOLD}-D${RESET}                  Run text direction demonstration
+  ${BOLD}-W${RESET}                  Run width settings demonstration
+  ${BOLD}-C${RESET}                  Run color capabilities demonstration
+  ${BOLD}-T${RESET}                  Run transformation demonstration
+  ${BOLD}-a${RESET}                  Run all demonstrations
+  ${BOLD}-i${RESET}                  Run interactive mode
+  ${BOLD}-r${RESET}                  Use random font
+  ${BOLD}-h${RESET}                  Show this help
+
+${BOLD}EXAMPLES${RESET}
+  $(basename "$0") "Hello World"           # Basic usage
+  $(basename "$0") -f -i                   # Interactive font showcase
+  $(basename "$0") -a                       # Run all demos
+  $(basename "$0") -c -w 60 "Colored Text" # Colored text with width 60
+
+${BOLD}VERSION${RESET}
+  Figlet Forge v1.0.0 - Eidosian Forge
+EOF
 }
 
 # Parse options and arguments
-while getopts ":lo:cuw:d:h" opt; do
+while getopts ":lo:cuw:d:pfDWCTairh" opt; do
     case $opt in
         l) LOG=1 ;;
         o) OUTPUT="$OPTARG" ;;
@@ -95,6 +595,15 @@ while getopts ":lo:cuw:d:h" opt; do
         u) UNICODE=1 ;;
         w) WIDTH="$OPTARG" ;;
         d) DIRECTION="$OPTARG" ;;
+        p) PYTHON_DEMO=1 ;;
+        f) FONT_SHOWCASE=1 ;;
+        D) DIRECTION_DEMO=1 ;;
+        W) WIDTH_DEMO=1 ;;
+        C) COLOR_DEMO=1 ;;
+        T) TRANSFORMATION_DEMO=1 ;;
+        a) ALL_DEMOS=1 ;;
+        i) INTERACTIVE=1 ;;
+        r) RANDOM_FONT=1 ;;
         h) usage; exit 0 ;;
         \?) echo "Invalid option: -$OPTARG" >&2; usage; exit 1 ;;
         :) echo "Option -$OPTARG requires an argument." >&2; usage; exit 1 ;;
@@ -106,4 +615,33 @@ if [ -n "$1" ]; then
 fi
 
 # Main execution
-print_samples
+if [ "$PYTHON_DEMO" -eq 1 ]; then
+    run_python_demo
+elif [ "$FONT_SHOWCASE" -eq 1 ]; then
+    font_showcase_demo
+elif [ "$DIRECTION_DEMO" -eq 1 ]; then
+    direction_demo
+elif [ "$WIDTH_DEMO" -eq 1 ]; then
+    width_demo
+elif [ "$COLOR_DEMO" -eq 1 ]; then
+    color_demo
+elif [ "$TRANSFORMATION_DEMO" -eq 1 ]; then
+    transformation_demo
+elif [ "$ALL_DEMOS" -eq 1 ]; then
+    run_all_demos
+elif [ "$INTERACTIVE" -eq 1 ]; then
+    interactive_mode
+else
+    print_samples
+fi
+
+# Final usage guide
+if [ "$ALL_DEMOS" -ne 1 ] && [ "$INTERACTIVE" -ne 1 ]; then
+    echo -e "\n${CYAN}${BOLD}═══ WHAT NEXT? ═══${RESET}"
+    echo -e "To create your own ASCII art text:"
+    echo -e "  $FIGLET_FORGE 'Your Text'"
+    echo -e "  $FIGLET_FORGE --font=slant --color=rainbow 'Colorful Text'"
+    echo -e "  $FIGLET_FORGE --help  # For more options"
+fi
+
+exit 0

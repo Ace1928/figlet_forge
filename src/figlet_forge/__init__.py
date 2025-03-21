@@ -38,8 +38,7 @@ from .core.figlet_font import FigletFont
 from .figlet import Figlet, print_figlet
 from .figlet_string import FigletString
 
-# Import version information
-# Import global constants
+# Import version information first to avoid circular imports
 from .version import (
     COLOR_CODES,
     DEFAULT_FONT,
@@ -86,9 +85,3 @@ __all__ = [
     "__author__",
     "__description__",
 ]
-
-# Execute main CLI when run directly
-if __name__ == "__main__":
-    from .cli import main
-
-    sys.exit(main())

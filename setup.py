@@ -5,13 +5,35 @@ For compatibility with older tools, use this instead of pyproject.toml.
 For modern usage, prefer pyproject.toml.
 """
 
+import os
+import re
+
 from setuptools import find_packages, setup
 
-from src.figlet_forge.version import (
-    __author__,
-    __author_email__,
-    __description__,
-    __version__,
+# Extract version directly from version.py without importing
+version_file = os.path.join("src", "figlet_forge", "version.py")
+with open(version_file, encoding="utf-8") as f:
+    version_content = f.read()
+
+# Extract metadata using regex patterns
+version_match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', version_content)
+author_match = re.search(r'__author__\s*=\s*["\']([^"\']+)["\']', version_content)
+author_email_match = re.search(
+    r'__author_email__\s*=\s*["\']([^"\']+)["\']', version_content
+)
+description_match = re.search(
+    r'__description__\s*=\s*["\']([^"\']+)["\']', version_content
+)
+
+__version__ = version_match.group(1) if version_match else "0.1.0"
+__author__ = author_match.group(1) if author_match else "Lloyd Handyside"
+__author_email__ = (
+    author_email_match.group(1) if author_email_match else "ace1928@gmail.com"
+)
+__description__ = (
+    description_match.group(1)
+    if description_match
+    else "Enhanced Figlet System with colorized ANSI support and Unicode rendering"
 )
 
 with open("README.md", encoding="utf-8") as fh:

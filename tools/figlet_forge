@@ -15,10 +15,22 @@
 # A central component of the Eidosian Forge ecosystem.
 
 # Set path to ensure module visibility
-cd "$(dirname "$0")"/.. || exit
+script_dir="$(dirname "$0")"
+cd "$script_dir"/.. || {
+  echo "Error: Cannot change to parent directory of $script_dir" >&2
+  exit 1
+}
+
 # Capture current directory and export PYTHONPATH separately
 current_dir="$(pwd)"
-export PYTHONPATH="$current_dir"
+export PYTHONPATH="$current_dir${PYTHONPATH:+:$PYTHONPATH}"
 
-# Execute the forge
-exec python -m figlet_forge.cli "$@"
+# Check if module is available
+if ! python3 -c "import figlet_forge.cli" 2>/dev/null; then
+  # Try to use installed package if module not found in development environment
+  exec python3 -m figlet_forge.cli "$@"
+  exit $?
+fi
+
+# Execute the forge with explicit module reference
+python3 -m figlet_forge.cli "$@"

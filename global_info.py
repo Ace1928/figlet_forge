@@ -1,9 +1,11 @@
 # filepath: /home/lloyd/repos/global_info.py
+import os
 import platform
 import pprint
+import sys
 from datetime import date
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, TypedDict, TypeVar, Union
+from typing import Any, Dict, List, Literal, Optional, Set, TypedDict, TypeVar, Union
 
 """
 ╔═══════════════════════════════════════════════════════════════════════════╗
@@ -1447,3 +1449,80 @@ __all__: List[str] = [
     "BRANDING",  # Visual identity parameters
     "SECURITY",  # Protection mechanism settings
 ]
+
+"""
+Global information and initialization for Figlet Forge.
+
+This module contains global constants and initialization functions
+for the Figlet Forge system, ensuring proper configuration and setup.
+"""
+
+# Ensure src directory is in Python path
+SRC_DIR = Path(__file__).parent / "src"
+if SRC_DIR.exists() and str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+# Package information
+PACKAGE_NAME = "figlet_forge"
+PACKAGE_VERSION = "1.0.2"
+PACKAGE_AUTHOR = "Lloyd Handyside"
+PACKAGE_EMAIL = "ace1928@gmail.com"
+PACKAGE_DESCRIPTION = (
+    "Enhanced Figlet System with colorized ANSI support and Unicode rendering"
+)
+
+# Font directories to search
+FONT_DIRS: List[Path] = [
+    Path.home() / ".figlet_forge" / "fonts",
+    Path("/usr/share/figlet"),
+    Path("/usr/local/share/figlet"),
+]
+
+# Add package fonts directory
+try:
+    import figlet_forge
+
+    PACKAGE_DIR = Path(figlet_forge.__file__).parent
+    FONT_DIRS.append(PACKAGE_DIR / "fonts")
+except ImportError:
+    pass
+
+# Environment variable for font path
+if "FIGLET_FORGE_FONT_DIR" in os.environ:
+    font_dir = Path(os.environ["FIGLET_FORGE_FONT_DIR"])
+    if font_dir.exists():
+        FONT_DIRS.insert(0, font_dir)
+
+
+# Function to find available fonts
+def get_available_fonts() -> Set[str]:
+    """
+    Find all available figlet fonts in the system.
+
+    Returns:
+        Set of available font names
+    """
+    fonts: Set[str] = set()
+
+    for font_dir in FONT_DIRS:
+        if font_dir.exists():
+            for font_file in font_dir.glob("*.flf"):
+                fonts.add(font_file.stem)
+
+    return fonts
+
+
+# Initialize package imports if needed
+def ensure_package_imports() -> None:
+    """
+    Ensure figlet_forge package can be imported.
+
+    This function is used for development environments to make sure
+    the package is importable without installation.
+    """
+    if "figlet_forge" not in sys.modules:
+        try:
+            import figlet_forge  # noqa
+        except ImportError:
+            if SRC_DIR.exists():
+                sys.path.insert(0, str(SRC_DIR))

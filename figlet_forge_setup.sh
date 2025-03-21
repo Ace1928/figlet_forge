@@ -22,8 +22,9 @@ manifest_dir() {
     echo "✓  Manifested: $path"
   else
     echo "✗  Failed to manifest: $path"
-    fi
-    }
+    return 1
+  fi
+}
 
 manifest_file() {
   local path="$1"
@@ -46,6 +47,16 @@ DIRS=(
   "tools"
   "examples"
 )
+
+# Check if package structure exists and create it if it doesn't
+# This ensures the package can be imported during development
+if [ ! -d "$ROOT/src/figlet_forge" ]; then
+  echo "Creating package structure for development..."
+  mkdir -p "$ROOT/src/figlet_forge"
+  # Create __init__.py files to make the packages importable
+  touch "$ROOT/src/__init__.py"
+  touch "$ROOT/src/figlet_forge/__init__.py"
+fi
 
 # Manifest directories
 for dir_pattern in "${DIRS[@]}"; do

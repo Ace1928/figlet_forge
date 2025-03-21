@@ -1,17 +1,29 @@
 #!/usr/bin/env python
 """
-Main entry point for the Figlet Forge command line interface.
-Provides a comprehensive CLI for rendering ASCII art text with
-support for colors, unicode, and various layout options.
+Main CLI entry point for Figlet Forge.
+
+This module provides the command-line interface for the Figlet Forge system,
+allowing users to create ASCII text art with various styling options.
 """
 
+import os
 import sys
 from optparse import OptionParser
 from typing import List, Optional
 
-from .. import COLOR_CODES, RESET_COLORS, Figlet, FigletFont
-from ..color import parse_color
-from ..core.exceptions import FontNotFound
+from figlet_forge.color.figlet_color import (
+    COLOR_CODES,
+    RESET_COLORS,
+    parse_color,
+)
+from figlet_forge.core.exceptions import FigletError, FontNotFound, InvalidColor
+
+# Import the FigletFont class
+from figlet_forge.core.figlet_font import FigletFont
+
+# Import the Figlet class from the local package
+from figlet_forge.figlet import Figlet
+
 from ..version import __version__
 
 # Default font for rendering
@@ -29,6 +41,14 @@ def main(args: Optional[List[str]] = None) -> int:
         Exit code (0 for success, 1 for error)
     """
     parser = OptionParser(version=__version__, usage="%prog [options] [text..]")
+
+    # Add debug option for troubleshooting
+    parser.add_option(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="enable debug output for troubleshooting",
+    )
     parser.add_option(
         "-f",
         "--font",
@@ -113,7 +133,7 @@ def main(args: Optional[List[str]] = None) -> int:
     parser.add_option(
         "-c",
         "--color",
-        default=":",
+        default=None,  # Changed from ":" to None for clarity
         help="""prints text with passed foreground color,
                             --color=foreground:background
                             --color=:background\t\t\t # only background
@@ -129,10 +149,60 @@ def main(args: Optional[List[str]] = None) -> int:
         help="enable Unicode character support for rendering",
     )
 
+    # Sample options
+    parser.add_option(
+        "--sample",
+        action="store_true",
+        default=False,
+        help="show text rendered in all available fonts",
+    )
+    parser.add_option(
+        "--sample-color",
+        action="store_true",
+        default=False,
+        help="show text with various color combinations",
+    )
+    parser.add_option(
+        "--interactive",
+        action="store_true",
+        default=False,
+        help="in sample mode, pause after each font for user input",
+    )
+    parser.add_option(
+        "--max-samples",
+        type="int",
+        default=100,
+        help="maximum number of fonts to sample (default: %default)",
+    )
+
     if args is None:
         args = sys.argv[1:]
 
     opts, args = parser.parse_args(args)
+
+    # Enable or disable debugging
+    if opts.debug:
+        import logging
+
+        logging.basicConfig(level=logging.DEBUG)
+        logging.debug("Debug logging enabled")
+
+    # Handle samples mode - this takes precedence over other operations
+    if opts.sample or opts.sample_color:
+        from .sample import DEFAULT_SAMPLE_TEXT, run_samples
+
+        # Get sample text either from args or use default
+        sample_text = " ".join(args) if args else DEFAULT_SAMPLE_TEXT
+
+        run_samples(
+            text=sample_text,
+            show_fonts=opts.sample,
+            show_colors=opts.sample_color,
+            interactive=opts.interactive,
+            width=opts.width,
+            max_fonts=opts.max_samples,
+        )
+        return 0
 
     if opts.list_fonts:
         print("\n".join(sorted(FigletFont.getFonts())))
@@ -148,61 +218,103 @@ def main(args: Optional[List[str]] = None) -> int:
 
     if opts.load:
         FigletFont.installFonts(opts.load)
-        return 0
+        return 0  # Added return statement for consistency
 
+    # Parse color option
+    ansi_colors = ("", "")
+    if opts.color:
+        try:
+            ansi_colors = parse_color(opts.color)
+        except InvalidColor as e:
+            sys.stderr.write(f"Error: {str(e)}\n")
+            return 1
+
+    # Get the text to render
     if len(args) == 0:
-        parser.print_help()
-        return 1
-
-    if sys.version_info < (3,):
-        args = [arg.decode("UTF-8") for arg in args]
-
-    text = " ".join(args)
+        if os.isatty(sys.stdin.fileno()):
+            parser.print_help()
+            return 0
+        text = sys.stdin.read()
+        if text == "":
+            return 0
+    else:
+        text = " ".join(args)
 
     try:
-        f = Figlet(
+        # Debug font list
+        if opts.debug:
+            print("Available fonts:")
+            for font in sorted(FigletFont.getFonts()):
+                print(f"  - {font}")
+            print(f"Selected font: {opts.font}")
+
+        fig_obj = Figlet(
             font=opts.font,
             direction=opts.direction,
             justify=opts.justify,
             width=opts.width,
             unicode_aware=opts.unicode,
         )
-    except FontNotFound:
-        print(f"figlet_forge error: requested font {opts.font!r} not found.")
+
+        rendered_text = fig_obj.renderText(text)
+
+        # Apply text transformations
+        if opts.reverse:
+            rendered_text = rendered_text.reverse()
+
+        if opts.flip:
+            rendered_text = rendered_text.flip()
+
+        if opts.normalize_surrounding_newlines:
+            # Add one empty line before and after
+            rendered_text = f"\n{rendered_text}\n"
+
+        if opts.strip_surrounding_newlines:
+            # Strip leading and trailing blank lines
+            lines = rendered_text.split("\n")
+            while lines and not lines[0].strip():
+                lines.pop(0)
+            while lines and not lines[-1].strip():
+                lines.pop()
+            rendered_text = "\n".join(lines)
+
+        # Apply color if specified
+        if opts.color and opts.color != ":":
+            foreground, background = ansi_colors
+
+            # Special handling for rainbow mode
+            if foreground == "RAINBOW":
+                from figlet_forge.color.effects import rainbow_colorize
+
+                rendered_text = rainbow_colorize(rendered_text, background)
+            else:
+                # Regular color handling
+                rendered_text = f"{foreground}{background}{rendered_text}{RESET_COLORS}"
+
+        # Write the final text to stdout
+        sys.stdout.write(rendered_text)
+
+        # Ensure output ends with a newline if it doesn't already
+        if not rendered_text.endswith("\n"):
+            sys.stdout.write("\n")
+
+        if opts.color and opts.color != ":":
+            # Ensure colors are reset
+            sys.stdout.write(RESET_COLORS)
+            sys.stdout.flush()
+
+        return 0
+
+    except (FontNotFound, FigletError) as e:
+        sys.stderr.write(f"Error: {str(e)}\n")
         return 1
+    except Exception as e:
+        if opts.debug:
+            import traceback
 
-    r = f.renderText(text)
-    if opts.reverse:
-        r = r.reverse()
-    if opts.flip:
-        r = r.flip()
-    if opts.strip_surrounding_newlines:
-        r = r.strip_surrounding_newlines()
-    elif opts.normalize_surrounding_newlines:
-        r = r.normalize_surrounding_newlines()
-
-    if sys.version_info > (3,):
-        # Set stdout to binary mode if needed for Python 3
-        try:
-            sys.stdout = sys.stdout.buffer
-        except AttributeError:
-            # Already in binary mode or redirected
-            pass
-
-    # Apply colors if specified
-    ansiColors = parse_color(opts.color)
-    if ansiColors:
-        sys.stdout.write(ansiColors.encode("UTF-8"))
-
-    # Output the rendered text
-    sys.stdout.write(r.encode("UTF-8"))
-    sys.stdout.write(b"\n")
-
-    # Reset colors if needed
-    if ansiColors:
-        sys.stdout.write(RESET_COLORS)
-
-    return 0
+            traceback.print_exc()
+        sys.stderr.write(f"Unexpected error: {str(e)}\n")
+        return 1
 
 
 if __name__ == "__main__":
