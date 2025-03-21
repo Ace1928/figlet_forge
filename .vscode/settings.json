@@ -789,7 +789,7 @@
     }
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "vscode.json-language-features",
     "editor.formatOnSave": true,
     "editor.tabSize": 2,
     "editor.quickSuggestions": {
@@ -1350,12 +1350,9 @@
   "audioCues.diffLineDeleted": "auto",
   "audioCues.diffLineInserted": "auto",
   "audioCues.diffLineModified": "auto",
-  "audioCues.lineHasBreakpoint": "auto",
-  "audioCues.lineHasInlineSuggestion": "auto",
   "audioCues.noInlayHints": "auto",
   "audioCues.onDebugBreak": "auto",
   "audioCues.terminalCommandFailed": "auto",
-  "audioCues.terminalQuickFix": "auto",
 
   // ┌─────────────────────────────────────────────────────┐
   // │ FRAMEWORK-SPECIFIC INTELLIGENCE ARCHITECTURE        │
@@ -1600,9 +1597,6 @@
   "search.mode": "view", // Change to "replace" if you prefer a replacement-focused interface
   "search.smartCase": true,
 
-  // Collapse unchanged regions in diffs
-  "diffEditor.experimental.collapseUnchangedRegions": true,
-
   // Advanced debugging enhancements
   "debug.disassemblyView.showSourceCode": true,
   "debug.showReturnValue": true, // Shows function return values inline
@@ -1624,5 +1618,11 @@
 
   // Expose symbols and history in Quick Open (Ctrl+P)
   "search.quickOpen.includeSymbols": true,
-  "search.quickOpen.includeHistory": true
+  "search.quickOpen.includeHistory": true,
+  "accessibility.signals.lineHasBreakpoint": {
+    "sound": "auto"
+  },
+  "accessibility.signals.lineHasInlineSuggestion": {
+    "sound": "auto"
+  }
 }
