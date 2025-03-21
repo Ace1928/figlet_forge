@@ -1,154 +1,170 @@
 """
 Compatibility layer for pyfiglet.
 
-This module provides perfect backward compatibility with the original pyfiglet package,
-ensuring that any code written for pyfiglet will work seamlessly with figlet_forge.
-It maintains identical API signatures while leveraging the enhanced features of
-figlet_forge under the hood.
+This module provides backward compatibility with the pyfiglet library,
+allowing Figlet Forge to be used as a drop-in replacement.
 
-Example usage with original pyfiglet syntax:
-    from figlet_forge.compat import Figlet
-    fig = Figlet(font='slant')
-    print(fig.renderText('Hello, world!'))
-
-Usage as a drop-in replacement:
-    # Original code
-    import pyfiglet
-    print(pyfiglet.figlet_format("Hello World"))
-
-    # Replacement code (identical behavior)
-    import figlet_forge.compat as pyfiglet
-    print(pyfiglet.figlet_format("Hello World"))
+Following Eidosian principles, we maintain compatibility while adding
+recursive optimization under the hood.
 """
 
+import os
 import sys
-import warnings
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-# Import the core figlet_forge components
-from .. import (
-    COLOR_CODES,
-    DEFAULT_FONT,
-    RESET_COLORS,
-    Figlet,
-    FigletFont,
-    FigletString,
-)
+# Re-export our core functionality under pyfiglet-compatible names
+from ..core.figlet_font import FigletFont
+from ..figlet import Figlet as BaseFiglet  # Import our implementation as BaseFiglet
+from ..version import DEFAULT_FONT, __version__
 
-# Re-export all the original pyfiglet classes and functions
-__all__ = [
-    "Figlet",
-    "FigletFont",
-    "FigletString",
-    "figlet_format",
-    "print_figlet",
-    "DEFAULT_FONT",
-    "COLOR_CODES",
-    "RESET_COLORS",
-]
+# Constants for compatibility
+VERSION = __version__
 
-# Version information matching pyfiglet format
-__version__ = "1.0.2"  # Match the current pyfiglet version for compatibility
+
+class FigletError(Exception):
+    """Compatibility class for pyfiglet's FigletError."""
+
+    pass
+
+
+class FontNotFound(FigletError):
+    """Compatibility class for pyfiglet's FontNotFound."""
+
+    pass
+
+
+# Wrap our implementation in a compatibility class that mirrors pyfiglet's API
+class Figlet(BaseFiglet):
+    """
+    Compatibility wrapper for the Figlet class.
+
+    This class provides the same API as pyfiglet's Figlet class,
+    while using Figlet Forge's implementation under the hood.
+    """
+
+    def __init__(
+        self,
+        font: Union[str, FigletFont] = DEFAULT_FONT,
+        direction: str = "auto",
+        justify: str = "auto",
+        width: int = 80,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Initialize with pyfiglet-compatible parameters.
+
+        Args:
+            font: Name of the font to use or a FigletFont instance
+            direction: Text direction ('auto', 'left-to-right', 'right-to-left')
+            justify: Text justification ('auto', 'left', 'center', 'right')
+            width: Maximum width of the rendered output
+            **kwargs: Additional parameters (for forward compatibility)
+        """
+        # Extract pyfiglet-specific parameters from kwargs
+        unicode_aware = kwargs.pop("unicode_aware", False)
+
+        # Initialize base Figlet implementation
+        super().__init__(
+            font=font,
+            direction=direction,
+            justify=justify,
+            width=width,
+            unicode_aware=unicode_aware,
+        )
+
+    # Alias for compatibility
+    def renderText(self, text: str) -> str:
+        """
+        Render text in the current font (pyfiglet API compatibility).
+
+        Args:
+            text: The text to render
+
+        Returns:
+            ASCII art rendering of the text
+        """
+        # Convert FigletString to str for compatibility
+        return str(super().renderText(text))
+
+    # Additional pyfiglet-compatible methods
+    def getRenderWidth(self, text: str) -> int:
+        """
+        Get the width of the rendered text (compatibility method).
+
+        Args:
+            text: The text to measure
+
+        Returns:
+            Width in characters
+        """
+        rendered = self.renderText(text)
+        return max((len(line) for line in rendered.splitlines()), default=0)
 
 
 def figlet_format(
     text: str,
     font: str = DEFAULT_FONT,
     width: int = 80,
-    height: Optional[int] = None,  # Unused in original but kept for API compatibility
-    justify: Optional[str] = None,
-    direction: Optional[str] = None,
+    justify: str = "auto",
+    direction: str = "auto",
+    **kwargs: Any,
 ) -> str:
     """
-    Return ASCII art text using the selected FIGlet font.
+    Render ASCII art text using the specified font and options.
 
-    This function maintains the exact API signature of the original pyfiglet.figlet_format
-    while leveraging the enhanced figlet_forge rendering engine under the hood.
+    This is a compatibility function mirroring pyfiglet.figlet_format.
 
     Args:
         text: The text to render
-        font: The FIGlet font to use
-        width: The maximum width of the output
-        height: Unused (kept for API compatibility)
-        justify: The justification of the output text ('left', 'center', 'right')
-        direction: The direction of the output text ('auto', 'left-to-right', 'right-to-left')
+        font: Name of the font to use
+        width: Maximum width of the rendered output
+        justify: Text justification ('auto', 'left', 'center', 'right')
+        direction: Text direction ('auto', 'left-to-right', 'right-to-left')
+        **kwargs: Additional parameters
 
     Returns:
-        A string containing the ASCII art
+        ASCII art rendering of the text
     """
-    if height is not None:
-        warnings.warn("The 'height' parameter is not supported and will be ignored.")
-
-    fig = Figlet(font=font, width=width, justify=justify, direction=direction)
+    fig = Figlet(
+        font=font,
+        direction=direction,
+        justify=justify,
+        width=width,
+        **kwargs,
+    )
     return fig.renderText(text)
+
+
+# Alias for backward compatibility
+renderText = figlet_format
 
 
 def print_figlet(
     text: str,
     font: str = DEFAULT_FONT,
-    colors: str = ":",
+    colors: str = "",
     width: int = 80,
-    justify: Optional[str] = None,
-    direction: Optional[str] = None,
+    justify: str = "auto",
+    **kwargs: Any,
 ) -> None:
     """
-    Print ASCII art text using the selected FIGlet font with optional colors.
-
-    This provides the same interface as the original pyfiglet.print_figlet,
-    with additional color support for compatibility with common pyfiglet extensions.
+    Print ASCII art text with optional coloring (compatibility function).
 
     Args:
-        text: The text to print
-        font: The FIGlet font to use
-        colors: The colors to use (syntax: "foreground:background")
-        width: The maximum width of the output
-        justify: The justification of the output text ('left', 'center', 'right')
-        direction: The direction of the output text ('auto', 'left-to-right', 'right-to-left')
+        text: The text to render
+        font: Name of the font to use
+        colors: Color specification (format: "fg:bg", "RED", "RED:BLUE", etc.)
+        width: Maximum width of the rendered output
+        justify: Text justification ('auto', 'left', 'center', 'right')
+        **kwargs: Additional parameters
     """
-    from ..color import parse_color
+    from ..figlet import print_figlet as core_print_figlet
 
-    # Generate the figlet text
-    fig = Figlet(font=font, width=width, justify=justify, direction=direction)
-    result = fig.renderText(text)
-
-    # Apply colors if specified
-    ansi_colors = parse_color(colors)
-    if ansi_colors:
-        sys.stdout.write(ansi_colors)
-
-    # Print the result
-    print(result)
-
-    # Reset colors if needed
-    if ansi_colors:
-        sys.stdout.write("\033[0m")
-        sys.stdout.flush()
-
-
-# Alias original functions to maintain compatibility with less common imports
-renderText = figlet_format
-
-
-# Create a module-level accessor to mimic pyfiglet's structure
-class _PyfigletCompat:
-    """
-    Module-level accessor for pyfiglet-compatible functions.
-    This enables importing and using figlet_forge.compat as a direct
-    replacement for the pyfiglet module.
-    """
-
-    @staticmethod
-    def figlet_format(*args, **kwargs):
-        return figlet_format(*args, **kwargs)
-
-    @staticmethod
-    def print_figlet(*args, **kwargs):
-        return print_figlet(*args, **kwargs)
-
-
-# Expose the module-level accessor
-sys.modules[__name__].__class__ = _PyfigletCompat
-
-
-# Provide classic pyfiglet API namespace attributes
-figlet_format = figlet_format
+    core_print_figlet(
+        text=text,
+        font=font,
+        colors=colors,
+        width=width,
+        justify=justify,
+        **kwargs,
+    )

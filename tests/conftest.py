@@ -1,109 +1,139 @@
 # tests/conftest.py
 """
-Pytest configuration for Figlet Forge tests.
+Shared test configuration and fixtures for Figlet Forge.
 
-This module provides fixtures and configuration for pytest-based testing,
-enabling more advanced test scenarios and better test organization.
+This module provides fixtures and utilities that can be reused across
+all test suites, following Eidosian principles of recursive optimization
+and structural integrity.
 """
 
 import os
-import random
-import string
-import tempfile
+import sys
 from pathlib import Path
+from typing import Dict, Generator, List, Tuple
 
 import pytest
 
-from figlet_forge import Figlet
+# Ensure package can be imported
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Ensure we use the local version for testing
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Import constants only after path setup
+
+# Test data constants
+TEST_TEXT = "Hello, Figlet!"
+TEST_UNICODE_TEXT = "Hello 世界"
+STANDARD_FONTS = ["standard", "slant", "small", "big", "mini"]
+TEST_COLORS = ["RED", "GREEN", "BLUE", "YELLOW", "CYAN", "MAGENTA"]
 
 
 @pytest.fixture
-def sample_text() -> str:
-    """Sample text for testing."""
-    return "Hello World"
+def test_text() -> str:
+    """Provide standard test text."""
+    return TEST_TEXT
+
+
+@pytest.fixture
+def test_unicode_text() -> str:
+    """Provide Unicode test text."""
+    return TEST_UNICODE_TEXT
 
 
 @pytest.fixture
 def standard_fonts() -> List[str]:
-    """List of standard fonts we expect to work consistently."""
-    return ["standard", "slant", "small", "big"]
+    """Provide a list of standard fonts that should be available."""
+    return STANDARD_FONTS
 
 
 @pytest.fixture
-def default_params() -> Dict[str, Any]:
-    """Default rendering parameters."""
-    return {"width": 80, "justify": "auto", "direction": "auto"}
+def temp_file_path(tmp_path: Path) -> Generator[Path, None, None]:
+    """
+    Provide a temporary file path for testing file operations.
+
+    Args:
+        tmp_path: Pytest's built-in temporary directory fixture
+
+    Yields:
+        A Path object pointing to a temporary file
+    """
+    temp_file = tmp_path / "test_output.txt"
+    yield temp_file
+    # Cleanup if file exists
+    if temp_file.exists():
+        temp_file.unlink()
 
 
 @pytest.fixture
-def temp_dir():
-    """Create a temporary directory for test files."""
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        yield Path(tmp_dir)
+def captured_output() -> Generator[Tuple[List[str], List[str]], None, None]:
+    """
+    Capture stdout and stderr for testing.
+
+    Yields:
+        Tuple containing lists of captured stdout and stderr lines
+    """
+    import io
+    from contextlib import redirect_stderr, redirect_stdout
+
+    stdout_capture = io.StringIO()
+    stderr_capture = io.StringIO()
+
+    with redirect_stdout(stdout_capture), redirect_stderr(stderr_capture):
+        yield stdout_capture, stderr_capture
 
 
 @pytest.fixture
-def temp_font_file(temp_dir):
-    """Create a simple valid FIGlet font file for testing."""
-    # Minimal valid .flf file content
-    font_content = (
-        "flf2a$ 5 4 8 -1 14 0 0 0\n"  # Header
-        "Font Author\n"  # Comment line
-        "Minimal test font for Figlet Forge\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        "@\n"  # Comment line
-        " $@\n"  # Space (32)
-        "!$@\n"  # ! (33)
-        '"$@\n'  # " (34)
-        "#$@\n"  # # (35)
-    )
+def figlet_factory():
+    """
+    Provide a factory function to create Figlet instances with specified parameters.
 
-    # Complete the font with basic characters
-    for i in range(36, 127):
-        char = chr(i)
-        font_content += f"{char}$@\n"  # Each character with end marker
+    Returns:
+        Function that creates Figlet instances
+    """
+    from figlet_forge import Figlet
 
-    # Write the font to a file
-    font_path = temp_dir / "test_font.flf"
-    with open(font_path, "w") as f:
-        f.write(font_content)
+    def _create_figlet(**kwargs):
+        """Create a Figlet instance with specified parameters."""
+        return Figlet(**kwargs)
 
-    return font_path
+    return _create_figlet
 
 
 @pytest.fixture
-def figlet_instance():
-    """Create a Figlet instance with standard font."""
-    return Figlet(font="standard")
+def mock_env_vars() -> Generator[Dict[str, str], None, None]:
+    """
+    Temporarily modify environment variables for testing.
+
+    Yields:
+        Dictionary to store original environment variables
+    """
+    original_vars = {}
+
+    # Save any environment variables we'll modify
+    for var in ["COLUMNS", "LINES"]:
+        if var in os.environ:
+            original_vars[var] = os.environ[var]
+
+    try:
+        yield original_vars
+    finally:
+        # Restore original environment variables
+        for var, value in original_vars.items():
+            os.environ[var] = value
+
+        # Remove any variables we added but weren't there originally
+        for var in ["COLUMNS", "LINES"]:
+            if var not in original_vars and var in os.environ:
+                del os.environ[var]
 
 
 @pytest.fixture
-def random_text():
-    """Generate random text for testing."""
-    length = random.randint(5, 20)
-    return "".join(random.choice(string.ascii_letters) for _ in range(length))
+def sample_figlet_string():
+    """Provide a sample FigletString for testing transformations."""
+    from figlet_forge.core.figlet_string import FigletString
 
-
-@pytest.fixture
-def capture_output(monkeypatch):
-    """Capture stdout output for testing CLI functions."""
-    from io import StringIO
-
-    output = StringIO()
-    monkeypatch.setattr("sys.stdout", output)
-    return output
+    ascii_art = """
+  ___ ___ ___
+ | _ \_ _/ __|
+ |  _/| | (_ |
+ |_| |___\___|
+"""
+    return FigletString(ascii_art.strip())
