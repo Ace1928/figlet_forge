@@ -1,59 +1,91 @@
 {
-  "editor.fontFamily": "'FiraCode NF', 'firaCode Nerd Font', 'JetBrains Mono', 'Cascadia Code', Consolas, 'Courier New', monospace",
+  // ╔═══════════════════════════════════════════════════════╗
+  // ║  EIDOSIAN FORGE - DEVELOPMENT ENVIRONMENT SETTINGS    ║
+  // ╚═══════════════════════════════════════════════════════╝
+
+  // ┌─────────────────────────────────────────────────┐
+  // │  Core Editor Experience - Precision as Style    │
+  // └─────────────────────────────────────────────────┘
+  "editor.fontFamily": "'FiraCode NF', 'Cascadia Code', 'JetBrains Mono', 'Fira Code', 'Hack Nerd Font', 'Source Code Pro', Consolas, 'Courier New', monospace",
   "editor.fontLigatures": true,
   "editor.fontSize": 14,
   "editor.lineHeight": 22,
-  "editor.letterSpacing": 0.2,
-  "editor.minimap.autohide": true,
-  "editor.minimap.enabled": true,
-  "editor.minimap.renderCharacters": false,
-  "editor.minimap.scale": 3,
-  "editor.minimap.showSlider": "mouseover",
-  "editor.minimap.side": "right",
+  "editor.letterSpacing": 0.5,
+  "editor.fontWeight": "normal",
+  "editor.renderWhitespace": "boundary",
+  "editor.wordWrap": "on",
+  "editor.wordWrapColumn": 100,
+  "editor.wrappingIndent": "same",
+  "editor.rulers": [80, 88, 100, 120],
+  "editor.codeLensFontFamily": "'FiraCode NF'",
+  "editor.codeLensFontSize": 12,
+
+  // Flow optimization - Reduce cognitive friction
   "editor.cursorBlinking": "phase",
   "editor.cursorSmoothCaretAnimation": "on",
-  "editor.cursorWidth": 1,
-  "editor.cursorSurroundingLines": 10,
-  "editor.cursorSurroundingLinesStyle": "default",
-  "editor.hover.delay": 300,
-  "editor.quickSuggestionsDelay": 5,
+  "editor.cursorWidth": 2,
+  "editor.cursorSurroundingLines": 12,
+  "editor.cursorSurroundingLinesStyle": "all",
+  "editor.smoothScrolling": true,
+  "editor.mouseWheelScrollSensitivity": 1.5,
+  "editor.fastScrollSensitivity": 6,
+  "editor.multiCursorLimit": 100,
+  "editor.accessibilitySupport": "on",
+
+  // Signal-to-noise calibration
+  "editor.minimap.autohide": false,
+  "editor.minimap.enabled": true,
+  "editor.minimap.maxColumn": 120,
+  "editor.minimap.renderCharacters": false,
+  "editor.minimap.scale": 3,
+  "editor.minimap.showSlider": "always",
+  "editor.minimap.side": "right",
+  "editor.scrollBeyondLastLine": false,
+  "editor.stickyScroll.enabled": true,
+  "editor.stickyScroll.maxLineCount": 10,
+
+  // Recursive clarity - Visual guidance systems
   "editor.guides.bracketPairs": "active",
   "editor.guides.bracketPairsHorizontal": "active",
   "editor.guides.highlightActiveBracketPair": true,
-  "editor.guides.highlightActiveIndentation": true,
   "editor.guides.indentation": true,
+  "editor.guides.highlightActiveIndentation": true,
   "editor.bracketPairColorization.enabled": true,
   "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
-  "editor.occurrencesHighlight": "singleFile",
-  "editor.indentSize": "tabSize",
+  "editor.inlayHints.enabled": "on",
+  "editor.inlayHints.fontSize": 10,
+  "editor.inlayHints.padding": true,
+  "editor.linkedEditing": true,
+  "editor.foldingImportsByDefault": true,
+  "editor.unfoldOnClickAfterEndOfLine": true,
   "editor.dragAndDrop": false,
-  "editor.wordWrap": "on",
-  "editor.copyWithSyntaxHighlighting": false,
-  "editor.renderWhitespace": "boundary",
-  "files.trimTrailingWhitespace": true,
-  "editor.tabCompletion": "on",
-  "editor.acceptSuggestionOnEnter": "smart",
-  "editor.suggest.shareSuggestSelections": true,
-  "editor.suggestSelection": "first",
-  "editor.snippetSuggestions": "top",
-  "editor.suggest.preview": true,
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
-  "editor.formatOnType": false,
-  "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit",
-    "source.organizeImports": "explicit"
-  },
-  "editor.defaultColorDecorators": "always",
-  "editor.linkedEditing": true,
+  "editor.formatOnType": true,
+
+  // Hyper-personal intelligence amplification
+  "editor.suggest.localityBonus": true,
+  "editor.suggest.preview": true,
+  "editor.suggest.shareSuggestSelections": true,
+  "editor.suggest.showIcons": true,
+  "editor.suggest.insertMode": "replace",
+  "editor.suggestFontSize": 13,
+  "editor.suggestSelection": "first",
+  "editor.tabCompletion": "on",
+  "editor.quickSuggestionsDelay": 0,
   "editor.quickSuggestions": {
     "comments": "on",
     "strings": "on",
     "other": "on"
   },
-  "editor.suggest.localityBonus": true,
-  "editor.accessibilitySupport": "on",
   "editor.parameterHints.enabled": true,
+  "editor.hover.delay": 200,
+  "editor.hover.sticky": true,
+  "editor.snippetSuggestions": "top",
+  "editor.acceptSuggestionOnEnter": "smart",
+  "editor.acceptSuggestionOnCommitCharacter": true,
+
+  // Comprehensive suggestion system - Maximum signal
   "editor.suggest.showMethods": true,
   "editor.suggest.showFunctions": true,
   "editor.suggest.showConstructors": true,
@@ -70,25 +102,280 @@
   "editor.suggest.showValues": true,
   "editor.suggest.showConstants": true,
   "editor.suggest.showEnums": true,
-  "files.autoSaveWhenNoErrors": true,
-  "files.autoSaveWorkspaceFilesOnly": true,
-  "files.eol": "auto",
-  "files.insertFinalNewline": true,
+  "editor.suggest.showEnumMembers": true,
+  "editor.suggest.showKeywords": true,
+  "editor.suggest.showWords": true,
+  "editor.suggest.showColors": true,
+  "editor.suggest.showUsers": true,
+  "editor.suggest.showIssues": true,
+
+  // ┌─────────────────────────────────────────────────┐
+  // │  File Management - Structure as Control         │
+  // └─────────────────────────────────────────────────┘
+  "files.trimTrailingWhitespace": true,
   "files.trimFinalNewlines": true,
+  "files.insertFinalNewline": true,
+  "files.eol": "auto",
+  "files.autoSave": "onFocusChange",
+  "files.autoSaveDelay": 1000,
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/node_modules": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.coverage": true,
+    "**/htmlcov": true
+  },
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.mypy_cache/**": true,
+    "**/.pytest_cache/**": true,
+    "**/venv/**": true
+  },
+  "files.associations": {
+    "*.flf": "plaintext",
+    "*.tlf": "plaintext",
+    "*.prompt.md": "markdown",
+    "pyproject.toml": "toml",
+    "Dockerfile*": "dockerfile",
+    ".env*": "dotenv"
+  },
+
+  // ┌─────────────────────────────────────────────────┐
+  // │  Terminal Integration - Flow Like Water         │
+  // └─────────────────────────────────────────────────┘
+  "terminal.integrated.defaultProfile.linux": "zsh",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.fontFamily": "'FiraCode NF', 'CaskaydiaCove NF', 'Hack Nerd Font'",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.integrated.copyOnSelection": true,
+  "terminal.integrated.rightClickBehavior": "paste",
+  "terminal.integrated.tabs.enabled": true,
+  "terminal.integrated.tabs.showActions": "always",
+  "terminal.integrated.tabs.showActiveTerminal": "always",
+  "terminal.integrated.tabs.location": "below",
+  "terminal.integrated.shellIntegration.enabled": true,
+
+  // ┌─────────────────────────────────────────────────┐
+  // │  Workbench Optimization - Velocity as Intelligence │
+  // └─────────────────────────────────────────────────┘
+  "workbench.colorTheme": "Github Dark High Contrast",
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.editor.labelFormat": "short",
+  "workbench.editor.showIcons": true,
+  "workbench.editor.showTabs": true,
+  "workbench.editor.tabCloseButton": "off",
+  "workbench.editor.tabSizing": "shrink",
+  "workbench.editor.limit.enabled": true,
+  "workbench.editor.limit.value": 10,
+  "workbench.editor.limit.perEditorGroup": true,
+  "workbench.editor.decorations.colors": true,
+  "workbench.editor.decorations.badges": true,
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.restoreViewState": true,
+  "workbench.list.smoothScrolling": true,
+  "workbench.sideBar.location": "left",
+  "workbench.tree.indent": 12,
+  "workbench.tree.renderIndentGuides": "always",
+  "workbench.startupEditor": "newUntitledFile",
+  "workbench.panel.defaultLocation": "bottom",
+  "workbench.layoutControl.enabled": true,
+  "workbench.view.alwaysShowHeaderActions": true,
+  "workbench.commandPalette.history": 50,
+  "workbench.settings.editor": "ui",
+  "workbench.settings.openDefaultSettings": true,
+  "workbench.settings.useSplitJSON": true,
+  "workbench.enableExperiments": true,
+  "window.menuBarVisibility": "compact",
+  "window.commandCenter": true,
+  "window.titleBarStyle": "custom",
+  "window.autoDetectColorScheme": true,
+  "window.dialogStyle": "custom",
+  "window.density.editorTabHeight": "default",
+  "workbench.activityBar.iconClickBehavior": "toggle",
+  "breadcrumbs.enabled": false,
+
+  // Custom color scheme for Eidosian precision
+  "workbench.colorCustomizations": {
+    "editor.lineHighlightBackground": "#ff930f1a",
+    "editor.lineHighlightBorder": "#9fced11f",
+    "editorCursor.background": "#ff930f",
+    "editorCursor.foreground": "#ff930f",
+    "editorLineNumber.activeForeground": "#A020F0",
+    "editorLineNumber.foreground": "#5DE23C",
+    "editor.selectionBackground": "#264f78",
+    "editor.selectionHighlightBackground": "#264f7880",
+    "editor.wordHighlightBackground": "#575757b8",
+    "editor.wordHighlightStrongBackground": "#004972b8",
+    "editorBracketMatch.background": "#0d3a58",
+    "editorBracketMatch.border": "#888888",
+    "editorIndentGuide.background": "#404040",
+    "editorIndentGuide.activeBackground": "#707070",
+    "titleBar.activeBackground": "#000000",
+    "titleBar.activeForeground": "#F4DB01",
+    "titleBar.inactiveBackground": "#000000",
+    "titleBar.inactiveForeground": "#ffffff",
+    "tab.activeBorder": "#F4DB01",
+    "terminal.tab.activeBorder": "#F4DB01",
+    "statusBar.background": "#000000",
+    "statusBar.debuggingBackground": "#007acc",
+    "statusBar.foreground": "#F4DB01",
+    "statusBar.noFolderBackground": "#007acc"
+  },
+
+  // ┌─────────────────────────────────────────────────┐
+  // │  Code Intelligence - Context & Recursion        │
+  // └─────────────────────────────────────────────────┘
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.compactFolders": false,
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": true,
+  "explorer.autoReveal": true,
+  "search.smartCase": true,
+  "search.useGlobalIgnoreFiles": true,
+  "search.useIgnoreFiles": true,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/venv": true,
+    "**/.git": true,
+    "**/.venv": true,
+    "**/__pycache__": true,
+    "**/.mypy_cache": true,
+    "**/.pytest_cache": true
+  },
+  "editor.defaultColorDecorators": "auto",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit",
+    "source.sortImports": "explicit"
+  },
+  "diffEditor.ignoreTrimWhitespace": false,
+  "diffEditor.renderSideBySide": true,
+  "diffEditor.maxComputationTime": 0,
+  "diffEditor.diffAlgorithm": "advanced",
+  "diffEditor.renderIndicators": true,
+  "scm.diffDecorationsGutterPattern": {
+    "added": true,
+    "modified": true
+  },
+  "git.enabled": true,
   "git.enableSmartCommit": true,
   "git.autofetch": true,
+  "git.confirmSync": false,
   "git.enableCommitSigning": true,
-  "diffEditor.maxComputationTime": 0,
-  "scm.diffDecorationsGutterPattern": {
-    "added": true
-  },
   "git.branchProtection": ["main", "master", "develop"],
   "git.branchProtectionPrompt": "alwaysPrompt",
-  "editor.fastScrollSensitivity": 5,
-  "editor.smoothScrolling": false,
-  "editor.stickyScroll.enabled": true,
-  "editor.stickyScroll.maxLineCount": 10,
-  "editor.scrollBeyondLastLine": false,
+  "git.mergeEditor": true,
+  "git.fetchOnPull": true,
+  "git.showPushSuccessNotification": true,
+  "git.pruneOnFetch": true,
+  "git.enableStatusBarSync": true,
+  "git.inputValidation": "always",
+  "git.inputValidationSubjectLength": 72,
+  "git.inputValidationLength": 120,
+  "git.openRepositoryInParentFolders": "always",
+  "security.workspace.trust.banner": "never",
+  "security.workspace.trust.emptyWindow": true,
+  "security.workspace.trust.enabled": false,
+  "security.workspace.trust.startupPrompt": "never",
+
+  // Coding intelligence and support
+  "editor.semanticHighlighting.enabled": true,
+  "editor.semanticTokenColorCustomizations": {
+    "[Github Dark High Contrast]": {
+      "enabled": true,
+      "rules": {
+        "parameter": "#7CB7FF",
+        "property": "#B392F0",
+        "variable.readonly": "#F97583",
+        "macro": "#F97583",
+        "comment": "#bbb",
+        "keyword": "#F97583"
+      }
+    }
+  },
+  "editor.tokenColorCustomizations": {
+    "[Github Dark High Contrast]": {
+      "comments": "#888888",
+      "strings": "#ff8b50",
+      "numbers": "#79c0ff",
+      "types": "#A5D6FF",
+      "functions": "#79c0ff",
+      "keywords": "#F97583",
+      "variables": "#F97583"
+    }
+  },
+
+  // ┌─────────────────────────────────────────────────┐
+  // │  Language-Specific Settings - Contextual Integrity │
+  // └─────────────────────────────────────────────────┘
+
+  // Python - Primary language for Figlet Forge
+  "[python]": {
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.formatOnType": true,
+    "editor.wordBasedSuggestions": "off",
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.tabSize": 4,
+    "editor.indentSize": "tabSize",
+    "editor.insertSpaces": true,
+    "editor.rulers": [88, 120],
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
+    },
+    "editor.semanticHighlighting.enabled": true
+  },
+  "python.analysis.typeCheckingMode": "strict",
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.extraPaths": ["./src", "./tests"],
+  "python.analysis.completeFunctionParens": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.inlayHints.functionReturnTypes": true,
+  "python.analysis.inlayHints.variableTypes": true,
+  "python.analysis.importFormat": "absolute",
+  "python.formatting.provider": "none",
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.banditEnabled": true,
+  "python.linting.lintOnSave": true,
+  "python.linting.ignorePatterns": [
+    "**/site-packages/**/*.py",
+    ".vscode/*.py",
+    "**/tests/**"
+  ],
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": true,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.pytestArgs": ["tests"],
+  "python.testing.cwd": "${workspaceFolder}",
+  "python.terminal.activateEnvironment": true,
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "python.terminal.executeInFileDir": true,
+  "python.terminal.launchArgs": ["-i"],
+  "python.terminal.shellIntegration.enabled": true,
+  "python.envFile": "${workspaceFolder}/.env",
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+
+  // JavaScript and TypeScript settings
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
@@ -114,11 +401,26 @@
   "typescript.preferences.importModuleSpecifier": "shortest",
   "typescript.preferences.quoteStyle": "single",
   "typescript.format.semicolons": "insert",
+  "typescript.inlayHints.enumMemberValues.enabled": true,
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+  "typescript.inlayHints.parameterNames.enabled": "all",
+  "typescript.inlayHints.parameterTypes.enabled": true,
+  "typescript.inlayHints.propertyDeclarationTypes.enabled": true,
+  "typescript.inlayHints.variableTypes.enabled": true,
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
   "javascript.updateImportsOnFileMove.enabled": "always",
   "javascript.suggest.completeFunctionCalls": true,
   "javascript.preferences.importModuleSpecifier": "shortest",
   "javascript.preferences.quoteStyle": "single",
   "javascript.format.semicolons": "insert",
+  "javascript.inlayHints.enumMemberValues.enabled": true,
+  "javascript.inlayHints.functionLikeReturnTypes.enabled": true,
+  "javascript.inlayHints.parameterNames.enabled": "literals",
+  "javascript.inlayHints.parameterTypes.enabled": true,
+  "javascript.inlayHints.propertyDeclarationTypes.enabled": true,
+  "javascript.inlayHints.variableTypes.enabled": true,
+
+  // React Settings (JSX/TSX)
   "[javascriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
@@ -131,13 +433,8 @@
     "editor.tabSize": 2,
     "editor.rulers": [80, 100, 120]
   },
-  "emmet.triggerExpansionOnTab": true,
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
+
+  // Web technologies
   "[html]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
@@ -165,6 +462,14 @@
   "css.lint.unknownAtRules": "ignore",
   "css.validate": true,
   "scss.validate": true,
+  "emmet.triggerExpansionOnTab": true,
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "typescript": "typescriptreact",
+    "markdown": "html"
+  },
+
+  // JSON and Configuration Files
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
@@ -189,8 +494,23 @@
     {
       "fileMatch": ["tsconfig.json"],
       "url": "https://json.schemastore.org/tsconfig.json"
+    },
+    {
+      "fileMatch": ["pyproject.toml"],
+      "url": "https://json.schemastore.org/pyproject.json"
+    },
+    {
+      "fileMatch": [".markdownlint.json"],
+      "url": "https://json.schemastore.org/markdownlint.json"
+    },
+    {
+      "fileMatch": [".prettierrc", ".prettierrc.json"],
+      "url": "https://json.schemastore.org/prettierrc.json"
     }
   ],
+  "json.validate.enable": true,
+
+  // Rust settings
   "[rust]": {
     "editor.defaultFormatter": "rust-lang.rust-analyzer",
     "editor.formatOnSave": true,
@@ -198,6 +518,21 @@
     "editor.rulers": [100],
     "editor.semanticHighlighting.enabled": true
   },
+  "rust-analyzer.checkOnSave.command": "clippy",
+  "rust-analyzer.cargo.allFeatures": true,
+  "rust-analyzer.inlayHints.typeHints.enable": true,
+  "rust-analyzer.inlayHints.parameterHints.enable": true,
+  "rust-analyzer.procMacro.enable": true,
+  "rust-analyzer.rustfmt.extraArgs": ["--edition", "2021"],
+  "rust-analyzer.check.command": "clippy",
+  "rust-analyzer.semanticHighlighting.operator.specialization.enable": true,
+  "rust-analyzer.semanticHighlighting.punctuation.enable": true,
+  "rust-analyzer.hover.actions.enable": true,
+  "rust-analyzer.lens.enable": true,
+  "rust-analyzer.completion.fullFunctionSignatures.enable": true,
+  "rust-analyzer.completion.autoimport.enable": true,
+
+  // TOML settings
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml",
     "editor.formatOnSave": true,
@@ -208,6 +543,9 @@
   "evenBetterToml.formatter.arrayTrailingComma": true,
   "evenBetterToml.formatter.arrayAutoExpand": true,
   "evenBetterToml.formatter.compactArrays": false,
+  "evenBetterToml.formatter.indentTables": true,
+
+  // Markdown - Documentation engine
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
     "editor.formatOnSave": true,
@@ -218,26 +556,22 @@
       "other": true
     },
     "editor.tabSize": 2,
-    "editor.renderWhitespace": "all"
+    "editor.renderWhitespace": "all",
+    "editor.suggest.showReferences": true
   },
   "markdown.preview.breaks": true,
   "markdown.validate.enabled": true,
+  "markdown.preview.typographer": true,
   "markdown.preview.fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif",
-  "[python]": {
-    "diffEditor.ignoreTrimWhitespace": false,
-    "editor.formatOnType": true,
-    "editor.wordBasedSuggestions": "off",
-    "editor.defaultFormatter": "ms-python.black-formatter",
-    "editor.tabSize": 4,
-    "editor.rulers": [88, 120],
-    "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
-    }
-  },
-  "python.analysis.typeCheckingMode": "strict",
-  "python.testing.pytestEnabled": true,
-  "python.testing.unittestEnabled": true,
-  "python.terminal.shellIntegration.enabled": true,
+  "markdown.preview.lineHeight": 1.6,
+  "markdown.extension.toc.levels": "2..6",
+  "markdown.extension.toc.updateOnSave": true,
+  "markdown.preview.scrollPreviewWithEditor": true,
+  "markdown.preview.scrollEditorWithPreview": true,
+  "markdown.occurrencesHighlight.enabled": true,
+  "markdown.validate.referenceLinks.enabled": "warning",
+
+  // C/C++
   "[c]": {
     "editor.defaultFormatter": "ms-vscode.cpptools",
     "editor.formatOnSave": true,
@@ -254,6 +588,15 @@
   "C_Cpp.default.cStandard": "c11",
   "C_Cpp.default.cppStandard": "c++17",
   "C_Cpp.intelliSenseEngine": "default",
+  "C_Cpp.enhancedColorization": "Enabled",
+  "C_Cpp.autocomplete": "default",
+  "C_Cpp.formatting": "clangFormat",
+  "C_Cpp.inlayHints.enable": true,
+  "C_Cpp.inlayHints.autoDeclarationTypes.enabled": true,
+  "C_Cpp.inlayHints.parameterNames.enabled": true,
+  "C_Cpp.inlayHints.referenceOperator.enabled": true,
+
+  // Go language
   "[go]": {
     "editor.defaultFormatter": "golang.go",
     "editor.formatOnSave": true,
@@ -264,6 +607,7 @@
       "source.organizeImports": "explicit"
     }
   },
+  "go.useLanguageServer": true,
   "go.lintTool": "golangci-lint",
   "go.lintFlags": ["--fast"],
   "go.lintOnSave": "package",
@@ -271,6 +615,14 @@
   "go.testOnSave": false,
   "go.formatTool": "goimports",
   "go.coverOnSave": false,
+  "go.toolsManagement.autoUpdate": true,
+  "go.inlayHints.assignVariableTypes": true,
+  "go.inlayHints.compositeLiteralTypes": true,
+  "go.inlayHints.constantValues": true,
+  "go.inlayHints.functionTypeParameters": true,
+  "go.inlayHints.parameterNames": true,
+
+  // Java and Kotlin
   "[java]": {
     "editor.defaultFormatter": "redhat.java",
     "editor.formatOnSave": true,
@@ -278,19 +630,237 @@
     "editor.rulers": [100, 120],
     "editor.semanticHighlighting.enabled": true
   },
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.imports.organize.starThreshold": 5,
+  "java.imports.organize.staticStarThreshold": 3,
+  "java.completion.enabled": true,
+  "java.completion.guessMethodArguments": true,
+  "java.completion.importOrder": ["java", "javax", "com", "org", ""],
+  "java.jdt.ls.java.home": "",
+  "java.format.settings.url": "",
+
   "[kotlin]": {
     "editor.defaultFormatter": "fwcd.kotlin",
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
     "editor.rulers": [100, 120]
   },
+  "kotlin.languageServer.enabled": true,
+  "kotlin.debugAdapter.enabled": true,
+  "kotlin.trace.server": "off",
+
+  // Shell scripts
   "[shellscript]": {
     "files.eol": "auto",
     "editor.rulers": [80, 100],
     "editor.tabSize": 2,
     "editor.insertSpaces": true,
-    "editor.semanticHighlighting.enabled": true
+    "editor.semanticHighlighting.enabled": true,
+    "editor.formatOnSave": true
   },
+
+  // ┌─────────────────────────────────────────────────┐
+  // │  Custom Extensions - Exhaustive But Concise     │
+  // └─────────────────────────────────────────────────┘
+
+  // Material Icon Theme
+  "material-icon-theme.folders.theme": "specific",
+  "material-icon-theme.folders.color": "#42a5f5",
+  "material-icon-theme.opacity": 1,
+  "material-icon-theme.saturation": 0.85,
+  "material-icon-theme.activeIconPack": "angular_ngrx",
+  "material-icon-theme.hidesExplorerArrows": false,
+  "material-icon-theme.files.associations": {
+    "*.controller.ts": "angular-component",
+    "*.service.ts": "angular-service",
+    "*.utils.ts": "ngrx-effects",
+    "*config.ts": "angular-cli",
+    "*.types.ts": "typescript-def",
+    "*.model.ts": "angular-directive",
+    "*.dto.ts": "typescript-def",
+    "*.store.ts": "ngrx-store",
+    "*.effects.ts": "ngrx-effects",
+    "*.selectors.ts": "ngrx-selectors",
+    "*.reducer.ts": "ngrx-reducer",
+    "*.hook.ts": "hook",
+    "*.hook.tsx": "hook",
+    "*.jsx": "react",
+    "*.tsx": "react-ts",
+    "*.component.jsx": "react-components",
+    "*.component.tsx": "react-components",
+    "*.slice.ts": "redux-store",
+    "*.slice.js": "redux-store",
+    "*.rs": "rust",
+    "Cargo.toml": "cargo",
+    "Cargo.lock": "cargo-lock",
+    "*.toml": "tune",
+    "*.lock": "lock",
+    "tsconfig.json": "tsconfig",
+    "package.json": "npm",
+    "package-lock.json": "npm",
+    "yarn.lock": "yarn",
+    "Gemfile": "gemfile",
+    "*.java": "java",
+    "*.kt": "kotlin",
+    "*.kts": "kotlin",
+    "*.gradle": "gradle",
+    "build.gradle": "gradle",
+    "settings.gradle": "gradle",
+    "*.gradle.kts": "gradle",
+    "*.c": "c",
+    "*.cpp": "cpp",
+    "*.h": "c-header",
+    "*.hpp": "cpp-header",
+    "CMakeLists.txt": "cmake",
+    "*.cmake": "cmake",
+    "*.go": "go",
+    "go.mod": "go-mod",
+    "go.sum": "go-sum",
+    "*.sh": "shell",
+    "*.bash": "shell",
+    "*.zsh": "shell",
+    ".bashrc": "shell",
+    ".zshrc": "shell",
+    "README.md": "readme",
+    "*.md": "markdown",
+    "*.flf": "font",
+    "*.tlf": "font",
+    "*.prompt.md": "settings"
+  },
+  "material-icon-theme.files.customClones": [
+    {
+      "name": "api-service",
+      "base": "api",
+      "color": "purple-300",
+      "lightColor": "purple-700",
+      "fileNames": ["api.service.ts", "api-client.ts"]
+    },
+    {
+      "name": "data-model",
+      "base": "database",
+      "color": "teal-400",
+      "lightColor": "teal-700",
+      "fileNames": ["data.model.ts", "entity.model.ts", "schema.ts"]
+    },
+    {
+      "name": "core-utils",
+      "base": "ngrx-effects",
+      "color": "amber-500",
+      "fileNames": ["core.utils.ts", "utils.core.ts"]
+    },
+    {
+      "name": "rust-entity",
+      "base": "rust",
+      "color": "orange-700",
+      "fileNames": ["entity.rs", "model.rs", "models.rs", "entities.rs"]
+    },
+    {
+      "name": "rust-service",
+      "base": "unity",
+      "color": "red-800",
+      "fileNames": ["service.rs", "services.rs", "client.rs", "clients.rs"]
+    },
+    {
+      "name": "kotlin-view",
+      "base": "android",
+      "color": "green-500",
+      "fileNames": ["*Activity.kt", "*Fragment.kt", "*View.kt"]
+    },
+    {
+      "name": "figlet-font",
+      "base": "font",
+      "color": "cyan-500",
+      "fileNames": ["*.flf", "*.tlf"]
+    },
+    {
+      "name": "eidosian-prompt",
+      "base": "readme",
+      "color": "purple-500",
+      "fileNames": ["*.prompt.md"]
+    }
+  ],
+  "material-icon-theme.folders.associations": {
+    "interfaces": "typescript",
+    "dto": "typescript",
+    "enums": "typescript",
+    "state": "ngrx-state",
+    "store": "ngrx-store",
+    "effects": "ngrx-effects",
+    "selectors": "ngrx-selectors",
+    "reducers": "ngrx-reducer",
+    "models": "models",
+    "entities": "database",
+    "repositories": "database",
+    "fixtures": "mock",
+    "mocks": "mock",
+    "src": "src",
+    "lib": "lib",
+    "components": "components",
+    "container": "container",
+    "feature": "rules",
+    "pages": "api",
+    "domain": "theme",
+    "docker": "docker",
+    "k8s": "kubernetes",
+    "nginx": "nginx",
+    "target": "dist",
+    "mobile": "android",
+    "web": "www",
+    "api": "api",
+    "controllers": "middleware",
+    "services": "app",
+    "utils": "tools",
+    "hooks": "hook",
+    "crates": "packages",
+    "fonts": "font",
+    "standard": "font",
+    "contrib": "font",
+    "prompts": "readme",
+    "color": "theme",
+    "core": "core",
+    "figlet": "font",
+    "render": "tools",
+    "cli": "console",
+    "examples": "examples"
+  },
+
+  // ESLint and validation tooling
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "eslint.run": "onSave",
+  "stylelint.enable": true,
+  "stylelint.validate": ["css", "scss", "less", "postcss"],
+
+  // Settings for better quality - "Structure as Control"
+  "editor.formatOnSaveMode": "modifications",
+  "editor.unicodeHighlight.allowedCharacters": {},
+  "editor.unicodeHighlight.ambiguousCharacters": true,
+  "editor.unicodeHighlight.includeComments": true,
+  "editor.unicodeHighlight.includeStrings": true,
+  "editor.unicodeHighlight.invisibleCharacters": true,
+  "editor.renderControlCharacters": true,
+
+  // Error handling and quality control
+  "problems.showCurrentInStatus": true,
+  "problems.decorations.enabled": true,
+  "errorLens.enabled": true,
+  "errorLens.enabledDiagnosticLevels": ["error", "warning", "info"],
+  "errorLens.followCursor": "activeLine",
+  "errorLens.scrollbarHackEnabled": true,
+
+  // ┌─────────────────────────────────────────────────┐
+  // │ Eidosian Vocabulary - Intelligence Amplification │
+  // └─────────────────────────────────────────────────┘
+  "cSpell.enabled": true,
+  "cSpell.allowCompoundWords": true,
+  "cSpell.checkOnlyEnabledFileTypes": true,
+  "cSpell.caseSensitive": false,
   "cSpell.words": [
     "ASGI",
     "autoapi",
@@ -433,219 +1003,5 @@
     "تِلِجِف",
     "مرحبا",
     "وَرْج"
-  ],
-  "workbench.colorTheme": "Github Dark High Contrast",
-  "workbench.editor.highlightModifiedTabs": true,
-  "workbench.editor.labelFormat": "short",
-  "workbench.editor.showIcons": true,
-  "workbench.editor.showTabs": true,
-  "workbench.editor.tabCloseButton": "off",
-  "workbench.iconTheme": "material-icon-theme",
-  "window.menuBarVisibility": "compact",
-  "window.commandCenter": true,
-  "breadcrumbs.enabled": false,
-  "editor.lineHighlightBackground": "#ff930f1a",
-  "editor.lineHighlightBorder": "#9fced11f",
-  "workbench.list.smoothScrolling": true,
-  "workbench.colorCustomizations": {
-    "editor.lineHighlightBackground": "#ff930f1a",
-    "editor.lineHighlightBorder": "#9fced11f",
-    "editorCursor.background": "#ff930f",
-    "editorCursor.foreground": "#ff930f",
-    "editorLineNumber.activeForeground": "#A020F0",
-    "editorLineNumber.foreground": "#5DE23C",
-    "titleBar.activeBackground": "#000000",
-    "titleBar.activeForeground": "#F4DB01",
-    "titleBar.inactiveBackground": "#000000",
-    "titleBar.inactiveForeground": "#ffffff",
-    "tab.activeBorder": "#F4DB01",
-    "terminal.tab.activeBorder": "#F4DB01",
-    "statusBar.background": "#000000",
-    "statusBar.debuggingBackground": "#007acc",
-    "statusBar.foreground": "#F4DB01",
-    "statusBar.noFolderBackground": "#007acc"
-  },
-  "material-icon-theme.folders.theme": "specific",
-  "material-icon-theme.folders.color": "#42a5f5",
-  "material-icon-theme.opacity": 1,
-  "material-icon-theme.saturation": 0.85,
-  "material-icon-theme.activeIconPack": "angular_ngrx",
-  "material-icon-theme.hidesExplorerArrows": false,
-  "material-icon-theme.files.associations": {
-    "*.controller.ts": "angular-component",
-    "*.service.ts": "angular-service",
-    "*.utils.ts": "ngrx-effects",
-    "*config.ts": "angular-cli",
-    "*.types.ts": "typescript-def",
-    "*.model.ts": "angular-directive",
-    "*.dto.ts": "typescript-def",
-    "*.store.ts": "ngrx-store",
-    "*.effects.ts": "ngrx-effects",
-    "*.selectors.ts": "ngrx-selectors",
-    "*.reducer.ts": "ngrx-reducer",
-    "*.hook.ts": "hook",
-    "*.hook.tsx": "hook",
-    "*.jsx": "react",
-    "*.tsx": "react-ts",
-    "*.component.jsx": "react-components",
-    "*.component.tsx": "react-components",
-    "*.slice.ts": "redux-store",
-    "*.slice.js": "redux-store",
-    "*.rs": "rust",
-    "Cargo.toml": "cargo",
-    "Cargo.lock": "cargo-lock",
-    "*.toml": "tune",
-    "*.lock": "lock",
-    "tsconfig.json": "tsconfig",
-    "package.json": "npm",
-    "package-lock.json": "npm",
-    "yarn.lock": "yarn",
-    "Gemfile": "gemfile",
-    "*.java": "java",
-    "*.kt": "kotlin",
-    "*.kts": "kotlin",
-    "*.gradle": "gradle",
-    "build.gradle": "gradle",
-    "settings.gradle": "gradle",
-    "*.gradle.kts": "gradle",
-    "*.c": "c",
-    "*.cpp": "cpp",
-    "*.h": "c-header",
-    "*.hpp": "cpp-header",
-    "CMakeLists.txt": "cmake",
-    "*.cmake": "cmake",
-    "*.go": "go",
-    "go.mod": "go-mod",
-    "go.sum": "go-sum",
-    "*.sh": "shell",
-    "*.bash": "shell",
-    "*.zsh": "shell",
-    ".bashrc": "shell",
-    ".zshrc": "shell",
-    "README.md": "readme",
-    "*.md": "markdown"
-  },
-  "material-icon-theme.files.customClones": [
-    {
-      "name": "api-service",
-      "base": "api",
-      "color": "purple-300",
-      "lightColor": "purple-700",
-      "fileNames": ["api.service.ts", "api-client.ts"]
-    },
-    {
-      "name": "data-model",
-      "base": "database",
-      "color": "teal-400",
-      "lightColor": "teal-700",
-      "fileNames": ["data.model.ts", "entity.model.ts", "schema.ts"]
-    },
-    {
-      "name": "core-utils",
-      "base": "ngrx-effects",
-      "color": "amber-500",
-      "fileNames": ["core.utils.ts", "utils.core.ts"]
-    },
-    {
-      "name": "rust-entity",
-      "base": "rust",
-      "color": "orange-700",
-      "fileNames": ["entity.rs", "model.rs", "models.rs", "entities.rs"]
-    },
-    {
-      "name": "rust-service",
-      "base": "unity",
-      "color": "red-800",
-      "fileNames": ["service.rs", "services.rs", "client.rs", "clients.rs"]
-    },
-    {
-      "name": "kotlin-view",
-      "base": "android",
-      "color": "green-500",
-      "fileNames": ["*Activity.kt", "*Fragment.kt", "*View.kt"]
-    }
-  ],
-  "material-icon-theme.folders.associations": {
-    "interfaces": "typescript",
-    "dto": "typescript",
-    "enums": "typescript",
-    "state": "ngrx-state",
-    "store": "ngrx-store",
-    "effects": "ngrx-effects",
-    "selectors": "ngrx-selectors",
-    "reducers": "ngrx-reducer",
-    "models": "models",
-    "entities": "database",
-    "repositories": "database",
-    "fixtures": "mock",
-    "mocks": "mock",
-    "src": "src",
-    "lib": "lib",
-    "components": "components",
-    "container": "container",
-    "feature": "rules",
-    "pages": "api",
-    "domain": "theme",
-    "docker": "docker",
-    "k8s": "kubernetes",
-    "nginx": "nginx",
-    "target": "dist",
-    "mobile": "android",
-    "web": "www",
-    "api": "api",
-    "controllers": "middleware",
-    "services": "app",
-    "utils": "tools",
-    "hooks": "hook",
-    "crates": "packages"
-  },
-  "security.workspace.trust.banner": "never",
-  "security.workspace.trust.emptyWindow": true,
-  "security.workspace.trust.enabled": false,
-  "security.workspace.trust.startupPrompt": "never",
-  "git.mergeEditor": true,
-  "emmet.includeLanguages": {
-    "javascript": "javascriptreact",
-    "typescript": "typescriptreact"
-  },
-  "angular.enable-strict-mode-prompt": false,
-  "angular.view-engine": false,
-  "angular.experimental-ivy": true,
-  "json.validate.enable": true,
-  "rust-analyzer.checkOnSave.command": "clippy",
-  "rust-analyzer.cargo.allFeatures": true,
-  "rust-analyzer.inlayHints.typeHints.enable": true,
-  "rust-analyzer.inlayHints.parameterHints.enable": true,
-  "rust-analyzer.procMacro.enable": true,
-  "rust-analyzer.rustfmt.extraArgs": ["--edition", "2021"],
-  "rust-analyzer.check.command": "clippy",
-  "markdown.extension.toc.levels": "2..6",
-  "markdown.extension.toc.updateOnSave": true,
-  "python.formatting.provider": "black",
-  "python.linting.enabled": true,
-  "python.linting.pylintEnabled": true,
-  "python.linting.mypyEnabled": true,
-  "python.analysis.autoImportCompletions": true,
-  "C_Cpp.enhancedColorization": "Enabled",
-  "go.useLanguageServer": true,
-  "java.configuration.updateBuildConfiguration": "automatic",
-  "java.imports.organize.starThreshold": 5,
-  "java.imports.organize.staticStarThreshold": 3,
-  "java.completion.enabled": true,
-  "java.completion.guessMethodArguments": true,
-  "java.completion.importOrder": ["java", "javax", "com", "org", ""],
-  "kotlin.languageServer.enabled": true,
-  "kotlin.debugAdapter.enabled": true,
-  "kotlin.trace.server": "off",
-  "vim.leader": "<space>",
-  "vim.easymotion": true,
-  "vim.visualModeKeyBindings": [],
-  "vim.visualModeKeyBindingsNonRecursive": [],
-  "vim.insertModeKeyBindings": [],
-  "vim.normalModeKeyBindingsNonRecursive": [
-    {
-      "before": ["t", "t"],
-      "commands": ["workbench.action.closeEditorsInGroup"]
-    }
   ]
 }
