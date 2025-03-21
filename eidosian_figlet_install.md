@@ -42,7 +42,8 @@ echo "🌐 [6/9] Establishing GitHub astral connection..." && \
 (gh auth status >/dev/null 2>&1 || (echo '   🔐 Not authenticated – initiating login ritual...' && gh auth login)) && \
 echo "🌐 [7/9] Materializing Ace1928/figlet_forge repository..." && \
 (if [ -d "figlet_forge" ]; then \
-  echo "   🔮 Existing figlet_forge detected, using local manifestation..." && cd figlet_forge; \
+  echo "   🔮 Existing figlet_forge detected, using local manifestation..." && cd figlet_forge && \
+  git remote set-url origin https://github.com/Ace1928/figlet_forge.git 2>/dev/null; \
 else \
   echo "   🔮 Attempting to fork repository..." && \
   (gh repo fork Ace1928/figlet_forge --clone --remote 2>/dev/null || \

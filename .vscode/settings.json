@@ -837,7 +837,7 @@
 
   // Markdown
   "[markdown]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one",
     "editor.formatOnSave": true,
     "editor.wordWrap": "on",
     "editor.quickSuggestions": {
@@ -1197,7 +1197,6 @@
   "editor.stickyScroll.scrollWithEditor": true,
   "editor.experimental.pasteActions.enabled": true,
   "editor.experimental.useCustomCodeActionMenu": true,
-  "editor.experimental.stickyScroll.enabled": true,
   "editor.multiCursorModifier": "alt",
   "editor.multiCursorMergeOverlapping": true,
   "editor.suggest.showStatusBar": true,
@@ -1352,7 +1351,6 @@
   "audioCues.diffLineInserted": "auto",
   "audioCues.diffLineModified": "auto",
   "audioCues.lineHasBreakpoint": "auto",
-  "audioCues.lineHasFoldedArea": "auto",
   "audioCues.lineHasInlineSuggestion": "auto",
   "audioCues.noInlayHints": "auto",
   "audioCues.onDebugBreak": "auto",
