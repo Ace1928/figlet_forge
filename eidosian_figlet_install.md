@@ -1,6 +1,6 @@
 # 🔮 Eidosian Omni-Installer: A Single-Line Magus Command
 
-> *"With but a single incantation, bring forth the ASCII wizardry of figlet_forge into your arcane terminal realm."* - Eidosian Codex
+> _"With but a single incantation, bring forth the ASCII wizardry of figlet_forge into your arcane terminal realm."_ - Eidosian Codex
 
 This mystical one-liner automatically detects your operating system, installs all required dependencies, and configures figlet_forge for immediate use. It's a complete self-bootstrapping spell that works across Linux, macOS, and Windows environments.
 
@@ -91,4 +91,5 @@ figlet_forge "Your text here"
 May your ASCII creations bring delight and wonder to all who behold them!
 
 ---
-*Crafted with arcane precision by the Eidosian Order*
+
+_Crafted with arcane precision by the Eidosian Order_
