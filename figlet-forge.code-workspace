@@ -378,13 +378,11 @@
     "workbench.iconTheme": "material-icon-theme",
     "material-icon-theme.folders.theme": "specific",
     "material-icon-theme.folders.color": "#42a5f5",
-    "material-icon-theme.opacity": 0.95,
+    "material-icon-theme.opacity": 0.97,
     "material-icon-theme.saturation": 0.9,
     "material-icon-theme.activeIconPack": "angular_ngrx",
     "material-icon-theme.hidesExplorerArrows": false,
-    "material-icon-theme.showReloadMessage": false,
-    "material-icon-theme.showUpdateMessage": true,
-    "material-icon-theme.showWelcomeMessage": false,
+    "material-icon-theme.files.color": "#81D4FA",
     "workbench.colorCustomizations": {
       "editor.lineHighlightBackground": "#ff930f1a",
       "editor.lineHighlightBorder": "#9fced11f",
@@ -543,7 +541,14 @@
           "api-client.ts",
           "api.client.ts",
           "http.service.ts",
-          "rest.service.ts"
+          "rest.service.ts",
+          "api.gateway.ts",
+          "gateway.ts",
+          "client.ts",
+          "axios-client.ts",
+          "fetch-client.ts",
+          "http-client.ts",
+          "graphql-client.ts"
         ]
       },
       {
@@ -556,7 +561,13 @@
           "entity.model.ts",
           "schema.ts",
           "domain.model.ts",
-          "entities.ts"
+          "entities.ts",
+          "aggregate.ts",
+          "value-object.ts",
+          "entity.ts",
+          "dto.model.ts",
+          "response.model.ts",
+          "request.model.ts"
         ]
       },
       {
@@ -568,7 +579,14 @@
           "utils.core.ts",
           "helpers.ts",
           "common.utils.ts",
-          "utility.ts"
+          "utility.ts",
+          "formatter.ts",
+          "transformer.ts",
+          "converter.ts",
+          "mapper.ts",
+          "validator.ts",
+          "functions.ts",
+          "tools.ts"
         ]
       },
       {
@@ -581,7 +599,13 @@
           "models.rs",
           "entities.rs",
           "domain.rs",
-          "schema.rs"
+          "schema.rs",
+          "aggregate.rs",
+          "value.rs",
+          "dto.rs",
+          "types.rs",
+          "structs.rs",
+          "state.rs"
         ]
       },
       {
@@ -594,7 +618,13 @@
           "client.rs",
           "clients.rs",
           "handler.rs",
-          "handlers.rs"
+          "handlers.rs",
+          "processor.rs",
+          "worker.rs",
+          "manager.rs",
+          "engine.rs",
+          "executor.rs",
+          "runner.rs"
         ]
       },
       {
@@ -605,7 +635,15 @@
           "utils.rs",
           "helpers.rs",
           "common.rs",
-          "util.rs"
+          "util.rs",
+          "tools.rs",
+          "format.rs",
+          "convert.rs",
+          "transform.rs",
+          "formatter.rs",
+          "converter.rs",
+          "validator.rs",
+          "functions.rs"
         ]
       },
       {
@@ -617,7 +655,13 @@
           "controllers.rs",
           "route.rs",
           "routes.rs",
-          "endpoint.rs"
+          "endpoint.rs",
+          "api.rs",
+          "http.rs",
+          "router.rs",
+          "web.rs",
+          "rest.rs",
+          "graphql.rs"
         ]
       },
       {
@@ -629,7 +673,29 @@
           "*Fragment.kt",
           "*View.kt",
           "*Screen.kt",
-          "*Composable.kt"
+          "*Composable.kt",
+          "*ViewModel.kt",
+          "*UI.kt",
+          "*Layout.kt",
+          "*Widget.kt",
+          "*Component.kt",
+          "*Dialog.kt"
+        ]
+      },
+      {
+        "name": "kotlin-service",
+        "base": "kotlin",
+        "color": "blue-500",
+        "fileNames": [
+          "*Service.kt",
+          "*Repository.kt",
+          "*Provider.kt",
+          "*Manager.kt",
+          "*Handler.kt",
+          "*Worker.kt",
+          "*Client.kt",
+          "*Processor.kt",
+          "*Engine.kt"
         ]
       },
       {
@@ -639,7 +705,28 @@
         "fileNames": [
           "*View.swift",
           "*ViewController.swift",
-          "*Screen.swift"
+          "*Screen.swift",
+          "*Cell.swift",
+          "*Component.swift",
+          "*UI.swift",
+          "*Widget.swift",
+          "*Layout.swift",
+          "*Scene.swift"
+        ]
+      },
+      {
+        "name": "swift-model",
+        "base": "swift",
+        "color": "cyan-400",
+        "fileNames": [
+          "*Model.swift",
+          "*Entity.swift",
+          "*Struct.swift",
+          "*State.swift",
+          "*Schema.swift",
+          "*DTO.swift",
+          "*Types.swift",
+          "*Data.swift"
         ]
       },
       {
@@ -650,7 +737,28 @@
           "*Widget.dart",
           "*Screen.dart",
           "*Page.dart",
-          "*View.dart"
+          "*View.dart",
+          "*Component.dart",
+          "*UI.dart",
+          "*Layout.dart",
+          "*Card.dart",
+          "*Dialog.dart",
+          "*Drawer.dart"
+        ]
+      },
+      {
+        "name": "flutter-model",
+        "base": "dart",
+        "color": "teal-300",
+        "fileNames": [
+          "*Model.dart",
+          "*Entity.dart",
+          "*Data.dart",
+          "*State.dart",
+          "*Schema.dart",
+          "*DTO.dart",
+          "*Object.dart",
+          "*Types.dart"
         ]
       },
       {
@@ -661,7 +769,12 @@
           "schema.graphql",
           "*.schema.graphql",
           "schema.gql",
-          "*.schema.gql"
+          "*.schema.gql",
+          "types.graphql",
+          "operations.graphql",
+          "queries.graphql",
+          "mutations.graphql",
+          "fragments.graphql"
         ]
       },
       {
@@ -674,7 +787,12 @@
           "layout.tsx",
           "layout.jsx",
           "loading.tsx",
-          "error.tsx"
+          "error.tsx",
+          "not-found.tsx",
+          "route.tsx",
+          "middleware.ts",
+          "error.tsx",
+          "template.tsx"
         ]
       },
       {
@@ -686,7 +804,191 @@
           "config.ts",
           "configuration.ts",
           "settings.js",
-          "settings.ts"
+          "settings.ts",
+          "config.json",
+          "config.yaml",
+          "config.yml",
+          "config.toml",
+          "config.ini",
+          "config.env",
+          "env.config.ts",
+          "app.config.ts"
+        ]
+      },
+      {
+        "name": "db-migration",
+        "base": "database",
+        "color": "blue-500",
+        "fileNames": [
+          "*_migration.sql",
+          "*_migration.js",
+          "*_migration.ts",
+          "migrate_*.sql",
+          "migrate_*.js",
+          "migrate_*.ts",
+          "migration_*.sql",
+          "migration_*.js",
+          "migration_*.ts",
+          "*.migration.sql",
+          "*.migration.js",
+          "*.migration.ts"
+        ]
+      },
+      {
+        "name": "db-seed",
+        "base": "database",
+        "color": "green-500",
+        "fileNames": [
+          "seed.sql",
+          "seed.js",
+          "seed.ts",
+          "seeds.sql",
+          "seeds.js",
+          "seeds.ts",
+          "*_seed.sql",
+          "*_seed.js",
+          "*_seed.ts",
+          "*.seed.sql",
+          "*.seed.js",
+          "*.seed.ts"
+        ]
+      },
+      {
+        "name": "python-model",
+        "base": "python",
+        "color": "cyan-500",
+        "fileNames": [
+          "models.py",
+          "model.py",
+          "entity.py",
+          "entities.py",
+          "schema.py",
+          "schemas.py",
+          "dto.py",
+          "domain.py",
+          "aggregate.py",
+          "types.py"
+        ]
+      },
+      {
+        "name": "python-service",
+        "base": "python",
+        "color": "purple-400",
+        "fileNames": [
+          "service.py",
+          "services.py",
+          "client.py",
+          "clients.py",
+          "provider.py",
+          "providers.py",
+          "runner.py",
+          "engine.py",
+          "worker.py",
+          "processor.py",
+          "manager.py"
+        ]
+      },
+      {
+        "name": "go-model",
+        "base": "go",
+        "color": "teal-400",
+        "fileNames": [
+          "model.go",
+          "models.go",
+          "entity.go",
+          "entities.go",
+          "schema.go",
+          "schemas.go",
+          "types.go",
+          "dto.go",
+          "domain.go"
+        ]
+      },
+      {
+        "name": "go-service",
+        "base": "go",
+        "color": "blue-400",
+        "fileNames": [
+          "service.go",
+          "services.go",
+          "client.go",
+          "clients.go",
+          "handler.go",
+          "handlers.go",
+          "provider.go",
+          "providers.go",
+          "engine.go",
+          "worker.go",
+          "processor.go"
+        ]
+      },
+      {
+        "name": "markdown-doc",
+        "base": "markdown",
+        "color": "blue-300",
+        "fileNames": [
+          "README.md",
+          "CONTRIBUTING.md",
+          "ARCHITECTURE.md",
+          "SETUP.md",
+          "DOCUMENTATION.md",
+          "CHANGELOG.md",
+          "DEPLOYMENT.md",
+          "DEVELOPERS.md",
+          "API.md",
+          "DESIGN.md"
+        ]
+      },
+      {
+        "name": "ci-config",
+        "base": "pipeline",
+        "color": "blue-400",
+        "fileNames": [
+          ".github/workflows/*.yml",
+          ".github/workflows/*.yaml",
+          ".gitlab-ci.yml",
+          ".travis.yml",
+          "azure-pipelines.yml",
+          "Jenkinsfile",
+          "bitbucket-pipelines.yml",
+          "circleci-config.yml",
+          ".circleci/config.yml",
+          ".drone.yml"
+        ]
+      },
+      {
+        "name": "container-config",
+        "base": "docker",
+        "color": "blue-500",
+        "fileNames": [
+          "Dockerfile",
+          "Dockerfile.*",
+          "*.dockerfile",
+          "docker-compose.yml",
+          "docker-compose.*.yml",
+          "docker-compose.yaml",
+          "docker-compose.*.yaml",
+          "docker-compose.override.yml",
+          "docker-compose.override.yaml",
+          "docker.env"
+        ]
+      },
+      {
+        "name": "terraform-config",
+        "base": "terraform",
+        "color": "purple-500",
+        "fileNames": [
+          "*.tf",
+          "*.tfvars",
+          "terraform.tfvars",
+          "variables.tf",
+          "outputs.tf",
+          "versions.tf",
+          "providers.tf",
+          "backend.tf",
+          "main.tf",
+          "data.tf",
+          "resources.tf"
         ]
       }
     ],
@@ -845,6 +1147,8 @@
     ],
     "kotlin.languageServer.enabled": true,
     "kotlin.debugAdapter.enabled": true,
-    "kotlin.trace.server": "off"
+    "kotlin.trace.server": "off",
+    "material-icon-theme.enableLogging": true,
+    "material-icon-theme.logLevel": "debug"
   }
 }

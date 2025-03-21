@@ -94,10 +94,6 @@
   "editor.stickyScroll.maxLineCount": 8,
   "editor.scrollBeyondLastLine": false,
   "editor.mouseWheelScrollSensitivity": 1.25,
-  // ┌─────────────────────────────────────────────────────┐
-  // │ LANGUAGE-SPECIFIC OPTIMIZATION PROTOCOLS            │
-  // └─────────────────────────────────────────────────────┘
-  // JavaScript & TypeScript
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
@@ -181,24 +177,16 @@
     "diffEditor.experimental.showMoves": true,
     "github.copilot.editor.enableAutoCompletions": true,
     "debug.saveBeforeStart": "allEditorsInActiveGroup",
-    // ┌─────────────────────────────────────────────────────┐
-    // │ ACCESSIBILITY & FOCUS ENGINEERING                   │
-    // └─────────────────────────────────────────────────────┘
     "editor.fontWeight": "normal",
     "breadcrumbs.symbolSortOrder": "position",
     "javascript.preferences.importModuleSpecifierEnding": "js",
     "javascript.preferences.useAliasesForRenames": true,
     "typescript.preferences.importModuleSpecifierEnding": "auto",
     "typescript.preferences.useAliasesForRenames": true,
-    // ┌─────────────────────────────────────────────────────┐
-    // │ EXTENSION ECOSYSTEM OPTIMIZATION                    │
-    // └─────────────────────────────────────────────────────┘
-    // Better Auto Imports
     "typescript.suggest.enabled": true,
     "javascript.suggest.enabled": true,
     "editor.unicodeHighlight.ambiguousCharacters": true,
     "editor.unicodeHighlight.invisibleCharacters": true,
     "editor.unicodeHighlight.nonBasicASCII": false,
-    // Asynchronous Git file operations for large repositories
     "editor.rename.enablePreview": true,
   }
