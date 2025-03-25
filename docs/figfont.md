@@ -97,11 +97,6 @@ resources for all users.
 
 # BASIC DEFINITIONS AND CONCEPTS
 
-````markdown
-# 🧩 BASIC DEFINITIONS AND CONCEPTS
-
-This section introduces the fundamental terminology and concepts needed to understand FIGlet typography. Each concept builds on the previous, creating a scaffolding of knowledge that enables both usage and extension of the FIGlet system.
-
 ## "FIGfont" 🔤
 
 A FIGfont is a file which represents the graphical arrangement of characters representing larger characters. Since a FIGfont file is a text file, it can be created with any text editing program on any platform. The filename of a FIGfont file must end with ".flf", which stands for "<F>IG<L>ettering <F>ont".
@@ -111,7 +106,6 @@ A FIGfont is a file which represents the graphical arrangement of characters rep
 │ 📂 FIGfont = Typography patterns crystallized into text  │
 └───────────────────────────────────────────────────────────┘
 ```
-````
 
 ## "FIGcharacters" and "Sub-characters" 📝
 
@@ -210,7 +204,6 @@ Not all FIGdrivers do vertical fitting or smushing. At present, FIGWin 1.0 does,
 
 # Advanced Typography Control
 
-````markdown
 ## "Smushing Rules" 🧩
 
 > _"Precise character interaction creates typographic elegance."_ — Eidosian Typography Principle 2.3
@@ -230,7 +223,6 @@ Generally, if a FIGfont is "drawn at the borders" using sub-characters "-\_|/\[]
 │ 🧪 Always experiment with different combinations to find optimal results! │
 └───────────────────────────────────────────────────────────────────────────┘
 ```
-````
 
 There are six possible horizontal smushing rules and five possible vertical smushing rules. Below is a description of all of the rules.
 
@@ -364,7 +356,6 @@ These techniques prevent horizontal smushing from causing a FIGfont to become il
 
 # Character Sets and Character Encoding
 
-````markdown
 ## "Character Sets" and "Character Codes" 🔣
 
 > _"Digital typography begins with understanding the numerical foundation of characters."_ — Eidosian Typography Principle 3.6
@@ -376,7 +367,6 @@ When you type using your keyboard, you are actually sending your computer a seri
 │ KEY PRESS → CHARACTER CODE → CHARACTER SET → DISPLAYED GLYPH  │
 └───────────────────────────────────────────────────────────────┘
 ```
-````
 
 There are many character sets, most of which are internationally accepted as standards. By far, the most common character set is ASCII, which stands for "American Standard Code for Information Interchange". ASCII identifies its characters with codes ranging from 0 to 127.
 

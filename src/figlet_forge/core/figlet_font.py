@@ -1,623 +1,797 @@
+"""
+Figlet Font Handler for Figlet Forge.
+
+This module handles loading and parsing FIGlet font files, which define
+the ASCII art representations of characters used by the FIGlet system.
+"""
+
+import logging
 import os
 import re
-import shutil
 import zipfile
 from importlib import resources
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import (
+    Dict,
+    List,
+    Optional,
+    Set,
+    TypedDict,
+    Union,
+)
 
-from .exceptions import FontError, FontNotFound
-from .utils import unicode_string
+from ..core.exceptions import FontNotFound
 
-unicode_string = type("".encode("ascii").decode("ascii"))
+# Configure logger for the font module
+logger = logging.getLogger(__name__)
+
+# Define type aliases for better clarity and precision
+CharacterMap = Dict[str, List[str]]
+WidthMap = Dict[str, int]
+
+
+class FontInfo(TypedDict, total=False):
+    """TypedDict for font metadata."""
+
+    name: str
+    author: str
+    date: str
+    version: str
+    comment: str
+
+    # Optional fields
+    magic_number: Optional[int]
+    full_width: Optional[int]
 
 
 class FigletFont:
     """
-    FigletFont represents a font loaded from a .flf file.
+    Represents a FIGlet font with character mapping and metadata.
 
-    This class handles font loading, parsing, and character extraction
-    with comprehensive Unicode support and robust error handling.
+    This class loads and parses FIGlet font files, handling the specifics
+    of different font formats and providing methods to access character
+    representations and metadata.
     """
 
-    def __init__(self, font: Union[str, Path] = "standard"):
-        """
-        Initialize the FigletFont.
-
-        Args:
-            font: Name of the font or a Path object pointing to a font file
-
-        Raises:
-            FontNotFound: If the specified font cannot be located
-            FontError: If there are issues parsing the font file
-        """
-        self.font = font
-        self.original_font_name = str(
-            font
-        )  # Store the original font name for reference
-        self.font_name = ""
+    def __init__(self) -> None:
+        """Initialize an empty FIGlet font."""
         self.comment = ""
-        self.chars: Dict[int, List[str]] = {}  # Map of character codes to figlet lines
-        self.width = {}
-        self.data = None
-        self.reMagicNumber = re.compile(r"^flf2.")
-        self.reEndMarker = re.compile(r"(.)\s*$")
-        self.base_dir = None  # Will be determined during loading
-        self.searched_paths: List[Path] = (
-            []
-        )  # Track searched paths for better diagnostics
+        self.chars: CharacterMap = {}
+        self.width: WidthMap = {}
+        self.font_name = ""
+        self.height = 0
+        self.base_line = 0
+        self.max_length = 0
+        self.old_layout = 0
+        self.print_direction = 0
+        self.full_width = 0
+        self.code_tags_depth = 0
+        self.hard_blank = ""
 
-        self.height = 0  # Height of every character
-        self.hardblank = ""  # Hard blank character
-        self.max_length = 0  # Maximum line length
-        self.old_layout = 0  # Layout settings
-        self.comment_count = 0  # Number of comment lines
-        self.print_direction = 0  # Print direction
-        self.full_layout = 0  # Full layout settings
-        self.codetag_count = 0  # Number of code-tagged characters
+        # Additional metadata for enhanced font tracking
+        self.loaded_from: Optional[str] = None
+        self.author: Optional[str] = None
+        self.version: Optional[str] = None
+        self.date: Optional[str] = None
 
-        # German special chars - required for backward compatibility
-        self.deutsch = {
-            ord("Ä"): 0x8E,
-            ord("Ö"): 0x99,
-            ord("Ü"): 0x9A,
-            ord("ä"): 0x84,
-            ord("ö"): 0x94,
-            ord("ü"): 0x81,
-            ord("ß"): 0xE1,
-        }
+        # Additional attributes for compatibility
+        self.info: str = ""
+        self.info_dict: Dict[str, str] = {}
 
-        # Load the font immediately
-        self.loadFont()
-        self.parseFont()  # Parse after loading
-
-    def loadFont(self) -> None:
+    def load_font(
+        self,
+        font_path: Optional[Union[str, Path]] = None,
+        font_name: Optional[str] = None,
+    ) -> bool:
         """
-        Load the font data from the specified source.
-
-        Raises:
-            FontNotFound: If the font file cannot be located
-        """
-        # Priority of font search:
-        # 1. Direct file path
-        # 2. Package resources in figlet_forge/fonts/
-        # 3. Standard font directories
-
-        # If the font is a direct path
-        if isinstance(self.font, Path) or (
-            isinstance(self.font, str) and ("/" in self.font or "\\" in self.font)
-        ):
-            font_path = Path(self.font)
-            self.searched_paths.append(font_path)
-            if not font_path.exists():
-                print(f"⚠ Font not found at path: {font_path}")
-                raise FontNotFound(
-                    f"Font file not found: {font_path}",
-                    font_name=str(self.font),
-                    searched_paths=[str(p) for p in self.searched_paths],
-                )
-
-            with open(font_path, "rb") as f:
-                self.data = f.read().decode("latin-1", "replace")
-            self.base_dir = font_path.parent
-            self.font_name = font_path.stem
-            print(f"✓ Loaded font '{self.font_name}' from path: {font_path}")
-            return
-
-        # Check package resources
-        try:
-            try:
-                package_path = Path("figlet_forge/fonts") / f"{self.font}.flf"
-                self.searched_paths.append(package_path)
-
-                # Use files() instead of open_text (which is deprecated)
-                try:
-                    from importlib.resources import files
-
-                    font_resource = files("figlet_forge.fonts").joinpath(
-                        f"{self.font}.flf"
-                    )
-                    if font_resource.is_file():
-                        with open(font_resource, encoding="latin-1") as f:
-                            self.data = f.read()
-                            self.font_name = str(self.font)
-                            print(
-                                f"✓ Loaded font '{self.font_name}' from package resources"
-                            )
-                            return
-                except (ImportError, FileNotFoundError):
-                    # Fall back to older method for Python < 3.9
-                    try:
-                        from importlib.resources import read_text
-
-                        self.data = read_text("figlet_forge.fonts", f"{self.font}.flf")
-                        self.font_name = str(self.font)
-                        print(
-                            f"✓ Loaded font '{self.font_name}' from package resources (read_text)"
-                        )
-                        return
-                    except (ImportError, FileNotFoundError):
-                        pass
-            except Exception:
-                pass
-        except Exception:
-            pass
-
-        # Search in standard font directories
-        from ..version import SHARED_DIRECTORY
-
-        search_dirs = [
-            Path(SHARED_DIRECTORY) / "fonts",
-            Path(__file__).parent.parent.parent / "fonts",
-            Path.home() / ".figlet_forge" / "fonts",
-            Path("/usr/share/figlet"),
-            Path("/usr/local/share/figlet"),
-        ]
-
-        for directory in search_dirs:
-            if not directory.exists():
-                continue
-
-            self.searched_paths.append(directory)
-
-            # Look for exact match first
-            font_path = directory / f"{self.font}.flf"
-            if font_path.exists():
-                with open(font_path, "rb") as f:
-                    self.data = f.read().decode("latin-1", "replace")
-                self.base_dir = directory
-                self.font_name = str(self.font)
-                print(f"✓ Loaded font '{self.font_name}' from directory: {directory}")
-                return
-
-            # Then look for case-insensitive match
-            for file in directory.glob("*.flf"):
-                self.searched_paths.append(file)
-                if file.stem.lower() == self.font.lower():
-                    with open(file, "rb") as f:
-                        self.data = f.read().decode("latin-1", "replace")
-                    self.base_dir = directory
-                    self.font_name = file.stem
-                    print(
-                        f"✓ Loaded font '{self.font_name}' with case-insensitive match: {file}"
-                    )
-                    return
-
-        # As a fallback, check if we're running from a zipped package
-        try:
-            import site
-            import zipfile
-
-            for site_dir in site.getsitepackages():
-                for root, dirs, files in os.walk(site_dir):
-                    if "figlet_forge" in root:
-                        for file in files:
-                            if file.endswith(".zip"):
-                                try:
-                                    with zipfile.ZipFile(os.path.join(root, file)) as z:
-                                        font_path = (
-                                            f"figlet_forge/fonts/{self.font}.flf"
-                                        )
-                                        if font_path in z.namelist():
-                                            with z.open(font_path) as f:
-                                                self.data = f.read().decode(
-                                                    "latin-1", "replace"
-                                                )
-                                                self.font_name = str(self.font)
-                                                print(
-                                                    f"✓ Loaded font '{self.font_name}' from zip package"
-                                                )
-                                                return
-                                except Exception:
-                                    pass
-        except Exception:
-            pass
-
-        # Font not found - provide detailed error with fallback suggestion
-        print(f"⚠ Font '{self.font}' not found - attempting fallback to 'standard'")
-
-        # Try to use 'standard' as fallback for better user experience
-        if str(self.font).lower() != "standard":
-            try:
-                original_font = self.font
-                self.font = "standard"
-                self.loadFont()  # Recursively try loading standard font
-
-                # Update font_name to 'standard' for consistency
-                self.font_name = "standard"
-
-                print(
-                    f"✓ Successfully loaded fallback font 'standard' instead of '{original_font}'"
-                )
-                return
-            except Exception as e:
-                print(f"⚠ Fallback to 'standard' font also failed: {e}")
-
-        # If we get here, even fallback failed
-        raise FontNotFound(
-            f"Font '{self.font}' not found after exhaustive search",
-            font_name=str(self.font),
-            searched_paths=[str(p) for p in self.searched_paths],
-        )
-
-    def parseFont(self) -> None:
-        """
-        Parse the font data after loading.
-
-        Raises:
-            FontError: If there are issues parsing the font file
-        """
-        if not self.data:
-            raise FontError("No font data loaded to parse")
-
-        lines = self.data.splitlines()
-
-        # Minimum number of lines required for a valid font
-        min_required_lines = 1  # At least header
-
-        if len(lines) < min_required_lines:
-            raise FontError("Font file is too short")
-
-        # Parse header line
-        try:
-            header = lines[0].split()
-
-            if not self.reMagicNumber.search(header[0]):
-                raise FontError("Not a valid FIGlet font file")
-
-            self.hardblank = header[0][-1]
-            self.height = int(header[1])
-            self.max_length = int(header[3])
-            self.old_layout = int(header[4])
-            self.comment_count = int(header[5])
-
-            if len(header) > 6:
-                self.print_direction = int(header[6])
-            if len(header) > 7:
-                self.full_layout = int(header[7])
-            if len(header) > 8:
-                self.codetag_count = int(header[8])
-
-        except (IndexError, ValueError) as e:
-            raise FontError(f"Error parsing font header: {e}")
-
-        # Check if we have enough lines for comments
-        total_required = 1 + self.comment_count  # Header + comments
-        if len(lines) < total_required:
-            raise FontError(
-                f"Font file too short: expected at least {total_required} lines"
-            )
-
-        # Skip comment lines
-        try:
-            line_no = 1 + self.comment_count
-
-            # Check if we have enough lines for the character data
-            required_char_lines = 95 * self.height  # 95 standard ASCII chars
-            if len(lines) < line_no + required_char_lines:
-                # For test files with minimal content, create blank characters
-                self._create_blank_characters()
-                return
-
-            # Load ASCII standard character set (required)
-            for i in range(32, 127):
-                end = None
-                width = 0
-
-                # Check if we have enough lines left
-                if line_no + self.height > len(lines):
-                    self._create_blank_characters()
-                    return
-
-                for j in range(0, self.height):
-                    if end:
-                        line = lines[line_no + j][0:end]
-                    else:
-                        line = lines[line_no + j]
-
-                    if j == 0:
-                        match = self.reEndMarker.search(line)
-                        if match:
-                            end = match.start(1)
-                            width = end
-                        else:
-                            width = len(line)
-
-                    if i not in self.chars:
-                        self.chars[i] = []
-
-                    self.chars[i].append(line)
-
-                self.width[i] = width
-                line_no += self.height
-
-            # Load additional characters (German, code-tagged, etc.)
-            self.loadGerman(lines, line_no)
-            self.loadCodetagged(lines, line_no)
-
-        except Exception as e:
-            # For test files with minimal content, create blank characters
-            # instead of failing completely
-            if self.font_name in ["minfont", "tmpgrn7kd66"] or "tmp" in str(self.font):
-                self._create_blank_characters()
-            else:
-                raise FontError(f"Error parsing font data: {e}")
-
-    def _create_blank_characters(self):
-        """Create blank characters for all ASCII range."""
-        for i in range(32, 127):
-            self.chars[i] = ["" for _ in range(self.height)]
-            self.width[i] = 1  # Minimal width
-
-    def loadGerman(self, lines: List[str], line_no: int) -> None:
-        """
-        Load German character set for backward compatibility.
+        Load a font from file or embedded resources.
 
         Args:
-            lines: Font file lines
-            line_no: Current line number in parsing
-        """
-        # This method is specifically for compatibility with older FIGlet functionality
-        # which required special handling of German characters
-        deutsch_chars = [91, 92, 93, 123, 124, 125, 126]
-        for i in deutsch_chars:
-            try:
-                end = None
-
-                for j in range(0, self.height):
-                    if end:
-                        line = lines[line_no + j][0:end]
-                    else:
-                        line = lines[line_no + j]
-                        match = self.reEndMarker.search(line)
-                        if match:
-                            end = match.start(1)
-
-                    if i not in self.chars:
-                        self.chars[i] = []
-                    self.chars[i].append(line)
-
-                line_no += self.height
-            except IndexError:
-                # If we hit an IndexError, we're beyond the end of the file
-                # Create zero-width characters as fallback for German chars
-                for j in range(0, self.height):
-                    if i not in self.chars:
-                        self.chars[i] = []
-                    self.chars[i].append("")
-
-    def loadCodetagged(self, lines: List[str], line_no: int) -> None:
-        """
-        Load code-tagged characters if available.
-
-        Args:
-            lines: Font file lines
-            line_no: Current line number in parsing
-        """
-        if self.codetag_count:
-            for i in range(0, self.codetag_count):
-                try:
-                    # Get the code from the first line of the character
-                    line = lines[line_no]
-                    match = re.search(r"0x([0-9A-Fa-f]+)", line)
-                    if match:
-                        code = int(match.group(1), 16)
-
-                        # Skip header line
-                        line_no += 1
-                        end = None
-
-                        # Parse each row of the character
-                        for j in range(0, self.height):
-                            if end:
-                                line = lines[line_no + j][0:end]
-                            else:
-                                line = lines[line_no + j]
-                                match = self.reEndMarker.search(line)
-                                if match:
-                                    end = match.start(1)
-
-                            if code not in self.chars:
-                                self.chars[code] = []
-                            self.chars[code].append(line)
-
-                        line_no += self.height
-
-                except IndexError:
-                    # If we hit an IndexError, we're beyond the end of the file
-                    break
-
-    def getCharacter(self, char: Union[str, int]) -> List[str]:
-        """
-        Get the lines of the specified character.
-
-        Args:
-            char: Character or character code to retrieve
+            font_path: Path to the font file, if None uses font_name
+            font_name: Name of the embedded font to load
 
         Returns:
-            List of strings representing the character's FIGlet lines
+            True if font was loaded successfully, False otherwise
         """
-        c = ord(char) if isinstance(char, str) else char
+        success = False
 
-        if c in self.chars:
-            return self.chars[c]
+        # If no specific font is requested, use the default
+        if font_path is None and font_name is None:
+            font_name = "standard"
 
-        # Handle German characters for backward compatibility
-        if c in self.deutsch:
-            return self.chars[self.deutsch[c]]
+        # Try direct file load first (if path provided)
+        if font_path is not None:
+            try:
+                # Ensure path is a string for file operations
+                path_str = str(font_path)
 
-        # Special handling for unknown characters
-        # Default to space or "block" character if configured
-        if 32 in self.chars:
-            return self.chars[32]  # Space as fallback
+                if os.path.isfile(path_str):
+                    with open(path_str, "rb") as font_file:
+                        data = font_file.read().decode("latin-1", errors="replace")
+                        success = self.parse_font(data)
+                        if success:
+                            self.loaded_from = path_str
+                            self.font_name = os.path.basename(path_str).split(".")[0]
+            except (OSError, UnicodeDecodeError, RuntimeError) as e:
+                # Log the error but continue to try other methods
+                logger.warning(f"Error loading font file: {e}")
 
-        # Last resort - create blank character with the right height
-        return ["" for _ in range(self.height)]
+        # If direct file load failed and we have a font name, try package fonts
+        if not success and font_name is not None:
+            # First try built-in package fonts - search in priority order
+            font_package_paths = [
+                "figlet_forge.fonts",  # Base fonts
+                "figlet_forge.fonts.standard",  # Standard fonts
+                "figlet_forge.fonts.contrib",  # Contrib fonts
+                "figlet_forge.data.fonts",  # Legacy package path
+            ]
 
-    def getWidth(self, char: Union[str, int]) -> int:
+            for package_path in font_package_paths:
+                try:
+                    # Try both .flf and .tlf extensions
+                    for ext in [".flf", ".tlf"]:
+                        resource_name = f"{font_name}{ext}"
+                        try:
+                            font_data = resources.read_binary(
+                                package_path, resource_name
+                            )
+                            success = self.parse_font(
+                                font_data.decode("latin-1", errors="replace")
+                            )
+                            if success:
+                                self.loaded_from = (
+                                    f"resource:{package_path}:{font_name}"
+                                )
+                                self.font_name = font_name
+                                return True
+                        except (FileNotFoundError, Exception) as resource_error:
+                            # Generalized exception handling for resource errors
+                            # This covers ResourceReadError without explicitly importing it
+                            logger.debug(
+                                f"Font {font_name}{ext} not found in {package_path}: {resource_error}"
+                            )
+                except (ImportError, ModuleNotFoundError) as e:
+                    # Log but continue to next package path
+                    logger.debug(f"Package {package_path} not found: {e}")
+
+        # If we still don't have a font, try the system font paths
+        if not success and font_name is not None:
+            success = self._find_font_in_paths(font_name)
+
+        # If everything failed, try to load the default "standard" font
+        if not success and font_name != "standard":
+            logger.info(
+                f"Failed to load font '{font_name}', falling back to 'standard'"
+            )
+            return self.load_font(None, "standard")
+
+        return success
+
+    def _find_font_in_paths(self, font_name: str) -> bool:
         """
-        Get the width of the specified character.
+        Search for the font in known system paths.
 
         Args:
-            char: Character or character code to measure
+            font_name: Name of the font to find
+
+        Returns:
+            True if found and loaded successfully, False otherwise
+        """
+        # Standard paths where figlet fonts may be installed
+        search_paths = [
+            "/usr/share/figlet",  # Common Linux location
+            "/usr/local/share/figlet",  # Common BSD/macOS location
+            "/usr/share/figlet/fonts",  # Alternative location
+            "/usr/local/lib/figlet/fonts",
+            os.path.expanduser("~/.figlet/fonts"),  # User-specific location
+            os.path.expanduser("~/figlet/fonts"),  # Alternative user location
+        ]
+
+        # Add current directory and script directory as final fallbacks
+        search_paths.append(os.path.dirname(os.path.abspath(__file__)))
+        search_paths.append(os.getcwd())
+
+        # Search for the font file
+        for path in search_paths:
+            if not os.path.exists(path):
+                continue
+
+            # Find all font files in directory
+            found_files: List[str] = []
+            for root, _, files in os.walk(path):
+                for file in files:
+                    if file.startswith(f"{font_name}.") or file == font_name:
+                        found_files.append(os.path.join(root, file))
+
+            # Try loading each candidate font file
+            for file_path in found_files:
+                try:
+                    with open(file_path, "rb") as font_file:
+                        data = font_file.read().decode("latin-1", errors="replace")
+                        if self.parse_font(data):
+                            self.loaded_from = file_path
+                            self.font_name = font_name
+                            return True
+                except (OSError, UnicodeDecodeError) as e:
+                    # Log and try next file
+                    logger.debug(f"Error trying font file {file_path}: {e}")
+
+        return False
+
+    def parse_font(self, data: str) -> bool:
+        """
+        Parse font data and load character definitions.
+
+        Args:
+            data: The raw font data as a string
+
+        Returns:
+            True if parsing succeeded, False otherwise
+
+        Raises:
+            RuntimeError: If the font format is invalid
+        """
+        lines = data.splitlines()
+
+        # Need at least the header line
+        if not lines:
+            return False
+
+        # Parse the header and extract basic font properties
+        try:
+            header = lines[0].split()
+            if len(header) < 6:
+                raise RuntimeError("Invalid header format")
+
+            # Extract header fields
+            self.hard_blank = header[0][-1]
+            self.height = int(header[1])
+            self.base_line = int(header[2])
+            self.max_length = int(header[3])
+            self.old_layout = int(header[4])
+            # Attempt to handle both old and new header formats
+            self.print_direction = 0
+            self.full_width = 0
+            self.code_tags_depth = 0
+
+            if len(header) > 5:
+                comment_lines = int(header[5])
+                self.comment = "\n".join(lines[1 : comment_lines + 1])
+                # Extract metadata from comment
+                self._extract_metadata_from_comment()
+                current_line = comment_lines + 1
+            else:
+                current_line = 1
+        except (ValueError, IndexError) as e:
+            raise RuntimeError(f"Error parsing font header: {e}") from e
+
+        # We now have a font with header, but no character data yet
+        # Create empty character data for required characters
+        self._create_blank_characters()
+
+        # Process character definitions
+        try:
+            # Detect font format more accurately
+            format_type = self._detect_font_format(lines)
+
+            if format_type == "german":
+                success = self._load_german_format(lines, current_line)
+                if not success:
+                    # Fallback to standard format if German format fails
+                    return self._load_standard_format(lines, current_line)
+            elif format_type == "codetagged":
+                success = self._load_codetagged_format(lines, current_line)
+                if not success:
+                    # Fallback to standard format if codetagged format fails
+                    return self._load_standard_format(lines, current_line)
+            else:  # Standard format
+                return self._load_standard_format(lines, current_line)
+
+            return True
+
+        except Exception as e:
+            # If an error occurs, ensure we leave a clean state
+            self.chars = {}
+            self.width = {}
+            logger.error(f"Error parsing font data: {e}")
+            return False
+
+    def _detect_font_format(self, lines: List[str]) -> str:
+        """
+        Detect the format of a font file by analyzing its content structure.
+
+        Args:
+            lines: Font file content as list of lines
+
+        Returns:
+            Format type: 'standard', 'german', or 'codetagged'
+        """
+        # Join all lines for efficient searching
+        content = "\n".join(lines)
+
+        # Check for German format marker - exact match only
+        if "\n@\n" in content:
+            # Verify it's not just a random occurrence by checking if it appears
+            # after the header section (rough heuristic)
+            header_end = content.find("\n\n")
+            if header_end > 0 and content.find("\n@\n", header_end) > 0:
+                return "german"
+
+        # Check for codetagged format marker - exact match only
+        if "\n@+@\n" in content:
+            # Similar verification
+            header_end = content.find("\n\n")
+            if header_end > 0 and content.find("\n@+@\n", header_end) > 0:
+                return "codetagged"
+
+        # Default to standard format
+        return "standard"
+
+    def _load_standard_format(self, lines: List[str], current_line: int) -> bool:
+        """
+        Load a standard format FIGlet font.
+
+        Args:
+            lines: Font file content as list of lines
+            current_line: Starting line number for parsing
+
+        Returns:
+            True if parsing succeeded, False otherwise
+        """
+        try:
+            # Parse each character block
+            while current_line < len(lines):
+                line_count = 0
+                char_lines: List[str] = []
+
+                # Get the character definition lines
+                while line_count < self.height and current_line + line_count < len(
+                    lines
+                ):
+                    line = lines[current_line + line_count]
+                    # Handle lines that might be too short (missing endmark)
+                    if line:
+                        char_lines.append(line[:-1])  # Remove endmark
+                    else:
+                        char_lines.append("")
+                    line_count += 1
+
+                if not char_lines:
+                    current_line += max(1, line_count)  # Skip to next potential block
+                    continue
+
+                # Determine which character this is
+                if (
+                    current_line + self.height <= len(lines)
+                    and lines[current_line + self.height - 1]
+                ):
+                    # Get the last character of the last line in this block
+                    last_line = lines[current_line + self.height - 1]
+                    if last_line:
+                        curr_char = last_line[-1]
+                    else:
+                        curr_char = " "  # Default to space for empty lines
+                else:
+                    curr_char = " "  # Default to space if out of bounds
+
+                # Store the character, removing trailing spaces for width calculation
+                width = (
+                    max(
+                        len(line.rstrip("\r\n" + self.hard_blank))
+                        for line in char_lines
+                    )
+                    if char_lines
+                    else 0
+                )
+
+                self.chars[curr_char] = char_lines
+                self.width[curr_char] = width
+
+                current_line += self.height
+
+            return bool(self.chars)  # Success if we have at least some characters
+
+        except Exception as e:
+            logger.debug(f"Error in standard format parsing: {e}")
+            return False
+
+    def _load_german_format(self, lines: List[str], current_line: int) -> bool:
+        """
+        Load a German format FIGlet font with improved error handling.
+
+        Args:
+            lines: Font file content as list of lines
+            current_line: Starting line number for parsing
+
+        Returns:
+            True if parsing succeeded, False otherwise
+        """
+        try:
+            # German font format parsing
+            self.chars = {}
+            self.width = {}
+
+            # Find the marker line more safely
+            marker_line = -1
+            for i in range(current_line, len(lines)):
+                if lines[i] == "@":  # Both exact matches possible
+                    marker_line = i
+                    break
+
+            if marker_line < 0:
+                # Try again with newline
+                for i in range(current_line, len(lines)):
+                    if lines[i] == "@\n" or lines[i] == "@\r\n":
+                        marker_line = i
+                        break
+
+            if marker_line < 0:
+                # No German format marker found at all
+                logger.debug("Cannot find marker line in German font format")
+                return False
+
+            # Skip over marker line
+            current_line = marker_line + 1
+
+            # Process character definitions
+            chr_code = ord(" ")  # Start with space
+
+            for _ in range(0, 95):  # 95 printable ASCII chars
+                if current_line + self.height > len(lines):
+                    # Not enough lines left in the file
+                    return bool(self.chars)  # Return success if we got some chars
+
+                char_lines: List[str] = []
+                char = chr(chr_code)
+
+                # Read each line of the character
+                for h in range(self.height):
+                    if current_line + h < len(lines):
+                        char_lines.append(lines[current_line + h].rstrip("\r\n"))
+                    else:
+                        # Pad with empty lines if data is missing
+                        char_lines.append("")
+
+                # Store the character data
+                width = (
+                    max(len(line.rstrip()) for line in char_lines) if char_lines else 0
+                )
+                self.chars[char] = char_lines
+                self.width[char] = width
+
+                chr_code += 1
+                current_line += self.height
+
+            return True
+
+        except Exception as e:
+            logger.debug(f"Error in German format parsing: {e}")
+            return False
+
+    def _load_codetagged_format(self, lines: List[str], current_line: int) -> bool:
+        """
+        Load a codetagged format FIGlet font with improved error handling.
+
+        Args:
+            lines: Font file content as list of lines
+            current_line: Starting line number for parsing
+
+        Returns:
+            True if parsing succeeded, False otherwise
+        """
+        try:
+            # Codetagged font format parsing
+            self.chars = {}
+            self.width = {}
+
+            # Find the code-tagged section safely
+            marker_line = -1
+            for i in range(current_line, len(lines)):
+                if lines[i] in ("@+@", "@+@\n", "@+@\r\n"):
+                    marker_line = i
+                    break
+
+            if marker_line < 0:
+                logger.debug("Cannot find marker line in codetagged font format")
+                return False
+
+            # Skip over marker line
+            current_line = marker_line + 1
+
+            # Process character definitions until we reach the end marker
+            while current_line < len(lines):
+                if lines[current_line] in ("@@", "@@\n", "@@\r\n"):
+                    break  # End of codetagged section
+
+                # Get character code from the first line
+                if not (
+                    current_line < len(lines) and lines[current_line].startswith("+")
+                ):
+                    current_line += 1
+                    continue
+
+                try:
+                    # Parse character code, handling potential formatting
+                    code_line = lines[current_line].strip()
+                    char_code = int(code_line[1:])
+                    current_line += 1
+                    char = chr(char_code)
+
+                    # Get character definition lines
+                    char_lines: List[str] = []
+                    for _ in range(self.height):
+                        if current_line < len(lines) and not lines[
+                            current_line
+                        ].startswith("+"):
+                            line = lines[current_line].rstrip("\r\n")
+                            char_lines.append(line)
+                            current_line += 1
+                        else:
+                            # Pad with empty lines if data is missing
+                            char_lines.append("")
+
+                    # Store character data
+                    width = (
+                        max(len(line.rstrip()) for line in char_lines)
+                        if char_lines
+                        else 0
+                    )
+                    self.chars[char] = char_lines
+                    self.width[char] = width
+
+                    # Skip end marker for this character
+                    if current_line < len(lines) and lines[current_line] in (
+                        "+@",
+                        "+@\n",
+                        "+@\r\n",
+                    ):
+                        current_line += 1
+
+                except (ValueError, IndexError) as e:
+                    # Log and skip invalid character definitions
+                    logger.debug(f"Invalid character definition: {e}")
+                    current_line += 1
+
+            return bool(self.chars)  # Success if we parsed some characters
+
+        except Exception as e:
+            logger.debug(f"Error in codetagged format parsing: {e}")
+            return False
+
+    def _create_blank_characters(self) -> None:
+        """Create blank representation for basic characters."""
+        # Create an empty line template
+        empty_line = " " * self.max_length
+
+        # Initialize the dictionary with empty characters
+        self.chars = {}
+        self.width = {}
+
+        # Set at minimum the printable ASCII chars
+        for i in range(32, 127):
+            char = chr(i)
+            self.chars[char] = [empty_line] * self.height
+            self.width[char] = self.max_length
+
+    def get_character(self, char: str) -> List[str]:
+        """
+        Get the ASCII art for a specific character.
+
+        Args:
+            char: The character to retrieve
+
+        Returns:
+            List of strings representing the ASCII art for the character
+        """
+        if not char or len(char) == 0:
+            return self.chars.get(" ", [" " * self.max_length] * self.height)
+
+        # For multi-character strings, just return the first character
+        if len(char) > 1:
+            char = char[0]
+
+        # Return the character data, or space if not found
+        if char in self.chars:
+            return self.chars[char]
+        else:
+            # Try to handle special characters
+            try:
+                # Check if it's a unicode character we can map
+                for fallback in ["?", " "]:
+                    if fallback in self.chars:
+                        return self.chars[fallback]
+            except Exception as e:
+                # Log instead of silent pass for better error handling
+                logger.debug(f"Error handling special character '{char}': {e}")
+
+            # Default fallback
+            return [" " * self.max_length] * self.height
+
+    def get_width(self, char: str) -> int:
+        """
+        Get the width of a specific character.
+
+        Args:
+            char: The character to check
 
         Returns:
             Width of the character in columns
         """
-        c = ord(char) if isinstance(char, str) else char
+        if not char or len(char) == 0:
+            return self.width.get(" ", self.max_length)
 
-        if c in self.width:
-            return self.width[c]
+        # For multi-character strings, just get the first character
+        if len(char) > 1:
+            char = char[0]
 
-        if c in self.deutsch and self.deutsch[c] in self.width:
-            return self.width[self.deutsch[c]]
+        # Return the character width, or default if not found
+        if char in self.width:
+            return self.width[char]
+        else:
+            # Try to use fallback characters
+            for fallback in ["?", " "]:
+                if fallback in self.width:
+                    return self.width[fallback]
+            # Last resort
+            return self.max_length
 
-        # Attempt to calculate width from character data
-        if c in self.chars:
-            return max(len(l) for l in self.chars[c])
+    def _extract_metadata_from_comment(self) -> None:
+        """Extract metadata fields from font comment."""
+        if not self.comment:
+            return
 
-        # Default to space width
-        if 32 in self.width:
-            return self.width[32]
+        # Extract common metadata fields
+        metadata_patterns = {
+            "name": r"(?:Name|Font)[:\s]+([^\n]+)",
+            "author": r"(?:Author|By)[:\s]+([^\n]+)",
+            "date": r"(?:Date|Created)[:\s]+([^\n]+)",
+            "version": r"(?:Version)[:\s]+([^\n]+)",
+        }
 
-        # Zero width as last resort
-        return 0
+        for field, pattern in metadata_patterns.items():
+            match = re.search(pattern, self.comment, re.IGNORECASE)
+            if match:
+                value = match.group(1).strip()
+                setattr(self, field, value)
 
     @classmethod
-    def getFonts(cls) -> List[str]:
+    def get_fonts(cls) -> List[str]:
         """
-        Get list of available FIGlet fonts.
+        Get a list of all available font names.
 
         Returns:
-            List of font names
+            List of available font names in alphabetical order
         """
-        fonts = set()
+        fonts: Set[str] = set()
 
-        # Look in package resources
-        try:
-            package_fonts = [
-                f.name[:-4]
-                for f in resources.files("figlet_forge.fonts").iterdir()
-                if f.name.endswith(".flf")
-            ]
-            fonts.update(package_fonts)
-        except (ModuleNotFoundError, FileNotFoundError, AttributeError):
-            pass  # Continue to next search method
-
-        # Check standard directories
-        from ..version import SHARED_DIRECTORY
-
-        search_dirs = [
-            Path(SHARED_DIRECTORY) / "fonts",
-            Path(__file__).parent.parent.parent / "fonts",
-            Path.home() / ".figlet_forge" / "fonts",
-            Path("/usr/share/figlet"),
-            Path("/usr/local/share/figlet"),
+        # Check built-in package fonts - precisely organized by priority
+        package_paths = [
+            "figlet_forge.fonts",  # Base fonts
+            "figlet_forge.fonts.standard",  # Standard fonts
+            "figlet_forge.fonts.contrib",  # Contrib fonts
+            "figlet_forge.data.fonts",  # Legacy package path
         ]
 
-        for directory in search_dirs:
-            if directory.exists():
-                try:
-                    dir_fonts = [f.stem for f in directory.glob("*.flf")]
-                    fonts.update(dir_fonts)
-                except Exception:
-                    continue
+        for package_path in package_paths:
+            try:
+                # Use importlib.resources for Python 3.7+ compatibility
+                for resource in resources.contents(package_path):
+                    if resource.endswith((".flf", ".tlf")):
+                        font_name = resource.rsplit(".", 1)[0]  # Remove extension
+                        fonts.add(font_name)
+            except (ImportError, ModuleNotFoundError) as e:
+                # Log and continue with other sources
+                logger.debug(f"Error accessing package resources {package_path}: {e}")
 
+        # Check system font directories
+        font_dirs = [
+            "/usr/share/figlet",
+            "/usr/local/share/figlet",
+            "/usr/share/figlet/fonts",
+            os.path.expanduser("~/.figlet/fonts"),
+        ]
+
+        for directory in font_dirs:
+            try:
+                if os.path.isdir(directory):
+                    for file in os.listdir(directory):
+                        if file.endswith((".flf", ".tlf")):
+                            font_name = file.rsplit(".", 1)[0]  # Remove extension
+                            fonts.add(font_name)
+            except OSError as e:
+                logger.debug(f"Error accessing font directory {directory}: {e}")
+
+        # Ensure we always have at least the standard font
+        fonts.add("standard")
+
+        # Convert to sorted list for consistent output
         return sorted(list(fonts))
 
-    @classmethod
-    def infoFont(cls, font: str, short: bool = False) -> str:
+    def info_font(self, font_name: Optional[str] = None) -> Optional[FontInfo]:
         """
         Get information about a specific font.
 
         Args:
-            font: Name of the font
-            short: Whether to return only the first line of information
+            font_name: Name of the font to query
 
         Returns:
-            Font information string
-
-        Raises:
-            FontNotFound: If the specified font cannot be found
+            Dictionary with font information or None if font not found
         """
-        try:
-            # Load font data
-            figfont = cls(font)
+        # If no font_name provided, use current font
+        if font_name is None and self.font_name:
+            # Return info about currently loaded font
+            return {
+                "name": self.font_name,
+                "author": self.author or "Unknown",
+                "date": self.date or "Unknown",
+                "version": self.version or "Unknown",
+                "comment": self.comment or "",
+                "magic_number": 0,  # Default value for compatibility
+                "full_width": self.full_width,
+            }
 
-            # Extract the comment section
-            data = figfont.data.splitlines()
+        # Load a temporary font to get its info
+        temp_font = FigletFont()
+        if temp_font.load_font(font_name=font_name):
+            return {
+                "name": temp_font.font_name,
+                "author": temp_font.author or "Unknown",
+                "date": temp_font.date or "Unknown",
+                "version": temp_font.version or "Unknown",
+                "comment": temp_font.comment or "",
+                "magic_number": 0,  # Default value for compatibility
+                "full_width": temp_font.full_width,
+            }
 
-            # Extract header info
-            header = data[0].split()
+        return None
 
-            if short:
-                return f"{font}: {' '.join(header[1:])}"
-
-            # Return full comment section
-            comment_lines = data[1 : figfont.comment_count + 1]
-            info = [f"Font: {font}", f"Header: {' '.join(header[1:])}"]
-            info.extend([f"Comment: {line}" for line in comment_lines])
-
-            return "\n".join(info)
-
-        except FontNotFound:
-            return f"Font '{font}' not found"
-        except Exception as e:
-            return f"Error retrieving font info for '{font}': {str(e)}"
-
-    @classmethod
-    def installFonts(cls, source_path: Union[str, Path]) -> bool:
+    def install_fonts(self, zip_path: Union[str, Path]) -> List[str]:
         """
-        Install fonts from a file or directory to the user's font directory.
+        Install fonts from a zip file to user fonts directory.
 
         Args:
-            source_path: Path to font file, directory, or zip containing fonts
+            zip_path: Path to zip file containing fonts
 
         Returns:
-            True if fonts were installed successfully, False otherwise
+            List of installed font names
         """
-        # Create user font directory if it doesn't exist
-        user_font_dir = Path.home() / ".figlet_forge" / "fonts"
-        user_font_dir.mkdir(parents=True, exist_ok=True)
+        installed_fonts: List[str] = []
 
-        path = Path(source_path)
+        # Create user fonts directory if it doesn't exist
+        user_fonts_dir = os.path.expanduser("~/.figlet/fonts")
+        os.makedirs(user_fonts_dir, exist_ok=True)
 
-        # Handle different source types
         try:
-            if not path.exists():
-                print(f"Source does not exist: {path}")
-                return False
+            # Ensure zip_path is a string for zipfile operations
+            zip_path_str = str(zip_path)
 
-            if path.is_file():
-                if path.suffix == ".flf":
-                    # Single font file
-                    dest = user_font_dir / path.name
-                    shutil.copy2(path, dest)
-                    print(f"Installed font: {path.name}")
-                    return True
-                elif path.suffix == ".zip":
-                    # Zip archive of fonts
-                    installed = 0
-                    with zipfile.ZipFile(path) as z:
-                        for item in z.namelist():
-                            if item.endswith(".flf"):
-                                font_name = Path(item).name
-                                z.extract(item, user_font_dir)
-                                print(f"Installed font from archive: {font_name}")
-                                installed += 1
-                    return installed > 0
-            elif path.is_dir():
-                # Directory of fonts
-                installed = 0
-                for font_file in path.glob("*.flf"):
-                    dest = user_font_dir / font_file.name
-                    shutil.copy2(font_file, dest)
-                    print(f"Installed font: {font_file.name}")
-                    installed += 1
-                return installed > 0
+            with zipfile.ZipFile(zip_path_str, "r") as z:
+                # Extract only .flf and .tlf files
+                for file_info in z.infolist():
+                    if file_info.filename.endswith((".flf", ".tlf")):
+                        # Extract the file to user fonts directory
+                        z.extract(file_info, user_fonts_dir)
+                        # Get font name by removing extension
+                        font_name = os.path.basename(file_info.filename).rsplit(".", 1)[
+                            0
+                        ]
+                        installed_fonts.append(font_name)
 
-            return False
+            return installed_fonts
+        except (zipfile.BadZipFile, OSError) as e:
+            raise FontNotFound(f"Failed to install fonts: {e}") from e
 
-        except Exception as e:
-            print(f"Error installing fonts: {e}")
-            return False
+    # Methods for backward compatibility with older tests
+    # Using proper noqa comments to suppress linter warnings for camelCase names
+    def getCharacter(self, char: str) -> List[str]:  # noqa: N802
+        """Backward compatibility method for get_character."""
+        return self.get_character(char)
+
+    def getWidth(self, char: str) -> int:  # noqa: N802
+        """Backward compatibility method for get_width."""
+        return self.get_width(char)
+
+    @classmethod
+    def getFonts(cls) -> List[str]:  # noqa: N802
+        """Backward compatibility method for get_fonts."""
+        return cls.get_fonts()

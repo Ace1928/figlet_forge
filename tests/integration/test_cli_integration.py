@@ -91,9 +91,11 @@ def test_version_option(cli_runner):
 
 def test_invalid_font(cli_runner):
     """Test with an invalid font."""
-    # Mock to ensure consistent behavior for the test
+    # We need to patch FigletFont.__init__ rather than the class itself
+    # to ensure the exception is properly raised and handled
     with patch(
-        "figlet_forge.figlet.FigletFont", side_effect=FontNotFound("Font not found")
+        "figlet_forge.core.figlet_font.FigletFont.__init__",
+        side_effect=FontNotFound("Font not found: nonexistent"),
     ):
         exit_code, stdout, stderr = cli_runner(["--font=nonexistent", "Test"])
 
@@ -133,6 +135,15 @@ def test_sample_text_option(cli_runner):
         assert exit_code == 0
         mock_showcase.assert_called_with(sample_text="Custom", fonts=None, color=None)
 
+    # Test with no value (should default to "Hello Eidos")
+    with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+        exit_code, stdout, stderr = cli_runner(["--sample", "--sample-text"])
+
+        assert exit_code == 0
+        mock_showcase.assert_called_with(
+            sample_text="Hello Eidos", fonts=None, color=None
+        )
+
 
 def test_sample_color_option(cli_runner):
     """Test the --sample-color option."""
@@ -142,6 +153,13 @@ def test_sample_color_option(cli_runner):
 
         assert exit_code == 0
         mock_showcase.assert_called_with(sample_text="hello", fonts=None, color="RED")
+
+    # Test with no value (should default to ALL)
+    with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+        exit_code, stdout, stderr = cli_runner(["--sample", "--sample-color"])
+
+        assert exit_code == 0
+        mock_showcase.assert_called_with(sample_text="hello", fonts=None, color="ALL")
 
 
 def test_sample_fonts_option(cli_runner):
@@ -155,6 +173,70 @@ def test_sample_fonts_option(cli_runner):
         assert exit_code == 0
         mock_showcase.assert_called_with(
             sample_text="hello", fonts=["slant", "mini"], color=None
+        )
+
+    # Test with no value (should default to ALL)
+    with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+        exit_code, stdout, stderr = cli_runner(["--sample", "--sample-fonts"])
+
+        assert exit_code == 0
+        mock_showcase.assert_called_with(sample_text="hello", fonts="ALL", color=None)
+
+
+def test_sample_color_option(cli_runner):
+    """Test the --sample-color option with and without values."""
+    # Test with specific color
+    with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+        exit_code, stdout, stderr = cli_runner(["--sample", "--sample-color=RED"])
+
+        assert exit_code == 0
+        mock_showcase.assert_called_with(sample_text="hello", fonts=None, color="RED")
+
+    # Test with no value (should default to ALL)
+    with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+        exit_code, stdout, stderr = cli_runner(["--sample", "--sample-color"])
+
+        assert exit_code == 0
+        mock_showcase.assert_called_with(sample_text="hello", fonts=None, color="ALL")
+
+
+def test_sample_fonts_option(cli_runner):
+    """Test the --sample-fonts option with and without values."""
+    # Test with specific fonts
+    with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+        exit_code, stdout, stderr = cli_runner(
+            ["--sample", "--sample-fonts=slant,mini"]
+        )
+
+        assert exit_code == 0
+        mock_showcase.assert_called_with(
+            sample_text="hello", fonts=["slant", "mini"], color=None
+        )
+
+    # Test with no value (should default to ALL)
+    with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+        exit_code, stdout, stderr = cli_runner(["--sample", "--sample-fonts"])
+
+        assert exit_code == 0
+        mock_showcase.assert_called_with(sample_text="hello", fonts="ALL", color=None)
+
+
+def test_sample_text_option(cli_runner):
+    """Test the --sample-text option with and without values."""
+    # Test with specific text
+    with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+        exit_code, stdout, stderr = cli_runner(["--sample", "--sample-text=Custom"])
+
+        assert exit_code == 0
+        mock_showcase.assert_called_with(sample_text="Custom", fonts=None, color=None)
+
+    # Test with no value (should default to "Hello Eidos")
+    with patch("figlet_forge.cli.main.generate_showcase") as mock_showcase:
+        exit_code, stdout, stderr = cli_runner(["--sample", "--sample-text"])
+
+        assert exit_code == 0
+        mock_showcase.assert_called_with(
+            sample_text="Hello Eidos", fonts=None, color=None
         )
 
 
@@ -261,11 +343,21 @@ def test_svg_output(cli_runner):
         ("--font=standard --color=rainbow --border=double", 0),
         ("--width=120 --justify=center", 0),
         ("--direction=right-to-left --color=BLUE", 0),
-        # Sample options
+        # Sample options with and without values
         ('--sample --sample-text="Hello World"', 0),
+        ("--sample --sample-text", 0),  # No value
         ("--sample --sample-color=RED", 0),
+        ("--sample --sample-color", 0),  # No value
         ("--sample --sample-fonts=slant,mini", 0),
+        ("--sample --sample-fonts", 0),  # No value
+        # Combined sample options
         ('--sample --sample-text="Test" --sample-color=RED', 0),
+        (
+            "--sample --sample-text --sample-color --sample-fonts",
+            0,
+        ),  # All without values
+        # Color option as flag
+        ("--color", 0),  # Should default to rainbow
         # Invalid combinations should still parse correctly
         ("--font=nonexistent", 1),  # Will fail later but parse correctly
     ],

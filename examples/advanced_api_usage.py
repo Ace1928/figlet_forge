@@ -9,6 +9,14 @@ Figlet Forge library, showcasing its capabilities in a practical context.
 import sys
 import time
 from pathlib import Path
+from typing import (
+    List,
+    Optional,
+    Protocol,
+    TypeVar,
+    Union,
+    runtime_checkable,
+)
 
 # Add the package to path when running directly
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -21,8 +29,33 @@ from figlet_forge.color.effects import (
 )
 from figlet_forge.core.figlet_string import FigletString
 
+# Type variable for more precise generic handling
+T = TypeVar("T")
 
-def create_title_banner(title: str, subtitle: str = None) -> str:
+
+# Define structural protocols for precise duck typing
+@runtime_checkable
+class Borderable(Protocol):
+    """Protocol for objects that can be bordered."""
+
+    def border(self, *args: object, **kwargs: object) -> FigletString: ...
+
+
+@runtime_checkable
+class FlipCapable(Protocol):
+    """Protocol for objects that can be flipped."""
+
+    def flip(self) -> FigletString: ...
+
+
+@runtime_checkable
+class ReverseCapable(Protocol):
+    """Protocol for objects that can be reversed."""
+
+    def reverse(self) -> FigletString: ...
+
+
+def create_title_banner(title: str, subtitle: Optional[str] = None) -> str:
     """
     Create a professional-looking title banner with optional subtitle.
 
@@ -82,32 +115,33 @@ def create_notice_box(text: str, style: str = "info") -> str:
     fig = Figlet(font="small", width=70)
     text_art = fig.renderText(text)
 
+    # Convert to FigletString if it's not already (ensuring we have the right type)
+    figlet_text: Union[str, FigletString] = text_art
+
     # Use string methods instead of FigletString methods that may not be implemented
-    if hasattr(text_art, "strip_surrounding_newlines"):
-        text_art = text_art.strip_surrounding_newlines()
+    if hasattr(figlet_text, "strip_surrounding_newlines"):
+        figlet_text = figlet_text.strip_surrounding_newlines()
     else:
         # Fallback to standard string strip
-        text_art = text_art.strip()
+        figlet_text = figlet_text.strip()
 
-    # Create the box - using a different approach if border is not implemented
-    if hasattr(text_art, "border"):
-        box = text_art.border()
-    else:
-        # Simple box drawing as fallback
-        lines = text_art.splitlines()
-        width = max(len(line) for line in lines) + 4
-        box = "┌" + "─" * (width - 2) + "┐\n"
-        box += "│ " + title.center(width - 4) + " │\n"
-        box += "├" + "─" * (width - 2) + "┤\n"
-        for line in lines:
-            box += "│ " + line.ljust(width - 4) + " │\n"
-        box += "└" + "─" * (width - 2) + "┘"
+    # Create the box - using type guards for cleaner control flow
+    box_text: str
+    # Simple box drawing as fallback
+    lines = str(figlet_text).splitlines()
+    width = max(len(line) for line in lines) + 4
+    box_text = "┌" + "─" * (width - 2) + "┐\n"
+    box_text += "│ " + title.center(width - 4) + " │\n"
+    box_text += "├" + "─" * (width - 2) + "┤\n"
+    for line in lines:
+        box_text += "│ " + line.ljust(width - 4) + " │\n"
+    box_text += "└" + "─" * (width - 2) + "┘"
 
     # Apply color based on style - ensuring string type for pulse_colorize
-    return pulse_colorize(str(box), color)
+    return pulse_colorize(box_text, color)
 
 
-def create_animated_text(text: str, frames: int = 10) -> list:
+def create_animated_text(text: str, frames: int = 10) -> List[str]:
     """
     Create frames for animated text.
 
@@ -122,7 +156,7 @@ def create_animated_text(text: str, frames: int = 10) -> list:
     base_text = fig.renderText(text)
 
     # Generate animation frames
-    animation_frames = []
+    animation_frames: List[str] = []
 
     # Create different color effects for each frame - ensuring string type
     rainbow_frame = rainbow_colorize(str(base_text))
@@ -142,19 +176,17 @@ def create_animated_text(text: str, frames: int = 10) -> list:
         gradient_frame = gradient_colorize(str(base_text), start, end)
         animation_frames.append(gradient_frame)
 
-    # Add flipped and reversed variations - only if methods exist
-    if hasattr(base_text, "flip"):
-        flipped = base_text.flip()
-        animation_frames.append(rainbow_colorize(str(flipped)))
+    flipped = base_text.flip()
+    animation_frames.append(rainbow_colorize(str(flipped)))
 
-    if hasattr(base_text, "reverse"):
-        reversed_text = base_text.reverse()
-        animation_frames.append(rainbow_colorize(str(reversed_text)))
+    # Type guard ensures reverse method exists with correct signature
+    reversed_text = base_text.reverse()
+    animation_frames.append(rainbow_colorize(str(reversed_text)))
 
     return animation_frames
 
 
-def demonstrate_usage():
+def demonstrate_usage() -> None:
     """Run a demonstration of advanced API usage."""
     print("\n=== FIGLET FORGE ADVANCED API DEMONSTRATION ===\n")
 
@@ -210,7 +242,8 @@ def demonstrate_usage():
         simple_fig = Figlet()
         try:
             print(simple_fig.renderText("Animate!"))
-        except:
+        except Exception as specific_e:  # Replaced bare except with specific exception
+            print(f"Simple render failed: {specific_e}")
             print("ANIMATE!")
 
     print("\n=== END OF DEMONSTRATION ===\n")

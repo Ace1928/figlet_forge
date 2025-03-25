@@ -1,39 +1,67 @@
-# ⚛️ Figlet Forge ⚡
-
-> _"Form follows function; elegance emerges from precision."_
-
-[![Version](https://img.shields.io/badge/Version-0.1.0-blue)]() [![Python](https://img.shields.io/badge/Python-3.7%2B-blue)]() [![License](https://img.shields.io/badge/License-MIT-green)]()
+# **Figlet Forge**
 
 ```ascii
-  ╭─────────────────────────╮
-  │  EIDOSIAN TYPOGRAPHY    │
-  ╰─────────────────────────╯
+  _____ _       _      _     _____
+ |  ___(_) __ _| | ___| |_  |  ___|__  _ __ __ _  ___
+ | |_  | |/ _` | |/ _ \ __| | |_ / _ \| '__/ _` |/ _ \
+ |  _| | | (_| | |  __/ |_  |  _| (_) | | | (_| |  __/
+ |_|   |_|\__, |_|\___|\__| |_|  \___/|_|  \__, |\___|
+            |___/                           |___/
 ```
 
-## 🔥 Overview
+> _"Form follows function; elegance emerges from precision"_
 
-Figlet Forge is an Eidosian reimplementation of the classic FIGlet ASCII art generator, extending functionality with colorized ANSI support, Unicode rendering, intelligent fallbacks, and a comprehensive API—all while maintaining backward compatibility.
+[![Python Package](https://github.com/Ace1928/figlet_forge/actions/workflows/python-package.yml/badge.svg)](https://github.com/Ace1928/figlet_forge/actions/workflows/python-package.yml)
+[![Eidosian Universal CI](https://github.com/Ace1928/figlet_forge/actions/workflows/ci.yml/badge.svg)](https://github.com/Ace1928/figlet_forge/actions/workflows/ci.yml)
+[![PyPI version](https://badge.fury.io/py/figlet-forge.svg)](https://badge.fury.io/py/figlet-forge)
+[![Documentation Status](https://readthedocs.io/en/latest/?badge=latest)](https://figlet-forge.readthedocs.io/)
+[![Forge System](https://img.shields.io/badge/Forge-System-8A2BE2)](https://github.com/Ace1928)
 
-## ✨ Features
+## Synopsis
 
-- **📊 Full colorized ANSI code support** for vibrant text art with foreground and background colors
-- **🌍 Unicode character rendering** with comprehensive mapping for global language support
-- **🗃️ Expanded font ecosystem** with careful attention to licensing and compatibility
-- **🔄 Intelligent fallbacks** for complete backward compatibility with older systems
-- **🚀 Significant performance optimizations** without sacrificing quality
-- **🧩 Enhanced maintainability** through modern Python practices and typing
-- **📚 Comprehensive documentation** for all use cases
-- **♻️ Full backward compatibility** with pyfiglet
+**Figlet Forge** is an Eidosian reimplementation extending the original pyfiglet package with colorized ANSI support, Unicode rendering, and intelligent fallbacks while maintaining full backward compatibility.
 
-## 🚀 Quick Start
+Building upon pyfiglet's foundation, Figlet Forge adds robust color support, comprehensive Unicode handling, and significant performance optimizations through recursive refinement and precision engineering.
 
-### Installation
+## Features
+
+- **Full colorized ANSI code support** for vibrant text art with foreground and background colors
+- **Unicode character rendering** with comprehensive mapping for global language support
+- **Expanded font ecosystem** with careful attention to licensing and compatibility
+- **Intelligent fallbacks** for complete backward compatibility with older systems
+- **Significant performance optimizations** without sacrificing quality
+- **Enhanced maintainability** through modern Python practices and typing
+- **Comprehensive documentation** for all use cases
+- **Full backward compatibility** with pyfiglet
+
+## Installation
 
 ```bash
 pip install figlet-forge
 ```
 
-### Basic Usage
+## Quick Start
+
+### Command Line
+
+```bash
+# Basic usage
+figlet_forge "Hello world"
+
+# Select a font
+figlet_forge -f slant "Cool Text"
+
+# Use colors
+figlet_forge -f big -c "RED:BLUE" "Colorful"
+
+# Add borders
+figlet_forge --border=single "Boxed Text"
+
+# Rainbow effect
+figlet_forge --color=rainbow "Rainbow"
+```
+
+### Python API
 
 ```python
 from figlet_forge import Figlet
@@ -46,56 +74,71 @@ print(result)
 
 # Colorized output
 print_figlet("Colorful Text", font="big", colors="RED:BLUE")
+
+# Advanced features
+fig = Figlet(font="standard", width=80, justify="center")
+text = fig.renderText("Centered Text")
+bordered = text.border(style="double")
+print(bordered)
 ```
 
-## 🔮 Advanced Features
+## Compatibility with pyfiglet
 
-### Color Support
+Figlet Forge is a drop-in replacement for pyfiglet:
 
 ```python
-# Syntax: foreground:background
-print_figlet("Warning!", font="standard", colors="RED:YELLOW")
+# Original pyfiglet code
+from pyfiglet import Figlet
+f = Figlet(font='slant')
+print(f.renderText('Hello World'))
 
-# RGB support
-print_figlet("Custom", font="slant", colors="255;128;0:0;0;128")
+# Works exactly the same with Figlet Forge
+from figlet_forge.compat import Figlet
+f = Figlet(font='slant')
+print(f.renderText('Hello World'))
 ```
 
-### Unicode Support
+## Documentation
 
-```python
-# Enable Unicode rendering
-fig = Figlet(font="standard", unicode_aware=True)
-print(fig.renderText("こんにちは世界"))
+For comprehensive documentation, visit [figlet-forge.readthedocs.io](https://figlet-forge.readthedocs.io/).
 
-# Right-to-left languages
-fig = Figlet(font="standard", direction="right-to-left")
-print(fig.renderText("مرحبا بالعالم"))
-```
+- [User Guide](https://figlet-forge.readthedocs.io/en/latest/user_guide.html)
+- [API Reference](https://figlet-forge.readthedocs.io/en/latest/api.html)
+- [Font Specification](https://figlet-forge.readthedocs.io/en/latest/figfont.html)
 
-## 📋 Command Line Interface
+## Examples
 
-```bash
-# Basic usage
-figlet_forge "Hello world"
+Check the `examples/` directory for practical use cases:
 
-# Select a font with colors
-figlet_forge -f slant -c "RED:BLUE" "Cool Text"
+- `advanced_api_usage.py`: Demonstrates sophisticated usage patterns
+- `compatibility_example.py`: Shows perfect compatibility with pyfiglet
+- `ascii_to_svg_example.py`: Converts ASCII art to SVG
+- `eidos_figlet_forge_manifesto.py`: Showcases the Eidosian principles
 
-# Unicode support with centered justification
-figlet_forge -u -w 60 -j center "こんにちは世界"
-```
+## Contributing
 
-## 📚 Documentation
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-Full documentation is available at [figlet-forge.readthedocs.io](https://figlet-forge.readthedocs.io/)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 🤝 Contributing
-
-Contributions are welcome! Check out our [contribution guidelines](CONTRIBUTING.md) to get started.
-
-## 📜 License
+## License
 
 Figlet Forge is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 Original pyfiglet copyright © 2007-2023 belongs to the original pyfiglet authors.
 Figlet Forge extensions copyright © 2023-2025 Lloyd Handyside and Eidosian Forge contributors.
+
+## Related Projects
+
+- [FIGlet](http://www.figlet.org/) - The original FIGlet program
+- [pyfiglet](https://github.com/pwaller/pyfiglet) - Python implementation of FIGlet
+
+## Eidosian Integration
+
+Figlet Forge is a component of the Eidosian Forge ecosystem, providing typography services and text crystallization tools following Eidosian principles of elegance, precision, and recursive optimization.
+
+> _"Elegance in recursion, precision in expression."_ - Lloyd Handyside

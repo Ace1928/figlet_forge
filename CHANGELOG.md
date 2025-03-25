@@ -1,98 +1,28 @@
-# Figlet Forge Changelog
+# Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to Figlet Forge will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.2] - 2023-11-20
+## [Unreleased]
 
-### Added
+### Added - Unreleased
 
-- Full ANSI color support with RGB and named colors
-- Unicode character rendering capabilities
-- Advanced text transformation utilities
-- Performance optimizations for rendering
-- Complete compatibility layer for pyfiglet
-- Enhanced documentation and examples
+- Full TypeScript-style type annotations throughout the codebase
+- Comprehensive documentation following Eidosian principles
+- Enhanced error handling with detailed error messages and recovery suggestions
+- HTML and SVG output formats for rendering
 
-### Changed
+### Fixed - Unreleased
 
-- Improved font loading mechanism with better error handling
-- Enhanced rendering engine with proper direction and justification support
-- Better support for different terminal environments
+- Resolved issues in the color effects module
+- Corrected rainbow_colorize function structure
+- Fixed documentation formatting in figfont.md
 
-### Fixed
+## [0.1.0] - 2023-12-15
 
-- Various edge cases in font rendering
-- Handling of special characters and control codes
-- Width calculation for complex layouts
-
-## [1.0.1] - 2023-10-15
-
-### Added
-
-- Initial compatibility layer implementation
-- Core rendering engine foundation
-- Basic color support
-
-## [1.0.0] - 2023-09-01
-
-### Added
-
-- Initial release with core functionality
-- Basic font support
-- CLI interface
-
-## [1.0.2] - 2025-05-01
-
-### Added
-
-- RGB color support with 24-bit color capabilities
-- Advanced color effects module with gradients, highlights, and animations
-- Optimized Unicode rendering for East Asian scripts
-- Comprehensive documentation with examples
-
-### Fixed
-
-- Resolved issues with right-to-left text rendering
-- Fixed compatibility issues with certain font formats
-- Improved error handling for font loading failures
-
-### Changed
-
-- Restructured codebase following Eidosian principles
-- Optimized rendering engine for better performance
-- Enhanced compatibility layer for seamless pyfiglet integration
-
-## [1.0.1] - 2025-01-15
-
-### Added
-
-- Basic ANSI color support
-- Unicode character rendering
-- Compatibility with original pyfiglet
-- Command-line interface enhancements
-
-### Fixed
-
-- Font parsing issues
-- Character encoding problems
-- Layout bugs in certain terminal environments
-
-## [1.0.0] - 2024-11-01
-
-### Added
-
-- Initial release of Figlet Forge
-- Core rendering functionality
-- Support for FIGlet and TOIlet font formats
-- Command-line interface
-- Python API
-
-## 2023-12-15 0.1.0
-
-This release introduces figlet_forge, an Eidosian reimplementation extending the original pyfiglet package:
+### Added - 0.1.0
 
 - Full colorized ANSI code support for vibrant text art
 - Unicode character rendering with comprehensive mapping
@@ -105,7 +35,7 @@ This release introduces figlet_forge, an Eidosian reimplementation extending the
 - Integrated with the Eidosian Forge ecosystem as a core typography tool
 - Modern project structure with pyproject.toml replacing setup.py
 
-  Technical improvements:
+#### Technical Improvements - 0.1.0
 
 - Type annotations throughout codebase (mypy, pyright integration)
 - Modular architecture for better extensibility
@@ -113,16 +43,28 @@ This release introduces figlet_forge, an Eidosian reimplementation extending the
 - Code quality enforced via pre-commit hooks
 - Documentation built with Sphinx and ReadTheDocs integration
 
-## 2023-09-13 1.0.2
+## [0.0.1] - 2023-07-15
 
-This release fixes a leaked file descriptor.
+### Added - 0.0.1
 
-## 2023-09-10 1.0.1
+- Project initialization
+- Basic structure and planning
+- Core implementation concept
+- Compatibility layer design
 
-This release adds a python_requires >= 3.9 to setup.py to prevent old python
-versions from picking up the newly incompatible version.
+## Historical pyfiglet Changelog
 
-## 2023-09-10 1.0.0
+Below is the changelog from the original pyfiglet project, maintained for historical reference.
+
+### pyfiglet 1.0.2 - 2023-09-13
+
+- Fixed a leaked file descriptor
+
+### pyfiglet 1.0.1 - 2023-09-10
+
+- Added python_requires >= 3.9 to setup.py to prevent old python versions from picking up the newly incompatible version
+
+### pyfiglet 1.0.0 - 2023-09-10 (yanked)
 
 This release was yanked, because it introduced incompatibilities with old
 versions of python but did not specify a python_requires line.
@@ -135,44 +77,44 @@ versions of python but did not specify a python_requires line.
 - Add pyproject.toml
 - Many small fixes
 
-## 2018-12-06 0.8.0
+### pyfiglet 0.8.0 - 2018-12-06
 
 - #62 Change LICENSE to MIT
 - #61 Provide font installation option (-L) and remove
-  unlicenced fonts from the distribution
+  unlicensed fonts from the distribution
 
-## 2018-10-17 0.7.6
+### pyfiglet 0.7.6 - 2018-10-17
 
 - #57 Implement colored print
 - #53 Allow fonts to be specified by path
 
-## 2016-06-12 0.7.5
+### pyfiglet 0.7.5 - 2016-06-12
 
 - #46 Add 100+ fonts from java.de figlet fonts collection v4.0
 - #48 Include python3 in testing
 
-## 2015-05-27 0.7.4
+### pyfiglet 0.7.4 - 2015-05-27
 
 - #43 Don't leak file handles
 
-## 2015-04-14 0.7.3
+### pyfiglet 0.7.3 - 2015-04-14
 
 - #41 Add newline and text wrapping support
 
-## 2014-09-14 0.7.2
+### pyfiglet 0.7.2 - 2014-09-14
 
 - #35 Add this CHANGELOG
 - #36 Bug fix for #34 (broken --reverse and --flip)
   (reported "character mapping must return integer, None or unicode")
 
-## 2014-07-27 0.7.1
+### pyfiglet 0.7.1 - 2014-07-27
 
 - #29 Fix for UTF8 regression
 - #31 Add **main** entry point
 - #32 Pep8 the code and minor refactoring
 - #33 Trove classifiers update
 
-## 2014-06-02 0.7
+### pyfiglet 0.7 - 2014-06-02
 
 - #9 Add --list_fonts and --info_font
 - #10 Add tools/pyfiglet_example for listing all fonts
@@ -185,3 +127,7 @@ versions of python but did not specify a python_requires line.
 - #21 Python 3 support
 - #27 Code improvements
 - #28 Human readable font list (-l)
+
+[Unreleased]: https://github.com/Ace1928/figlet_forge/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/Ace1928/figlet_forge/releases/tag/v0.1.0
+[0.0.1]: https://github.com/Ace1928/figlet_forge/releases/tag/v0.0.1
